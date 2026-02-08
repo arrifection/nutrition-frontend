@@ -241,12 +241,14 @@ function App() {
                         <div className="flex items-center gap-4">
                             {user && (
                                 <>
-                                    <button
-                                        onClick={() => setView('history')}
-                                        className={`text-sm font-semibold ${view === 'history' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
-                                    >
-                                        My Records
-                                    </button>
+                                    {user.role === 'client' && (
+                                        <button
+                                            onClick={() => setView('history')}
+                                            className={`text-sm font-semibold ${view === 'history' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
+                                        >
+                                            My Records
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => { setView('dashboard'); setSelectedPatient(null); }}
                                         className={`text-sm font-semibold ${view === 'dashboard' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
