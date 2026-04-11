@@ -14,7 +14,13 @@ from history_router import router as history_router
 from fastapi import Request
 import time
 
+from database import check_db
+
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_db_client():
+    await check_db()
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
