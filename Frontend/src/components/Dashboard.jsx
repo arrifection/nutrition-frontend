@@ -64,7 +64,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                     <div className="lg:col-span-2 space-y-8">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">Dietitian Dashboard</h1>
+                                <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">DIETDESK TEST</h1>
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Clinic Operations Feed</p>
                             </div>
                             <button
