@@ -6,6 +6,7 @@ const Signup = ({ onToggle }) => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [role, setRole] = useState("client");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -13,7 +14,7 @@ const Signup = ({ onToggle }) => {
         e.preventDefault();
         setError("");
         setLoading(true);
-        const result = await signup(username, email, password);
+        const result = await signup(username, email, password, role);
         if (!result.success) {
             setError(result.message);
         }
@@ -26,6 +27,17 @@ const Signup = ({ onToggle }) => {
             <p className="text-gray-500 text-center mb-8">Join NutriPro today</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">I am a...</label>
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all bg-white"
+                    >
+                        <option value="client">Client / Patient</option>
+                        <option value="dietitian">Dietitian / Professional</option>
+                    </select>
+                </div>
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                     <input

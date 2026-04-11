@@ -16,23 +16,28 @@ import ReminderManager from "./ReminderManager";
 import ReflectionLog from "./ReflectionLog";
 import ConsistencyPulse from "./ConsistencyPulse";
 import { getPatients } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard({ onCreatePlan, onSelectClient }) {
-    const [role, setRole] = useState("dietitian");
+    const { user } = useAuth();
+    const role = user?.role || "client";
     const [activeClients, setActiveClients] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(role === "dietitian");
 
     useEffect(() => {
-        const fetchPatients = async () => {
-            const response = await getPatients();
-            if (response.success && Array.isArray(response.data)) {
-                setActiveClients(response.data);
-            }
-
+        if (role === "dietitian") {
+            const fetchPatients = async () => {
+                const response = await getPatients();
+                if (response.success && Array.isArray(response.data)) {
+                    setActiveClients(response.data);
+                }
+                setLoading(false);
+            };
+            fetchPatients();
+        } else {
             setLoading(false);
-        };
-        fetchPatients();
-    }, []);
+        }
+    }, [role]);
 
     const todayFollowUps = [
         { time: "09:30 AM", client: "Maria Garcia", objective: "Weekly Review" },
@@ -53,24 +58,6 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
 
     return (
         <div className="max-w-6xl mx-auto px-6 py-6 font-sans">
-            {/* Role Switcher */}
-            <div className="flex justify-center mb-8">
-                <div className="bg-gray-100 p-1 rounded-sm flex">
-                    <button
-                        onClick={() => setRole("dietitian")}
-                        className={`px-4 py-1.5 text-sm font-bold rounded-sm transition-all ${role === "dietitian" ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"}`}
-                    >
-                        Dietitian View
-                    </button>
-                    <button
-                        onClick={() => setRole("client")}
-                        className={`px-4 py-1.5 text-sm font-bold rounded-sm transition-all ${role === "client" ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"}`}
-                    >
-                        Client View
-                    </button>
-                </div>
-            </div>
-
             {role === "dietitian" ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left & Center: Main Management */}
@@ -229,7 +216,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Health Status</h1>
-                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Maria Garcia • Client Profile</p>
+                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{user?.username || 'Client'} • Profile</p>
                             </div>
                             <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-sm border border-emerald-100">
                                 <Target size={18} />

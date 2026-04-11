@@ -33,10 +33,10 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const res = await api.post("/auth/login", { email, password });
-            const { access_token, username, email: userEmail } = res.data;
+            const { access_token, username, email: userEmail, role } = res.data;
             localStorage.setItem("token", access_token);
             setToken(access_token);
-            setUser({ username, email: userEmail });
+            setUser({ username, email: userEmail, role });
             return { success: true };
         } catch (err) {
             return {
@@ -46,9 +46,9 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const signup = async (username, email, password) => {
+    const signup = async (username, email, password, role) => {
         try {
-            await api.post("/auth/register", { username, email, password });
+            await api.post("/auth/register", { username, email, password, role });
             return await login(email, password);
         } catch (err) {
             return {
