@@ -1,3 +1,4 @@
+import asyncio
 import certifi
 import motor.motor_asyncio
 from pydantic import BaseModel, Field
@@ -7,30 +8,34 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# MongoDB Connection String
-# Local: "mongodb://localhost:27017"
-# Atlas: "mongodb+srv://<username>:<password>@cluster.mongodb.net/test"
+# MongoDB Connection
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://nexusnao:2xTLMDSy7600@cluster0.z4lzt6j.mongodb.net/?appName=Cluster0")
 
-ca = certifi.where()
-client = motor.motor_asyncio.AsyncIOMotorClient(
-    MONGODB_URL, 
-    tlsCAFile=ca,
-    tls=True,
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=5000
-)
-
-
-db = client.nutripro_db
+try:
+    ca = certifi.where()
+    client = motor.motor_asyncio.AsyncIOMotorClient(
+        MONGODB_URL,
+        tls=True,
+        tlsCAFile=ca,
+        serverSelectionTimeoutMS=10000, # Increased timeout
+        connectTimeoutMS=10000
+    )
+except Exception as e:
+    print(f"CRITICAL: Failed to initialize MongoDB client: {e}")
+    # Fallback without tlsCAFile if it fails
+    client = motor.motor_asyncio.AsyncIOMotorClient(
+        MONGODB_URL,
+        serverSelectionTimeoutMS=10000
+    )
 
 async def check_db():
     try:
-        await client.admin.command('ping')
+        # Use a short timeout for the ping
+        await asyncio.wait_for(client.admin.command('ping'), timeout=5.0)
         print("✅ MongoDB Atlas Connected Successfully!")
         return True
     except Exception as e:
-        print(f"❌ MongoDB Connection Failed: {e}")
+        print(f"❌ MongoDB Connection Failed: {type(e).__name__} - {e}")
         return False
 
 

@@ -51,9 +51,10 @@ export const AuthProvider = ({ children }) => {
             await api.post("/auth/register", { username, email, password, role });
             return await login(email, password);
         } catch (err) {
+            const errorMsg = err.response?.data?.detail || err.message || "Signup failed";
             return {
                 success: false,
-                message: err.response?.data?.detail || "Signup failed"
+                message: errorMsg
             };
         }
     };
