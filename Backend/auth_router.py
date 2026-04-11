@@ -48,48 +48,60 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.post("/register", response_model=dict)
 async def register(user_data: UserRegister):
-    # Check if user exists
-    existing_user = await users_collection.find_one({
-        "$or": [{"email": user_data.email}, {"username": user_data.username}]
-    })
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username or email already registered"
-        )
-    
-    hashed_password = get_password_hash(user_data.password)
-    new_user = {
-        "username": user_data.username,
-        "email": user_data.email,
-        "password": hashed_password,
-        "role": user_data.role,
-        "createdAt": datetime.utcnow()
-    }
-    
-    result = await users_collection.insert_one(new_user)
-    if result.inserted_id:
-        return {"message": "User registered successfully"}
-    raise HTTPException(status_code=500, detail="Failed to register user")
+    try:
+        # Check if user exists
+        existing_user = await users_collection.find_one({
+            "$or": [{"email": user_data.email}, {"username": user_data.username}]
+        })
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username or email already registered"
+            )
+        
+        hashed_password = get_password_hash(user_data.password)
+        new_user = {
+            "username": user_data.username,
+            "email": user_data.email,
+            "password": hashed_password,
+            "role": user_data.role,
+            "createdAt": datetime.utcnow()
+        }
+        
+        result = await users_collection.insert_one(new_user)
+        if result.inserted_id:
+            return {"message": "User registered successfully"}
+        raise HTTPException(status_code=500, detail="Failed to register user record")
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"ERROR in register: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {type(e).__name__} - {str(e)}")
 
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
-    user = await users_collection.find_one({"email": user_data.email})
-    if not user or not verify_password(user_data.password, user["password"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token = create_access_token(data={"sub": user["email"]})
-    return {
-        "access_token": access_token, 
-        "token_type": "bearer",
-        "username": user["username"],
-        "email": user["email"],
-        "role": user.get("role", "client")
-    }
+    try:
+        user = await users_collection.find_one({"email": user_data.email})
+        if not user or not verify_password(user_data.password, user["password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        access_token = create_access_token(data={"sub": user["email"]})
+        return {
+            "access_token": access_token, 
+            "token_type": "bearer",
+            "username": user["username"],
+            "email": user["email"],
+            "role": user.get("role", "client")
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"ERROR in login: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {type(e).__name__} - {str(e)}")
 
 @router.get("/me")
 async def read_users_me(current_user: dict = Depends(get_current_user)):
