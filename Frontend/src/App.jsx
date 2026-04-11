@@ -232,7 +232,7 @@ function App() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <h1 className="text-lg font-bold text-emerald-800 tracking-tight cursor-pointer" onClick={() => { setView('dashboard'); setSelectedPatient(null); }}>
-                                NUTRI<span className="text-emerald-500">PRO</span>
+                                DIET<span className="text-emerald-500">DESK</span>
                             </h1>
                             <div className="h-6 w-px bg-emerald-100 hidden md:block"></div>
                             <p className="text-xs text-gray-500 hidden md:block font-medium uppercase tracking-widest">Clinical Dietetics v1.0</p>
@@ -253,7 +253,7 @@ function App() {
                                         onClick={() => { setView('dashboard'); setSelectedPatient(null); }}
                                         className={`text-sm font-semibold ${view === 'dashboard' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
                                     >
-                                        Dashboard
+                                        Dietdesk
                                     </button>
 
                                     <div className="h-6 w-px bg-emerald-100 mx-2"></div>
