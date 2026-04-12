@@ -11,7 +11,7 @@ class BMIInput(BaseModel):
     inches: Optional[float] = None  # float to allow 5.5 inches
 
 @router.post("/bmi")
-def calculate_bmi(data: BMIInput):ioyh
+def calculate_bmi(data: BMIInput):
     # Validate weight
     if data.weight <= 0:
         raise HTTPException(status_code=400, detail="Weight must be positive")

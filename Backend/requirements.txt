@@ -7,6 +7,6 @@ certifi
 pydantic[email]
 email-validator
 pyjwt
-passlib[bcrypt]
+bcrypt
 python-multipart
 python-jose[cryptography]

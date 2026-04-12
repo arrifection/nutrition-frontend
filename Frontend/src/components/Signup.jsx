@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 const Signup = ({ onToggle }) => {
-    const { signup } = useAuth();
+    const { register } = useAuth();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -14,9 +14,9 @@ const Signup = ({ onToggle }) => {
         e.preventDefault();
         setError("");
         setLoading(true);
-        const result = await signup(username, email, password, role);
+        const result = await register(username, email, password, role);
         if (!result.success) {
-            setError(result.message);
+            setError(result.error || 'Signup failed. Please try again.');
         }
         setLoading(false);
     };

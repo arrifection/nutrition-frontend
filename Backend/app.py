@@ -4,7 +4,7 @@ from bmi import router as bmi_router
 from advice import router as advice_router
 from bmr import router as bmr_router
 from macros import router as macros_router
-from exchange_list import router as exchange_router
+from exchange_list import router as exchange_router, seed_food_data
 from patient_router import router as patient_router
 from plan_router import router as plan_router
 from clinical_router import router as clinical_router
@@ -21,6 +21,7 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_db_client():
     await check_db()
+    await seed_food_data()  # Seeding moved here — APIRouter does not support on_event
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -31,10 +32,17 @@ async def log_requests(request: Request, call_next):
     return response
 
 # CORS middleware to allow frontend requests
+# NOTE: allow_origins=["*"] is NOT allowed when allow_credentials=True (CORS spec).
+# List every origin the frontend runs on (local dev + production).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for local network testing
-
+    allow_origins=[
+        "http://localhost:5173",                          # Vite local dev
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        "https://nutrition-frontend-pink.vercel.app",     # Production (Vercel)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

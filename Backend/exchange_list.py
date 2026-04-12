@@ -33,9 +33,10 @@ def food_helper(food) -> dict:
         "calories": food["calories"]
     }
 
-@router.on_event("startup")
 async def seed_food_data():
-    """Seed the database with initial food exchange data if empty"""
+    """Seed the database with initial food exchange data if empty.
+    Called from app.py startup — APIRouter does not support on_event.
+    """
     from database import check_db
     if not await check_db():
         print("⚠️ Skipping food seeding: Database not reachable")

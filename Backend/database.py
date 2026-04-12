@@ -39,6 +39,10 @@ async def check_db():
         return False
 
 
+# Get Database name from env or default
+DB_NAME = os.getenv("DATABASE_NAME", "nutripro_db")
+db = client[DB_NAME]
+
 # Collections
 patients_collection = db.get_collection("patients")
 plans_collection = db.get_collection("diet_plans")

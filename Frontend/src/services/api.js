@@ -12,6 +12,15 @@ const api = axios.create({
     },
 });
 
+// Attach Bearer token from localStorage to every request automatically
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('dietdesk_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // Helper for unified response handling
 const handleResp = async (fn) => {
     try {
@@ -56,5 +65,10 @@ export const getExchangeList = (category = null) => {
     const url = category ? `/api/v1/exchange-list/category/${category}` : '/api/v1/exchange-list';
     return handleResp(() => api.get(url));
 };
+
+// Auth endpoints
+export const loginUser    = (data) => handleResp(() => api.post('/auth/login', data));
+export const registerUser = (data) => handleResp(() => api.post('/auth/register', data));
+export const getMe        = ()     => handleResp(() => api.get('/auth/me'));
 
 export default api;

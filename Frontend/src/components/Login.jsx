@@ -14,7 +14,7 @@ const Login = ({ onToggle }) => {
         setLoading(true);
         const result = await login(email, password);
         if (!result.success) {
-            setError(result.message);
+            setError(result.error || 'Login failed. Please try again.');
         }
         setLoading(false);
     };

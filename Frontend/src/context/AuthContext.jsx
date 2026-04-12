@@ -1,86 +1,64 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/api";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginUser, registerUser } from '../services/api';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+
+const TOKEN_KEY = 'dietdesk_token';
+const USER_KEY  = 'dietdesk_user';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem("token"));
-    const [loading, setLoading] = useState(true);
+    const [user, setUser]       = useState(null);
+    const [loading, setLoading] = useState(true); // true while rehydrating from localStorage
 
+    // Rehydrate session from localStorage on first load
     useEffect(() => {
-        if (token) {
-            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            fetchUser();
-        } else {
-            delete api.defaults.headers.common["Authorization"];
-            setLoading(false);
-        }
-    }, [token]);
-
-    const fetchUser = async () => {
         try {
-            const res = await api.get("/auth/me");
-            setUser(res.data);
-        } catch (err) {
-            console.error("Failed to fetch user", err);
-            logout();
+            const storedUser  = localStorage.getItem(USER_KEY);
+            const storedToken = localStorage.getItem(TOKEN_KEY);
+            if (storedUser && storedToken) {
+                setUser(JSON.parse(storedUser));
+            }
+        } catch {
+            // Corrupt storage — clear it
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     const login = async (email, password) => {
-        try {
-            const res = await api.post("/auth/login", { email, password });
-            const { access_token, username, email: userEmail, role } = res.data;
-            localStorage.setItem("token", access_token);
-            setToken(access_token);
-            setUser({ username, email: userEmail, role });
-            return { success: true };
-        } catch (err) {
-            return {
-                success: false,
-                message: err.response?.data?.detail || "Login failed"
-            };
+        const result = await loginUser({ email, password });
+        if (!result.success) {
+            return { success: false, error: result.error || 'Login failed' };
         }
+        const { access_token, username, role } = result.data;
+        const userData = { username, email, role };
+
+        localStorage.setItem(TOKEN_KEY, access_token);
+        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        setUser(userData);
+        return { success: true };
     };
 
-    const signup = async (username, email, password, role) => {
-        try {
-            await api.post("/auth/register", { username, email, password, role });
-            return await login(email, password);
-        } catch (err) {
-            const errorMsg = err.response?.data?.detail || err.message || "Signup failed";
-            return {
-                success: false,
-                message: errorMsg
-            };
+    const register = async (username, email, password, role) => {
+        const result = await registerUser({ username, email, password, role });
+        if (!result.success) {
+            return { success: false, error: result.error || 'Registration failed' };
         }
+        return { success: true };
     };
 
     const logout = () => {
-        localStorage.removeItem("token");
-        setToken(null);
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
         setUser(null);
-        delete api.defaults.headers.common["Authorization"];
     };
 
-    const saveHistory = async (activityType, inputData, outputResult) => {
-        if (!user) return;
-        try {
-            await api.post("/history/add", {
-                activity_type: activityType,
-                input_data: inputData,
-                output_result: outputResult
-            });
-        } catch (err) {
-            console.error("Failed to save history", err);
-        }
-    };
+    const value = { user, login, logout, register, loading };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, signup, logout, saveHistory }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
