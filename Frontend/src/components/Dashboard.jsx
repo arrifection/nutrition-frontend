@@ -240,6 +240,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-emerald-50 text-sm">
+                                                {activeClients.map((client) => (
                                                     <tr
                                                         key={client.id}
                                                         onClick={() => onSelectClient(client)}
