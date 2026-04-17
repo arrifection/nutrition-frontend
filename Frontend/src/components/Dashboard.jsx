@@ -192,86 +192,97 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                         {!loading && (
                             <>
                                 {/* Stats Row */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="bg-white border-2 border-emerald-900/10 p-5 rounded-sm shadow-sm flex items-center gap-4">
-                                        <div className="bg-emerald-50 p-3 rounded-sm text-emerald-600">
-                                            <Users size={24} />
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                                    <div className="bg-white border border-emerald-900/10 p-4 md:p-5 rounded-sm shadow-sm flex items-center gap-3 md:gap-4">
+                                        <div className="bg-emerald-50 p-2 md:p-3 rounded-sm text-emerald-600">
+                                            <Users size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Clients</p>
-                                            <p className="text-2xl font-black text-emerald-900">{activeClients.length}</p>
+                                            <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Clients</p>
+                                            <p className="text-xl md:text-2xl font-black text-emerald-900">{activeClients.length}</p>
                                         </div>
                                     </div>
-                                    <div className="bg-white border-2 border-blue-900/10 p-5 rounded-sm shadow-sm flex items-center gap-4">
-                                        <div className="bg-blue-50 p-3 rounded-sm text-blue-600">
-                                            <FileText size={24} />
+                                    <div className="bg-white border border-blue-900/10 p-4 md:p-5 rounded-sm shadow-sm flex items-center gap-3 md:gap-4">
+                                        <div className="bg-blue-50 p-2 md:p-3 rounded-sm text-blue-600">
+                                            <FileText size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plans Pending</p>
-                                            <p className="text-2xl font-black text-blue-900">3</p>
+                                            <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending</p>
+                                            <p className="text-xl md:text-2xl font-black text-blue-900">3</p>
                                         </div>
                                     </div>
-                                    <div className="bg-white border-2 border-amber-900/10 p-5 rounded-sm shadow-sm flex items-center gap-4">
-                                        <div className="bg-amber-50 p-3 rounded-sm text-amber-600">
-                                            <TrendingUp size={24} />
+                                    <div className="bg-white border border-amber-900/10 p-4 md:p-5 rounded-sm shadow-sm flex items-center gap-3 md:gap-4 col-span-2 md:col-span-1">
+                                        <div className="bg-amber-50 p-2 md:p-3 rounded-sm text-amber-600">
+                                            <TrendingUp size={20} />
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</p>
-                                            <p className="text-2xl font-black text-amber-900">92%</p>
+                                        <div className="flex flex-col">
+                                            <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</p>
+                                            <p className="text-xl md:text-2xl font-black text-amber-900">92%</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Active Clients Table */}
-                                <div className="bg-white border-2 border-emerald-900/10 rounded-sm shadow-sm overflow-hidden">
-                                    <div className="p-5 border-b-2 border-emerald-50 flex justify-between items-center bg-gray-50/50">
-                                        <h3 className="font-black text-xs uppercase tracking-widest text-emerald-900">Active Patients</h3>
-                                        <span className="text-[10px] font-bold text-gray-400">{activeClients.length} TOTAL RECORDS</span>
+                                <div className="bg-white border border-emerald-900/10 rounded-sm shadow-sm overflow-hidden">
+                                    <div className="p-4 md:p-5 border-b border-emerald-50 flex justify-between items-center bg-gray-50/50">
+                                        <h3 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-emerald-900">Patient Database</h3>
+                                        <span className="text-[8px] md:text-[10px] font-bold text-gray-400">{activeClients.length} RECORDS</span>
                                     </div>
-                                    <div className="overflow-x-auto">
+
+                                    {/* Desktop Table View */}
+                                    <div className="hidden md:block overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr className="bg-gray-50 text-[9px] md:text-[10px] uppercase text-gray-500 font-black tracking-widest">
-                                                    <th className="px-4 md:px-6 py-4">Patient</th>
-                                                    <th className="px-4 md:px-6 py-4">Goal</th>
-                                                    <th className="px-4 md:px-6 py-4 text-center">BMI</th>
-                                                    <th className="px-4 md:px-6 py-4 hidden sm:table-cell">Status</th>
-                                                    <th className="px-4 md:px-6 py-4"></th>
+                                                <tr className="bg-gray-50 text-[10px] uppercase text-gray-500 font-black tracking-widest">
+                                                    <th className="px-6 py-4">Patient</th>
+                                                    <th className="px-6 py-4">Goal</th>
+                                                    <th className="px-6 py-4 text-center">BMI</th>
+                                                    <th className="px-6 py-4">Status</th>
+                                                    <th className="px-6 py-4"></th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-emerald-50 text-sm">
                                                 {activeClients.map((client) => (
-                                                    <tr
-                                                        key={client.id}
-                                                        onClick={() => onSelectClient(client)}
-                                                        className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
-                                                    >
-                                                        <td className="px-4 md:px-6 py-4 font-bold text-gray-800 text-xs md:text-sm">
+                                                    <tr key={client.id} onClick={() => onSelectClient(client)} className="hover:bg-emerald-50/50 transition-colors cursor-pointer group">
+                                                        <td className="px-6 py-4 font-bold text-gray-800">
                                                             {client.name}
-                                                            <span className="block text-[9px] md:text-[10px] text-gray-400 font-medium">{client.gender} • {client.age}y</span>
+                                                            <span className="block text-[10px] text-gray-400 font-medium">{client.gender} • {client.age}y</span>
                                                         </td>
-                                                        <td className="px-4 md:px-6 py-4 text-gray-600 font-medium uppercase text-[10px] md:text-xs tracking-tight">{client.goal}</td>
-                                                        <td className="px-4 md:px-6 py-4 text-center font-black text-emerald-700">{client.bmi || '-'}</td>
-                                                        <td className="px-4 md:px-6 py-4 hidden sm:table-cell">
+                                                        <td className="px-6 py-4 text-gray-600 font-medium uppercase text-xs tracking-tight">{client.goal}</td>
+                                                        <td className="px-6 py-4 text-center font-black text-emerald-700">{client.bmi || '-'}</td>
+                                                        <td className="px-6 py-4">
                                                             <div className="flex items-center gap-2">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                                                 <span className="text-[10px] font-black uppercase text-emerald-700 tracking-widest">Live</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-4 md:px-6 py-4 text-right">
-                                                            <button className="text-emerald-900 opacity-20 group-hover:opacity-100 transition-opacity">
-                                                                <ChevronRight size={18} />
-                                                            </button>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <ChevronRight size={18} className="text-emerald-900 opacity-20 group-hover:opacity-100" />
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {activeClients.length === 0 && (
-                                                    <tr>
-                                                        <td colSpan="5" className="px-6 py-12 text-center text-gray-400 italic">No patient records found in clinical database.</td>
-                                                    </tr>
-                                                )}
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {/* Mobile Card View */}
+                                    <div className="md:hidden divide-y divide-emerald-50">
+                                        {activeClients.map((client) => (
+                                            <div key={client.id} onClick={() => onSelectClient(client)} className="p-4 flex items-center justify-between active:bg-emerald-50">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-800">{client.name}</span>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-[10px] text-gray-400 font-medium uppercase">{client.goal}</span>
+                                                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                        <span className="text-[10px] font-black text-emerald-600">BMI {client.bmi || '-'}</span>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight size={16} className="text-gray-300" />
+                                            </div>
+                                        ))}
+                                        {activeClients.length === 0 && (
+                                            <div className="p-10 text-center text-xs text-gray-400 italic">No patients found.</div>
+                                        )}
                                     </div>
                                 </div>
                             </>

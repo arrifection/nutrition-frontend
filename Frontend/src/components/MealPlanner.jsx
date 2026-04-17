@@ -167,17 +167,17 @@ const MealPlanner = forwardRef(({ macroTargets, patientId, onError, onSuccess },
             className="w-full relative"
         >
             {/* Week Navigation */}
-            <div className="flex flex-wrap gap-2 mb-6 border-b-2 border-primary-200 pb-4">
+            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-6 border-b-2 border-primary-200 pb-4 overflow-x-auto">
                 {days.map(day => (
                     <button
                         key={day}
                         onClick={() => setCurrentDay(day)}
-                        className={`px-4 py-2 font-black uppercase tracking-widest text-xs transition-all border-2 ${currentDay === day
-                            ? "bg-primary-900 text-white border-primary-900 transform -translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                        className={`px-3 md:px-4 py-1.5 md:py-2 font-black uppercase tracking-widest text-[9px] md:text-xs transition-all border-2 flex-shrink-0 ${currentDay === day
+                            ? "bg-primary-900 text-white border-primary-900 transform -translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
                             : "bg-white text-primary-900 border-primary-900 hover:bg-beige-100"
                             }`}
                     >
-                        {day}
+                        {day.substring(0, 3)}<span className="hidden sm:inline">{day.substring(3)}</span>
                     </button>
                 ))}
 
@@ -223,15 +223,15 @@ const MealPlanner = forwardRef(({ macroTargets, patientId, onError, onSuccess },
                     </div>
 
                     {/* Macro Overview */}
-                    <div className="grid grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8">
                         {['carbs', 'protein', 'fat', 'calories'].map(macro => (
-                            <div key={macro} className={`p-3 border-2 text-center transition-all ${getWarningColor(getWarningLevel(totalConsumed[macro], targets[macro]))}`}>
-                                <p className="text-[10px] uppercase opacity-70 mb-1">{macro}</p>
-                                <p className="text-xl font-black">
+                            <div key={macro} className={`p-2 md:p-3 border-2 text-center transition-all ${getWarningColor(getWarningLevel(totalConsumed[macro], targets[macro]))}`}>
+                                <p className="text-[8px] md:text-[10px] uppercase opacity-70 mb-1">{macro}</p>
+                                <p className="text-sm md:text-xl font-black">
                                     {Math.round(totalConsumed[macro])}
                                     {macro !== 'calories' && 'g'}
                                 </p>
-                                <p className="text-[9px] opacity-60">
+                                <p className="text-[8px] md:text-[9px] opacity-60">
                                     of {targets[macro]}
                                 </p>
                             </div>
