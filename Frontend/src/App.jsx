@@ -7,17 +7,17 @@ import Step4MealPlanner from "./components/steps/Step4MealPlanner";
 import Step5WeeklyPlan from "./components/steps/Step5WeeklyPlan";
 import Dashboard from "./components/Dashboard";
 import PatientDetail from "./components/PatientDetail";
-import GoalManager from "./components/GoalManager";
-import ReminderManager from "./components/ReminderManager";
+import Sidebar from "./components/Sidebar";
 import Toast from "./components/ui/Toast";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import History from "./components/History";
 import { useAuth } from "./context/AuthContext";
+import { Box, Stack } from "@mui/material";
 
 function App() {
     const { user, logout, loading } = useAuth();
-    // View state ('dashboard', 'planner', 'profile', 'history', 'login', 'signup')
+    // View state ('dashboard', 'planner', 'profile', 'history', 'login', 'signup', 'patients', 'plans', 'progress', 'settings')
     const [view, setView] = useState('dashboard');
     const [selectedPatient, setSelectedPatient] = useState(null);
 
@@ -57,10 +57,20 @@ function App() {
         showToast(msg, "error");
     };
 
-
     const handleSuccess = (msg) => showToast(msg, "success");
 
-    // Navigation
+    // Navigation logic that responds to sidebar
+    const handleNavigate = (newView) => {
+        if (newView === 'create') {
+            startNewPlan();
+        } else if (newView === 'patients') {
+            setView('dashboard'); // Current dashboard has patients, but we can refine later
+        } else {
+            setView(newView);
+        }
+        setSelectedPatient(null);
+    };
+
     const startNewPlan = () => {
         setPatientData(null);
         setPatientId(null);
@@ -79,126 +89,59 @@ function App() {
     const nextStep = () => goToStep(currentStep + 1);
     const prevStep = () => goToStep(currentStep - 1);
 
-    // Step 1 completion: patient info saved
     const handlePatientSaved = (profile) => {
         setPatientData(profile);
         setPatientId(profile.id);
-        setMetrics({
-            bmi: profile.bmi,
-            bmr: profile.bmr,
-            tdee: profile.tdee,
-        });
+        setMetrics({ bmi: profile.bmi, bmr: profile.bmr, tdee: profile.tdee });
         showToast("Patient information saved", "success");
         nextStep();
     };
 
-    // Step 2 -> Step 3
-    const handleProceedToMacros = () => {
-        nextStep();
-    };
+    const handleProceedToMacros = () => nextStep();
 
-    // Step 3 completion: macros confirmed
     const handleMacrosConfirmed = (macros) => {
         setMacroTargets(macros);
         showToast("Macro targets set", "success");
         nextStep();
     };
 
-    // Render current step
     const renderStep = () => {
         switch (currentStep) {
-            case 1:
-                return (
-                    <Step1PatientInfo
-                        onSave={handlePatientSaved}
-                        onError={handleError}
-                        initialData={patientData}
-                    />
-                );
-            case 2:
-                return (
-                    <Step2Calculations
-                        metrics={metrics}
-                        onProceed={handleProceedToMacros}
-                        onBack={prevStep}
-                    />
-                );
-            case 3:
-                return (
-                    <Step3MacroSetup
-                        tdee={metrics?.tdee}
-                        initialMacros={macroTargets}
-                        onConfirm={handleMacrosConfirmed}
-                        onBack={prevStep}
-                    />
-                );
-            case 4:
-                return (
-                    <Step4MealPlanner
-                        macroTargets={macroTargets}
-                        weekPlan={weekPlan}
-                        setWeekPlan={setWeekPlan}
-                        currentDay={currentDay}
-                        setCurrentDay={setCurrentDay}
-                        onError={handleError}
-                        onProceed={nextStep}
-                        onBack={prevStep}
-                    />
-                );
-            case 5:
-                return (
-                    <Step5WeeklyPlan
-                        weekPlan={weekPlan}
-                        macroTargets={macroTargets}
-                        patientId={patientId}
-                        patientData={patientData}
-                        onError={handleError}
-                        onSuccess={handleSuccess}
-                        onBack={prevStep}
-                        onStartOver={startNewPlan}
-                    />
-                );
-            default:
-                return null;
+            case 1: return <Step1PatientInfo onSave={handlePatientSaved} onError={handleError} initialData={patientData} />;
+            case 2: return <Step2Calculations metrics={metrics} onProceed={handleProceedToMacros} onBack={prevStep} />;
+            case 3: return <Step3MacroSetup tdee={metrics?.tdee} initialMacros={macroTargets} onConfirm={handleMacrosConfirmed} onBack={prevStep} />;
+            case 4: return <Step4MealPlanner macroTargets={macroTargets} weekPlan={weekPlan} setWeekPlan={setWeekPlan} currentDay={currentDay} setCurrentDay={setCurrentDay} onError={handleError} onProceed={nextStep} onBack={prevStep} />;
+            case 5: return <Step5WeeklyPlan weekPlan={weekPlan} macroTargets={macroTargets} patientId={patientId} patientData={patientData} onError={handleError} onSuccess={handleSuccess} onBack={prevStep} onStartOver={startNewPlan} />;
+            default: return null;
         }
     };
 
-    // View Switching Logic
     const renderMainContent = () => {
         if (loading) {
             return (
-                <div className="flex justify-center items-center h-[60vh]">
+                <Box className="flex justify-center items-center h-[60vh]">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                </div>
+                </Box>
             );
         }
 
-        if (!user) {
-            if (view === 'signup') return <Signup onToggle={() => setView('login')} />;
-            return <Login onToggle={() => setView('signup')} />;
-        }
+        if (view === 'history') return <History onBack={() => setView('dashboard')} />;
 
-        if (view === 'history') {
-            return <History onBack={() => setView('dashboard')} />;
-        }
-
-        if (view === 'dashboard') {
+        if (view === 'dashboard' || view === 'patients' || view === 'plans' || view === 'progress' || view === 'settings') {
             return (
-                <main className="bg-gray-50/50 min-h-[calc(100vh-72px)] py-4 md:py-8">
-                    <Dashboard
-                        onCreatePlan={startNewPlan}
-                        onSelectClient={(client) => {
-                            setSelectedPatient(client);
-                            setView('profile');
-                        }}
-                    />
-                </main>
+                <Dashboard
+                    onCreatePlan={startNewPlan}
+                    onSelectClient={(client) => {
+                        setSelectedPatient(client);
+                        setView('profile');
+                    }}
+                />
             );
         }
 
         if (view === 'profile' && selectedPatient) {
             return (
-                <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+                <Box p={{ xs: 2, md: 4 }}>
                     <PatientDetail
                         patient={selectedPatient}
                         onBack={() => setView('dashboard')}
@@ -209,98 +152,57 @@ function App() {
                             setView('planner');
                         }}
                     />
-                </main>
+                </Box>
             );
         }
 
-        return (
-            <div className="bg-white">
-                <div className="border-b border-emerald-100 bg-emerald-50/30 no-print overflow-x-auto">
-                    <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
-                        <StepProgress currentStep={currentStep} onStepClick={goToStep} />
-                    </div>
-                </div>
-                <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">{renderStep()}</main>
-            </div>
-        );
+        if (view === 'planner') {
+            return (
+                <Box className="bg-white min-h-screen">
+                    <Box className="border-b border-emerald-100 bg-emerald-50/30 no-print overflow-x-auto p-4">
+                        <Box sx={{ maxWidth: '1000px', mx: 'auto' }}>
+                            <StepProgress currentStep={currentStep} onStepClick={goToStep} />
+                        </Box>
+                    </Box>
+                    <Box sx={{ maxWidth: '1000px', mx: 'auto', p: { xs: 2, md: 4 } }}>{renderStep()}</Box>
+                </Box>
+            );
+        }
+
+        return <Box p={4}><Typography color="textSecondary">Section under development...</Typography></Box>;
     };
 
+    if (!user && !loading) {
+        return (
+            <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
+                {view === 'signup' ? <Signup onToggle={() => setView('login')} /> : <Login onToggle={() => setView('signup')} />}
+                <Toast message={toast.message} type={toast.type} isVisible={toast.visible} onClose={() => setToast((prev) => ({ ...prev, visible: false }))} />
+            </Box>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-white">
-            <header className="border-b border-emerald-200 bg-white no-print sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <h1 className="text-base md:text-lg font-bold text-emerald-800 tracking-tight cursor-pointer" onClick={() => { setView('dashboard'); setSelectedPatient(null); }}>
-                                DIET<span className="text-emerald-500">DESK</span>
-                            </h1>
-                            <div className="h-6 w-px bg-emerald-100 hidden sm:block"></div>
-                            <p className="text-[10px] text-gray-500 hidden sm:block font-medium uppercase tracking-widest">Clinical Dietetics v1.0</p>
-                        </div>
-
-                        <div className="flex items-center gap-2 md:gap-4">
-                            {user && (
-                                <>
-                                    {user.role === 'client' && (
-                                        <button
-                                            onClick={() => setView('history')}
-                                            className={`text-[10px] md:text-sm font-semibold ${view === 'history' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-2 md:px-3 py-1 rounded-sm hover:bg-emerald-50`}
-                                        >
-                                            History
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => { setView('dashboard'); setSelectedPatient(null); }}
-                                        className={`text-[10px] md:text-sm font-semibold ${view === 'dashboard' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-2 md:px-3 py-1 rounded-sm hover:bg-emerald-50`}
-                                    >
-                                        Home
-                                    </button>
-
-                                    <div className="h-6 w-px bg-emerald-100 mx-1 md:mx-2"></div>
-
-                                    <div className="flex items-center gap-2 md:gap-3 bg-emerald-50/50 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-100">
-                                        <div className="w-5 h-5 md:w-6 md:h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[8px] md:text-[10px] text-white font-bold">
-                                            {user.username[0].toUpperCase()}
-                                        </div>
-                                        <span className="text-[10px] md:text-sm font-bold text-emerald-900 truncate max-w-[60px] md:max-w-none">{user.username}</span>
-                                        <button
-                                            onClick={logout}
-                                            className="text-[8px] md:text-[10px] font-black text-emerald-400 hover:text-red-500 uppercase tracking-tighter ml-1 transition-colors"
-                                        >
-                                            Logout
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {renderMainContent()}
-
-            <footer className="border-t border-emerald-50 bg-white no-print py-8 mt-auto">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                            © 2026 NutriPro Systems • Professional Grade
-                        </p>
-                        <div className="flex gap-6">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-emerald-600">Privacy</span>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-emerald-600">Support</span>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-emerald-600">Terms</span>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                isVisible={toast.visible}
-                onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
-            />
-        </div>
+        <Stack direction={{ xs: 'column', lg: 'row' }} className="min-h-screen bg-slate-50">
+            {user && (
+                <Sidebar 
+                    activeView={view} 
+                    onNavigate={handleNavigate} 
+                    onLogout={logout} 
+                    username={user.username} 
+                />
+            )}
+            
+            <Box component="main" sx={{ flexGrow: 1, overflowY: 'auto', height: '100vh', position: 'relative' }}>
+                {renderMainContent()}
+                
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    isVisible={toast.visible}
+                    onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
+                />
+            </Box>
+        </Stack>
     );
 }
 
