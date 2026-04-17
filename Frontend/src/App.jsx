@@ -184,7 +184,7 @@ function App() {
 
         if (view === 'dashboard') {
             return (
-                <main className="bg-gray-50/50 min-h-[calc(100vh-72px)] py-8">
+                <main className="bg-gray-50/50 min-h-[calc(100vh-72px)] py-4 md:py-8">
                     <Dashboard
                         onCreatePlan={startNewPlan}
                         onSelectClient={(client) => {
@@ -198,7 +198,7 @@ function App() {
 
         if (view === 'profile' && selectedPatient) {
             return (
-                <main className="max-w-6xl mx-auto px-6 py-8">
+                <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
                     <PatientDetail
                         patient={selectedPatient}
                         onBack={() => setView('dashboard')}
@@ -215,12 +215,12 @@ function App() {
 
         return (
             <div className="bg-white">
-                <div className="border-b border-emerald-100 bg-emerald-50/30 no-print">
-                    <div className="max-w-5xl mx-auto px-6 py-4">
+                <div className="border-b border-emerald-100 bg-emerald-50/30 no-print overflow-x-auto">
+                    <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
                         <StepProgress currentStep={currentStep} onStepClick={goToStep} />
                     </div>
                 </div>
-                <main className="max-w-5xl mx-auto px-6 py-8">{renderStep()}</main>
+                <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">{renderStep()}</main>
             </div>
         );
     };
@@ -228,44 +228,44 @@ function App() {
     return (
         <div className="min-h-screen bg-white">
             <header className="border-b border-emerald-200 bg-white no-print sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-6 py-4">
+                <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-lg font-bold text-emerald-800 tracking-tight cursor-pointer" onClick={() => { setView('dashboard'); setSelectedPatient(null); }}>
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <h1 className="text-base md:text-lg font-bold text-emerald-800 tracking-tight cursor-pointer" onClick={() => { setView('dashboard'); setSelectedPatient(null); }}>
                                 DIET<span className="text-emerald-500">DESK</span>
                             </h1>
-                            <div className="h-6 w-px bg-emerald-100 hidden md:block"></div>
-                            <p className="text-xs text-gray-500 hidden md:block font-medium uppercase tracking-widest">Clinical Dietetics v1.0</p>
+                            <div className="h-6 w-px bg-emerald-100 hidden sm:block"></div>
+                            <p className="text-[10px] text-gray-500 hidden sm:block font-medium uppercase tracking-widest">Clinical Dietetics v1.0</p>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 md:gap-4">
                             {user && (
                                 <>
                                     {user.role === 'client' && (
                                         <button
                                             onClick={() => setView('history')}
-                                            className={`text-sm font-semibold ${view === 'history' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
+                                            className={`text-[10px] md:text-sm font-semibold ${view === 'history' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-2 md:px-3 py-1 rounded-sm hover:bg-emerald-50`}
                                         >
-                                            My Records
+                                            History
                                         </button>
                                     )}
                                     <button
                                         onClick={() => { setView('dashboard'); setSelectedPatient(null); }}
-                                        className={`text-sm font-semibold ${view === 'dashboard' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-3 py-1 rounded-sm hover:bg-emerald-50`}
+                                        className={`text-[10px] md:text-sm font-semibold ${view === 'dashboard' ? 'text-emerald-800' : 'text-emerald-600'} hover:text-emerald-700 transition-colors px-2 md:px-3 py-1 rounded-sm hover:bg-emerald-50`}
                                     >
-                                        Dietdesk
+                                        Home
                                     </button>
 
-                                    <div className="h-6 w-px bg-emerald-100 mx-2"></div>
+                                    <div className="h-6 w-px bg-emerald-100 mx-1 md:mx-2"></div>
 
-                                    <div className="flex items-center gap-3 bg-emerald-50/50 px-3 py-1.5 rounded-full border border-emerald-100">
-                                        <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold">
+                                    <div className="flex items-center gap-2 md:gap-3 bg-emerald-50/50 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-100">
+                                        <div className="w-5 h-5 md:w-6 md:h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[8px] md:text-[10px] text-white font-bold">
                                             {user.username[0].toUpperCase()}
                                         </div>
-                                        <span className="text-sm font-bold text-emerald-900">{user.username}</span>
+                                        <span className="text-[10px] md:text-sm font-bold text-emerald-900 truncate max-w-[60px] md:max-w-none">{user.username}</span>
                                         <button
                                             onClick={logout}
-                                            className="text-[10px] font-black text-emerald-400 hover:text-red-500 uppercase tracking-tighter ml-1 transition-colors"
+                                            className="text-[8px] md:text-[10px] font-black text-emerald-400 hover:text-red-500 uppercase tracking-tighter ml-1 transition-colors"
                                         >
                                             Logout
                                         </button>

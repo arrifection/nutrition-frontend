@@ -14,18 +14,18 @@ export default function StepProgress({ currentStep, onStepClick }) {
     };
 
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-[400px] md:min-w-0">
             {steps.map((step, index) => (
                 <div key={step.number} className="flex items-center flex-1 last:flex-none">
                     {/* Step circle and label */}
                     <button
                         onClick={() => step.number <= currentStep && onStepClick(step.number)}
                         disabled={step.number > currentStep}
-                        className={`flex flex-col items-center ${step.number <= currentStep ? "cursor-pointer" : "cursor-default"
+                        className={`flex flex-col items-center flex-shrink-0 ${step.number <= currentStep ? "cursor-pointer" : "cursor-default"
                             }`}
                     >
                         <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${getStepStatus(step.number) === "completed"
+                            className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-medium transition-colors ${getStepStatus(step.number) === "completed"
                                 ? "bg-emerald-600 text-white"
                                 : getStepStatus(step.number) === "active"
                                     ? "bg-gray-800 text-white"
@@ -35,7 +35,7 @@ export default function StepProgress({ currentStep, onStepClick }) {
                             {getStepStatus(step.number) === "completed" ? "✓" : step.number}
                         </div>
                         <span
-                            className={`mt-1.5 text-xs font-medium ${getStepStatus(step.number) === "active"
+                            className={`mt-1.5 text-[10px] md:text-xs font-medium hidden sm:block ${getStepStatus(step.number) === "active"
                                 ? "text-gray-800"
                                 : getStepStatus(step.number) === "completed"
                                     ? "text-emerald-600"
@@ -49,7 +49,7 @@ export default function StepProgress({ currentStep, onStepClick }) {
                     {/* Connector line */}
                     {index < steps.length - 1 && (
                         <div
-                            className={`h-px flex-1 mx-4 ${step.number < currentStep ? "bg-emerald-600" : "bg-emerald-200"
+                            className={`h-px flex-1 mx-2 md:mx-4 ${step.number < currentStep ? "bg-emerald-600" : "bg-emerald-200"
                                 }`}
                         />
                     )}

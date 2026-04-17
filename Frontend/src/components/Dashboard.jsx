@@ -163,19 +163,19 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
     };
 
     return (
-        <div className="max-w-6xl mx-auto px-6 py-6 font-sans">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6 font-sans">
             {role === "dietitian" ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left & Center: Main Management */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="flex items-center justify-between">
+                    <div className="lg:col-span-2 space-y-6 md:space-y-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">DIETDESK</h1>
+                                <h1 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight uppercase">DIETDESK</h1>
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Clinic Operations Feed</p>
                             </div>
                             <button
                                 onClick={onCreatePlan}
-                                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-sm font-bold text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none"
+                                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-5 py-2.5 rounded-sm font-bold text-xs md:text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none w-full sm:w-auto"
                             >
                                 <Plus size={18} />
                                 CREATE NEW PLAN
@@ -231,34 +231,33 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr className="bg-gray-50 text-[10px] uppercase text-gray-500 font-black tracking-widest">
-                                                    <th className="px-6 py-4">Patient</th>
-                                                    <th className="px-6 py-4">Goal</th>
-                                                    <th className="px-6 py-4 text-center">BMI</th>
-                                                    <th className="px-6 py-4">Status</th>
-                                                    <th className="px-6 py-4"></th>
+                                                <tr className="bg-gray-50 text-[9px] md:text-[10px] uppercase text-gray-500 font-black tracking-widest">
+                                                    <th className="px-4 md:px-6 py-4">Patient</th>
+                                                    <th className="px-4 md:px-6 py-4">Goal</th>
+                                                    <th className="px-4 md:px-6 py-4 text-center">BMI</th>
+                                                    <th className="px-4 md:px-6 py-4 hidden sm:table-cell">Status</th>
+                                                    <th className="px-4 md:px-6 py-4"></th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-emerald-50 text-sm">
-                                                {activeClients.map((client) => (
                                                     <tr
                                                         key={client.id}
                                                         onClick={() => onSelectClient(client)}
                                                         className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
                                                     >
-                                                        <td className="px-6 py-4 font-bold text-gray-800">
+                                                        <td className="px-4 md:px-6 py-4 font-bold text-gray-800 text-xs md:text-sm">
                                                             {client.name}
-                                                            <span className="block text-[10px] text-gray-400 font-medium">{client.gender} • {client.age}y</span>
+                                                            <span className="block text-[9px] md:text-[10px] text-gray-400 font-medium">{client.gender} • {client.age}y</span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-gray-600 font-medium uppercase text-xs tracking-tight">{client.goal}</td>
-                                                        <td className="px-6 py-4 text-center font-black text-emerald-700">{client.bmi || '-'}</td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-4 md:px-6 py-4 text-gray-600 font-medium uppercase text-[10px] md:text-xs tracking-tight">{client.goal}</td>
+                                                        <td className="px-4 md:px-6 py-4 text-center font-black text-emerald-700">{client.bmi || '-'}</td>
+                                                        <td className="px-4 md:px-6 py-4 hidden sm:table-cell">
                                                             <div className="flex items-center gap-2">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                                                 <span className="text-[10px] font-black uppercase text-emerald-700 tracking-widest">Live</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4 text-right">
+                                                        <td className="px-4 md:px-6 py-4 text-right">
                                                             <button className="text-emerald-900 opacity-20 group-hover:opacity-100 transition-opacity">
                                                                 <ChevronRight size={18} />
                                                             </button>

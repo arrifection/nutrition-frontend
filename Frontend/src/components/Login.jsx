@@ -20,9 +20,9 @@ const Login = ({ onToggle }) => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-xl border border-emerald-50">
-            <h2 className="text-3xl font-bold text-emerald-800 mb-6 text-center">Welcome Back</h2>
-            <p className="text-gray-500 text-center mb-8">Login to your NutriPro account</p>
+        <div className="max-w-md mx-auto mt-10 md:mt-20 p-6 md:p-8 bg-white rounded-2xl shadow-xl border border-emerald-50">
+            <h2 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-4 md:mb-6 text-center">Welcome Back</h2>
+            <p className="text-gray-500 text-center mb-6 md:mb-8">Login to your NutriPro account</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
