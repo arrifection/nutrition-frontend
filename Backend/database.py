@@ -32,10 +32,10 @@ async def check_db():
     try:
         # Use a short timeout for the ping
         await asyncio.wait_for(client.admin.command('ping'), timeout=5.0)
-        print("✅ MongoDB Atlas Connected Successfully!")
+        print("MongoDB Atlas Connected Successfully!")
         return True
     except Exception as e:
-        print(f"❌ MongoDB Connection Failed: {type(e).__name__} - {e}")
+        print(f"MongoDB Connection Failed: {type(e).__name__} - {e}")
         return False
 
 

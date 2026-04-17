@@ -47,6 +47,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 @router.post("/register", response_model=dict)
 async def register(user_data: UserRegister):
     try:
+        # Normalize email
+        user_data.email = user_data.email.lower()
+        
         # Check if user exists
         existing_user = await users_collection.find_one({
             "$or": [{"email": user_data.email}, {"username": user_data.username}]
@@ -68,6 +71,7 @@ async def register(user_data: UserRegister):
         
         result = await users_collection.insert_one(new_user)
         if result.inserted_id:
+            print(f"SUCCESS: User {user_data.email} registered")
             return {"message": "User registered successfully"}
         raise HTTPException(status_code=500, detail="Failed to register user record")
     except HTTPException as he:
@@ -79,14 +83,27 @@ async def register(user_data: UserRegister):
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
     try:
+        # Normalize email
+        user_data.email = user_data.email.lower()
+        
         user = await users_collection.find_one({"email": user_data.email})
-        if not user or not verify_password(user_data.password, user["password"]):
+        if not user:
+            print(f"LOGIN FAIL: User not found - {user_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
+        if not verify_password(user_data.password, user["password"]):
+            print(f"LOGIN FAIL: Password mismatch for {user_data.email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
+        print(f"LOGIN SUCCESS: {user_data.email}")
         access_token = create_access_token(data={"sub": user["email"]})
         return {
             "access_token": access_token, 

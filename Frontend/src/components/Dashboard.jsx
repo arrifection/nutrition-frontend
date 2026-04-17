@@ -1,13 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     Users,
     Calendar,
     FileText,
-    Bell,
     Plus,
-    Activity,
     ChevronRight,
-    MessageCircle,
     Utensils,
     Target,
     TrendingUp
@@ -15,8 +12,15 @@ import {
 import ReminderManager from "./ReminderManager";
 import ReflectionLog from "./ReflectionLog";
 import ConsistencyPulse from "./ConsistencyPulse";
+import EmptyPlanState from "./EmptyPlanState";
+import MealPlanUpload from "./MealPlanUpload";
+import DaySelector from "./DaySelector";
+import DailyProgressHeader from "./DailyProgressHeader";
+import MealChecklistCard from "./MealChecklistCard";
+import { mockTransformUploadedMealPlan } from "../utils/mealPlanTransformer";
 import { getPatients } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 
 export default function Dashboard({ onCreatePlan, onSelectClient }) {
     const { user } = useAuth();
@@ -44,17 +48,119 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
         { time: "11:00 AM", client: "David Smith", objective: "Initial Assessment" },
     ];
 
-    const todayMeals = [
-        { time: "08:00 AM", meal: "Breakfast", icon: "🍳", items: "Oatmeal with berries, 2 egg whites" },
-        { time: "01:30 PM", meal: "Lunch", icon: "🥗", items: "Grilled chicken salad with quinoa" },
-        { time: "07:00 PM", meal: "Dinner", icon: "🍲", items: "Baked salmon with steamed broccoli" },
-    ];
+    const [mealPlan, setMealPlan] = useState(null);
+    const [selectedDay, setSelectedDay] = useState(0);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [showUploadField, setShowUploadField] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
 
-    const progressStats = [
+    const selectedDayPlan = mealPlan?.days?.[selectedDay] ?? null;
+    const totalMeals = selectedDayPlan?.meals?.length ?? 0;
+    const completedMeals = selectedDayPlan?.meals?.filter((meal) => meal.completed).length ?? 0;
+
+    const handleFileSelect = (file) => {
+        setUploadFile(file);
+        setUploadError("");
+    };
+
+    const handleUploadPlan = async () => {
+        if (!uploadFile) return;
+        setIsUploading(true);
+        setUploadError("");
+
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            const transformed = mockTransformUploadedMealPlan(uploadFile);
+            setMealPlan(transformed);
+            setSelectedDay(0);
+            setUploadFile(null);
+            setShowUploadField(false);
+        } catch (error) {
+            setUploadError("Unable to convert the selected file. Please try another PDF.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const toggleMealCompleted = (mealId) => {
+        setMealPlan((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                days: prev.days.map((day, index) => {
+                    if (index !== selectedDay) return day;
+                    return {
+                        ...day,
+                        meals: day.meals.map((meal) =>
+                            meal.id === mealId ? { ...meal, completed: !meal.completed } : meal
+                        ),
+                    };
+                }),
+            };
+        });
+    };
+
+    const planSection = (
+        <Paper variant="outlined" sx={{ p: { xs: 4, md: 5 }, bgcolor: "background.paper" }}>
+            <Stack spacing={4}>
+                <Box>
+                    <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: "0.18em" }}>
+                        Today's Nutrition Plan
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 1 }}>
+                        Meal plan tracker
+                    </Typography>
+                </Box>
+
+                {!mealPlan ? (
+                    <Stack spacing={3}>
+                        <EmptyPlanState onUploadClick={() => setShowUploadField(true)} />
+                        {showUploadField && (
+                            <MealPlanUpload
+                                file={uploadFile}
+                                onFileSelect={handleFileSelect}
+                                onUpload={handleUploadPlan}
+                                disabled={isUploading}
+                            />
+                        )}
+                        {uploadError && (
+                            <Typography variant="body2" color="error">
+                                {uploadError}
+                            </Typography>
+                        )}
+                    </Stack>
+                ) : (
+                    <Stack spacing={3}>
+                        <DaySelector days={mealPlan.days} selectedIndex={selectedDay} onChange={setSelectedDay} />
+                        <DailyProgressHeader
+                            completed={completedMeals}
+                            total={totalMeals}
+                            planTitle={mealPlan.planTitle}
+                            dayLabel={selectedDayPlan?.dayLabel ?? ""}
+                        />
+                        <Stack spacing={3}>
+                            {selectedDayPlan?.meals?.map((meal) => (
+                                <MealChecklistCard key={meal.id} meal={meal} onToggleComplete={toggleMealCompleted} />
+                            ))}
+                        </Stack>
+                    </Stack>
+                )}
+            </Stack>
+        </Paper>
+    );
+
+    const [progressStats, setProgressStats] = useState([
         { label: "Calories", current: 1250, target: 1800, unit: "kcal", color: "bg-emerald-500" },
         { label: "Water", current: 1.5, target: 2.5, unit: "L", color: "bg-blue-500" },
         { label: "Steps", current: 6400, target: 10000, unit: "steps", color: "bg-amber-500" },
-    ];
+    ]);
+
+    const updateProgress = (index, newValue) => {
+        setProgressStats(prev => prev.map((stat, i) =>
+            i === index ? { ...stat, current: Math.max(0, newValue) } : stat
+        ));
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-6 py-6 font-sans">
@@ -213,58 +319,39 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                 /* ... (keeping client board similar but could also push to real data if goals/meals were dynamic) */
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Health Status</h1>
-                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{user?.username || 'Client'} • Profile</p>
-                            </div>
-                            <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-sm border border-emerald-100">
-                                <Target size={18} />
-                                <span className="font-bold text-xs uppercase tracking-widest">Weight Loss Phase 1</span>
-                            </div>
+                        <div className="text-center py-4">
+                            <h2 className="text-xl font-black text-gray-800 uppercase tracking-tight">Hi {user?.username || 'Client'}!</h2>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Welcome to your health dashboard</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {progressStats.map((stat, i) => (
                                 <div key={i} className="bg-white border-2 border-emerald-900/10 p-6 rounded-sm shadow-sm hover:translate-y-[-2px] transition-all">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{stat.label}</p>
-                                    <div className="flex items-baseline gap-2">
+                                    <div className="flex items-baseline gap-2 mb-2">
+                                        <button
+                                            onClick={() => updateProgress(i, stat.current - (stat.label === 'Water' ? 0.1 : 50))}
+                                            className="text-lg font-bold text-gray-400 hover:text-gray-600"
+                                        >
+                                            -
+                                        </button>
                                         <p className="text-2xl font-black text-emerald-900">{stat.current}</p>
+                                        <button
+                                            onClick={() => updateProgress(i, stat.current + (stat.label === 'Water' ? 0.1 : 50))}
+                                            className="text-lg font-bold text-gray-400 hover:text-gray-600"
+                                        >
+                                            +
+                                        </button>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">/ {stat.target} {stat.unit}</p>
                                     </div>
                                     <div className="mt-4 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full ${stat.color} transition-all duration-700 ease-out`}
-                                            style={{ width: `${(stat.current / stat.target) * 100}%` }}
+                                            style={{ width: `${Math.min(100, (stat.current / stat.target) * 100)}%` }}
                                         ></div>
                                     </div>
                                 </div>
                             ))}
-                        </div>
-
-                        <div className="bg-white border-2 border-emerald-900/10 rounded-sm shadow-sm overflow-hidden">
-                            <div className="p-6 border-b-2 border-emerald-50 flex items-center gap-3 bg-gray-50/50">
-                                <Utensils className="text-emerald-700" size={20} />
-                                <h3 className="font-black text-xs uppercase tracking-widest text-emerald-900">Today's Nutrition Plan</h3>
-                                <p className="ml-auto text-[10px] text-gray-400 uppercase font-black tracking-widest">Active Schedule</p>
-                            </div>
-                            <div className="p-8 space-y-8 relative">
-                                <div className="absolute left-12 top-8 bottom-8 w-1 bg-emerald-50"></div>
-                                {todayMeals.map((meal, i) => (
-                                    <div key={i} className="flex gap-8 relative z-10">
-                                        <div className="w-10 h-10 rounded-sm bg-white border-2 border-emerald-900/10 flex items-center justify-center shadow-sm">
-                                            <span className="text-xl">{meal.icon}</span>
-                                        </div>
-                                        <div className="flex-1 pb-4">
-                                            <div className="flex justify-between mb-1">
-                                                <h4 className="font-black text-xs uppercase tracking-widest text-gray-800">{meal.meal}</h4>
-                                                <span className="text-[10px] font-bold text-gray-400">{meal.time}</span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 font-medium leading-relaxed">{meal.items}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
                         </div>
                     </div>
 

@@ -26,14 +26,17 @@ export default function ConsistencyPulse({ role = "client", data = null }) {
         intensity: Math.floor(Math.random() * 4) // 0 to 3
     }));
 
-    const getIntensityClass = (lvl) => {
-        switch (lvl) {
-            case 3: return "bg-emerald-600";
-            case 2: return "bg-emerald-400";
-            case 1: return "bg-emerald-200";
-            default: return "bg-gray-100";
+    const streak = (() => {
+        let count = 0;
+        for (let i = rhythmData.length - 1; i >= 0; i--) {
+            if (rhythmData[i].status === 'completed') {
+                count++;
+            } else {
+                break;
+            }
         }
-    };
+        return count;
+    })();
 
     if (role === "dietitian") {
         return (
@@ -79,7 +82,7 @@ export default function ConsistencyPulse({ role = "client", data = null }) {
                     <h3 className="font-bold text-gray-800">Weekly Harmony</h3>
                 </div>
                 <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-bold text-emerald-600">5</span>
+                    <span className="text-lg font-bold text-emerald-600">{streak}</span>
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Days in Flow</span>
                 </div>
             </div>
