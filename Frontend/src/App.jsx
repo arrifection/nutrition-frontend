@@ -179,8 +179,8 @@ function App() {
 
         if (view === 'planner') {
             return (
-                <Box sx={{ background: '#ffffff', minHeight: '100vh' }}>
-                    <Box sx={{ borderBottom: '1px solid #dcfce7', background: 'rgba(220, 252, 231, 0.3)', p: 2, overflowX: 'auto' }}>
+                <Box sx={{ background: 'var(--surface)', minHeight: '100vh' }}>
+                    <Box sx={{ borderBottom: '1px solid var(--border)', background: 'var(--background)', p: 2, overflowX: 'auto' }}>
                         <Box sx={{ maxWidth: '1000px', mx: 'auto' }}>
                             <StepProgress currentStep={currentStep} onStepClick={goToStep} />
                         </Box>
@@ -203,7 +203,7 @@ function App() {
     }
 
     return (
-        <Stack direction={{ xs: 'column', lg: 'row' }} className="min-h-screen bg-slate-50">
+        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', background: 'var(--background)' }}>
             {user && (
                 <Sidebar 
                     activeView={view} 

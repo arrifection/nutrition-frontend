@@ -20,20 +20,29 @@
     --sidebar-bg: #0f172a;
     --sidebar-hover: rgba(255,255,255,0.06);
     --sidebar-active: rgba(255,255,255,0.10);
-    --sidebar-border: rgba(255, 255, 255, 0.07);
-
-    /* Surface */
-    --bg-main: #f1f5f9;
+    --background: #f8fafc;
     --surface: #ffffff;
-    --surface-hover: #f8fafc;
     --border: #e2e8f0;
-    --border-light: #f1f5f9;
-
-    /* Text */
     --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --text-secondary: #64748b;
     --text-muted: #94a3b8;
-    --text-invert: #ffffff;
+    --brand-green: #16a34a;
+    --brand-green-hover: #15803d;
+    --brand-navy: #0f172a;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark {
+    --background: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --brand-green: #22c55e;
+    --brand-green-hover: #16a34a;
+    --brand-navy: #020617;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
   }
 
   * {
@@ -41,9 +50,11 @@
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-main);
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--background);
     color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
@@ -63,8 +74,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
   .dd-card:hover {
@@ -179,6 +190,11 @@
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     font-family: 'Inter', sans-serif;
+  }
+
+  .input-premium::placeholder, .form-input::placeholder, .form-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
   }
 
   .input-premium:focus, .form-input:focus, .form-select:focus, .form-textarea:focus {

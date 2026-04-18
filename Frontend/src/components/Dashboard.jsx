@@ -14,20 +14,20 @@ import { getPatients } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const T = {
-    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#94a3b8' },
-    heading: { fontSize: '1.375rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1.2 },
-    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
-    sectionTitle: { fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', letterSpacing: '0.01em' },
-    body: { fontSize: '0.875rem', fontWeight: 500, color: '#0f172a' },
-    bodyMuted: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
-    stat: { fontSize: '1.625rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 },
+    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' },
+    heading: { fontSize: '1.375rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 },
+    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: 'var(--text-secondary)' },
+    sectionTitle: { fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.01em' },
+    body: { fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' },
+    bodyMuted: { fontSize: '0.8125rem', fontWeight: 400, color: 'var(--text-secondary)' },
+    stat: { fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1 },
 };
 
 const card = {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
     borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    boxShadow: 'var(--card-shadow)',
 };
 
 const STAT_CONFIG = [
@@ -89,17 +89,17 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                     style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         width: 38, height: 38,
-                        background: '#ffffff',
-                        border: '1px solid #e2e8f0',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
                         borderRadius: '9px',
                         cursor: 'pointer',
-                        color: '#64748b',
+                        color: 'var(--text-secondary)',
                         position: 'relative',
                         transition: 'border-color 0.15s ease',
                         flexShrink: 0,
                     }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = '#94a3b8'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-muted)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
                 >
                     <Bell size={16} strokeWidth={1.8} />
                     <span style={{
@@ -183,7 +183,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                     <div style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '16px 20px',
-                        borderBottom: '1px solid #f1f5f9',
+                        borderBottom: '1px solid var(--border)',
                     }}>
                         <span style={T.sectionTitle}>Recent Patients</span>
                         <button className="btn-text" style={{ padding: '4px 8px' }}>
@@ -206,12 +206,12 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
                                 style={{
                                     width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                                     padding: '13px 20px',
-                                    borderTop: idx > 0 ? '1px solid #f8fafc' : 'none',
+                                    borderTop: idx > 0 ? '1px solid var(--border)' : 'none',
                                     border: 'none', cursor: 'pointer',
                                     background: 'transparent', textAlign: 'left',
                                     transition: 'background 0.12s ease',
                                 }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--background)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
                                 {/* Avatar */}
@@ -239,7 +239,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
 
                 {/* Priority Tasks */}
                 <div style={card}>
-                    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
                         <span style={T.sectionTitle}>Priority Tasks</span>
                     </div>
                     <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
