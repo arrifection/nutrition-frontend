@@ -12,6 +12,7 @@ import Toast from "./components/ui/Toast";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import History from "./components/History";
+import Patients from "./components/Patients";
 import { useAuth } from "./context/AuthContext";
 import { Box, Stack, Typography } from "@mui/material";
 import Settings from "./components/Settings";
@@ -66,8 +67,6 @@ function App() {
     const handleNavigate = (newView) => {
         if (newView === 'create') {
             startNewPlan();
-        } else if (newView === 'patients') {
-            setView('dashboard'); // Current dashboard has patients, but we can refine later
         } else {
             setView(newView);
         }
@@ -139,13 +138,22 @@ function App() {
                         setSelectedPatient(client);
                         setView('profile');
                     }}
+                    onNavigate={handleNavigate}
                 />
             );
         }
 
         // Functional Pages
         if (view === 'patients') {
-            return <PlaceholderPage title="Patient Management" description="View and manage your entire patient roster, clinical history, and metabolic profiles." icon={Users} />;
+            return (
+                <Patients 
+                    onBack={() => setView('dashboard')} 
+                    onSelectPatient={(client) => {
+                        setSelectedPatient(client);
+                        setView('profile');
+                    }} 
+                />
+            );
         }
 
         if (view === 'plans') {
