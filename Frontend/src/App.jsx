@@ -13,7 +13,10 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import History from "./components/History";
 import { useAuth } from "./context/AuthContext";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
+import Settings from "./components/Settings";
+import PlaceholderPage from "./components/ui/PlaceholderPage";
+import { Users, FileText, Activity } from "lucide-react";
 
 function App() {
     const { user, logout, loading } = useAuth();
@@ -119,7 +122,7 @@ function App() {
     const renderMainContent = () => {
         if (loading) {
             return (
-                <Box className="flex justify-center items-center h-[60vh]">
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', h: '60vh' }}>
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
                 </Box>
             );
@@ -127,7 +130,8 @@ function App() {
 
         if (view === 'history') return <History onBack={() => setView('dashboard')} />;
 
-        if (view === 'dashboard' || view === 'patients' || view === 'plans' || view === 'progress' || view === 'settings') {
+        // Dashboard/Home
+        if (view === 'dashboard') {
             return (
                 <Dashboard
                     onCreatePlan={startNewPlan}
@@ -137,6 +141,23 @@ function App() {
                     }}
                 />
             );
+        }
+
+        // Functional Pages
+        if (view === 'patients') {
+            return <PlaceholderPage title="Patient Management" description="View and manage your entire patient roster, clinical history, and metabolic profiles." icon={Users} />;
+        }
+
+        if (view === 'plans') {
+            return <PlaceholderPage title="Nutrition Protocols" description="Review all active and historically assigned nutrition plans across your practice." icon={FileText} />;
+        }
+
+        if (view === 'progress') {
+            return <PlaceholderPage title="Progress Tracking" description="Monitor patient adherence, biometric trends, and clinical outcomes over time." icon={Activity} />;
+        }
+
+        if (view === 'settings') {
+            return <Settings />;
         }
 
         if (view === 'profile' && selectedPatient) {
@@ -158,8 +179,8 @@ function App() {
 
         if (view === 'planner') {
             return (
-                <Box className="bg-white min-h-screen">
-                    <Box className="border-b border-emerald-100 bg-emerald-50/30 no-print overflow-x-auto p-4">
+                <Box sx={{ background: '#ffffff', minHeight: '100vh' }}>
+                    <Box sx={{ borderBottom: '1px solid #dcfce7', background: 'rgba(220, 252, 231, 0.3)', p: 2, overflowX: 'auto' }}>
                         <Box sx={{ maxWidth: '1000px', mx: 'auto' }}>
                             <StepProgress currentStep={currentStep} onStepClick={goToStep} />
                         </Box>

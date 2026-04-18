@@ -3,109 +3,242 @@
 @tailwind utilities;
 
 /* 
-  DIETDESK - PREMIUM REDESIGN
-  Modern SaaS Aesthetic: Glassmorphism, Mesh Gradients, and High-Definition Components
+  DIETDESK - PREMIUM HEALTHCARE SAAS
+  Design System: Cohesive, clinical, and intentional.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --brand-primary: #10b981;
-    --brand-secondary: #6366f1;
-    --bg-main: #f8fafc;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    /* Brand */
+    --brand-green: #16a34a;
+    --brand-green-light: #dcfce7;
+    --brand-green-muted: #22c55e;
+
+    /* Sidebar */
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: rgba(255,255,255,0.06);
+    --sidebar-active: rgba(255,255,255,0.10);
+    --sidebar-border: rgba(255, 255, 255, 0.07);
+
+    /* Surface */
+    --bg-main: #f1f5f9;
+    --surface: #ffffff;
+    --surface-hover: #f8fafc;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+
+    /* Text */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --text-invert: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
   }
 
   body {
-    @apply text-slate-900 antialiased min-h-screen selection:bg-emerald-100;
-    font-family: 'Outfit', sans-serif;
-    background: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
-                #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: #dcfce7;
+    color: #14532d;
   }
 }
 
 @layer components {
-  /* Premium Glass Cards */
+
+  /* Cards */
+  .dd-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .dd-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  }
+
+  /* Legacy glass-panel mapped to dd-card for backward compat */
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
   .stat-card {
-    @apply glass-panel p-5 transition-all duration-300 hover:translate-y-[-4px] hover:shadow-[0_12px_40px_0_rgba(31,38,135,0.1)];
+    @apply dd-card p-5 transition-all duration-200 cursor-default;
   }
 
   /* Buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--brand-green);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(22, 163, 74, 0.3);
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    background: #15803d;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: #cbd5e1;
+  }
+
+  .btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: transparent;
+    color: var(--brand-green);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .btn-text:hover {
+    background: var(--brand-green-light);
+  }
+
+  /* Legacy */
   .btn-premium {
-    @apply relative overflow-hidden px-6 py-3 bg-slate-900 text-white font-semibold rounded-2xl
-           transition-all duration-300 hover:bg-slate-800 active:scale-95 shadow-lg shadow-slate-200
-           flex items-center justify-center gap-2;
-  }
-
-  .btn-premium::after {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%];
-    transition: 0.5s;
-  }
-
-  .btn-premium:hover::after {
-    @apply translate-x-[100%];
+    @apply btn-primary;
   }
 
   .btn-ghost {
-    @apply px-4 py-2 text-slate-600 font-semibold rounded-xl hover:bg-slate-100 transition-all;
+    @apply btn-secondary;
   }
 
-  /* Navigation Bar */
-  .nav-blur {
-    @apply sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-white/40;
-  }
-
-  /* Form Elements */
+  /* Input */
   .input-premium {
-    @apply w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: 'Inter', sans-serif;
   }
 
-  /* Typography */
-  .title-gradient {
-    @apply bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent;
+  .input-premium:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.08);
+  }
+
+  .input-premium::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
   }
 
   /* Animations */
   .fade-up {
-    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeUp 0.4s cubic-bezier(0.2, 1, 0.4, 1) forwards;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Status badges */
+  .badge-active {
+    background: #dcfce7;
+    color: #15803d;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-pending {
+    background: #fef9c3;
+    color: #92400e;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 }
 
-/* Scrollbar Customization */
-::-webkit-scrollbar {
-  width: 8px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300;
-}
-
-/* Utility for section spacing on mobile */
+/* Mobile utility */
 @media (max-width: 768px) {
-  .app-container {
-    @apply px-4 py-6;
-  }
-  
-  .glass-panel {
-    @apply rounded-2xl;
-  }
+  .glass-panel { border-radius: 10px; }
+  .dd-card { border-radius: 10px; }
 }

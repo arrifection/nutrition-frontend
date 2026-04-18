@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
     User,
-    History,
+    History as HistoryIcon,
     ClipboardList,
     TrendingUp,
     AlertCircle,
@@ -11,16 +11,25 @@ import {
     Calendar,
     Target,
     Activity,
-    MessageCircle
+    MessageCircle,
+    ChevronRight,
+    ExternalLink
 } from "lucide-react";
 import GoalManager from "./GoalManager";
 import ReflectionLog from "./ReflectionLog";
 import ConsistencyPulse from "./ConsistencyPulse";
 
+const T = {
+    heading: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' },
+    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
+    sectionTitle: { fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a' },
+    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#94a3b8' },
+    value: { fontSize: '0.875rem', fontWeight: 600, color: '#1e293b' }
+};
+
 export default function PatientDetail({ patient, onBack, onEditPlan }) {
     const [activeTab, setActiveTab] = useState("overview");
 
-    // Mock history data for demonstration
     const history = {
         plans: [
             { id: 1, date: "2024-01-10", name: "High Protein / Low Carb Version 1", status: "Completed" },
@@ -37,172 +46,196 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
     };
 
     const tabs = [
-        { id: "overview", label: "Profile Overview", icon: <User size={16} /> },
-        { id: "goals", label: "Goals Tracking", icon: <Target size={16} /> },
-        { id: "reflections", label: "Patient Reflections", icon: <MessageCircle size={16} /> },
-        { id: "plans", label: "Diet Plans", icon: <FileText size={16} /> },
-        { id: "history", label: "Follow-ups & Notes", icon: <History size={16} /> },
+        { id: "overview", label: "Overview", icon: User },
+        { id: "goals", label: "Goals", icon: Target },
+        { id: "reflections", label: "Journal", icon: MessageCircle },
+        { id: "plans", label: "Plans", icon: FileText },
+        { id: "history", label: "History", icon: HistoryIcon },
     ];
 
-
     return (
-        <div className="space-y-6">
-            {/* Header / Nav */}
-            <div className="flex items-center gap-4 mb-2">
-                <button
-                    onClick={onBack}
-                    className="p-2 hover:bg-emerald-50 text-emerald-600 rounded-full transition-colors"
-                >
-                    <ArrowLeft size={20} />
+        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button 
+                        onClick={onBack}
+                        style={{ 
+                            width: '36px', height: '36px', borderRadius: '10px', 
+                            background: '#ffffff', border: '1px solid #e2e8f0',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#64748b', cursor: 'pointer'
+                        }}
+                    >
+                        <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                        <h1 style={T.heading}>{patient.name}</h1>
+                        <p style={T.subheading}>Patient ID: #P-{patient.id || '00' + patient.name.length} • Registered Jan 2024</p>
+                    </div>
+                </div>
+                <button onClick={() => onEditPlan(patient)} className="btn-primary">
+                    <Plus size={16} strokeWidth={2.5} />
+                    Update Plan
                 </button>
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
-                    <p className="text-sm text-gray-500">Patient ID: #P-{patient.id || '00' + patient.name.length} • Registered Jan 2024</p>
+            </div>
+
+            {/* Metrics Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                <div className="dd-card" style={{ padding: '16px' }}>
+                    <div style={T.label}>Status</div>
+                    <div style={{ marginTop: '4px' }}>
+                        <span className="badge-active">On Track</span>
+                    </div>
                 </div>
-                <div className="ml-auto flex gap-3">
-                    <button
-                        onClick={() => onEditPlan(patient)}
-                        className="btn-primary text-sm flex items-center gap-2"
-                    >
-                        <Plus size={16} /> Update Plan
-                    </button>
+                <div className="dd-card" style={{ padding: '16px' }}>
+                    <div style={T.label}>Demographics</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{patient.age}y • {patient.gender}</div>
+                </div>
+                <div className="dd-card" style={{ padding: '16px' }}>
+                    <div style={T.label}>Vitals</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{patient.height}cm • {patient.weight}kg</div>
+                </div>
+                <div className="dd-card" style={{ padding: '16px' }}>
+                    <div style={T.label}>Metabolic BMI</div>
+                    <div style={{ ...T.value, marginTop: '4px', color: '#16a34a' }}>{patient.bmi || '23.4'} (Normal)</div>
                 </div>
             </div>
 
-            {/* Quick Profile Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white border border-emerald-100 p-4 rounded-sm shadow-sm">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Status</p>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">On Track</span>
-                </div>
-                <div className="bg-white border border-emerald-100 p-4 rounded-sm shadow-sm">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Age / Gender</p>
-                    <p className="text-sm font-bold text-gray-800">{patient.age}yr • {patient.gender}</p>
-                </div>
-                <div className="bg-white border border-emerald-100 p-4 rounded-sm shadow-sm">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Height / Weight</p>
-                    <p className="text-sm font-bold text-gray-800">{patient.height}cm • {patient.weight}kg</p>
-                </div>
-                <div className="bg-white border border-emerald-100 p-4 rounded-sm shadow-sm">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">BMI</p>
-                    <p className="text-sm font-bold text-emerald-600">{patient.bmi || '23.4'} (Normal)</p>
-                </div>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', overflowX: 'auto', paddingBottom: '2px' }}>
+                {tabs.map(tab => {
+                    const Icon = tab.icon;
+                    const active = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                padding: '10px 16px', border: 'none', background: 'transparent',
+                                cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600,
+                                color: active ? '#16a34a' : '#64748b',
+                                borderBottom: active ? '2px solid #16a34a' : '2px solid transparent',
+                                transition: 'all 0.15s ease',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <Icon size={16} strokeWidth={active ? 2.5 : 2} />
+                            {tab.label}
+                        </button>
+                    )
+                })}
             </div>
 
-            {/* Tab Navigation */}
-            <div className="border-b border-emerald-100 flex gap-8">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`py-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-all ${activeTab === tab.id
-                            ? "border-emerald-500 text-emerald-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        {tab.icon}
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Tab Content */}
-            <div className="min-h-[400px]">
+            {/* Content Area */}
+            <div style={{ minHeight: '400px' }}>
                 {activeTab === "overview" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Summary Section */}
-                        <div className="space-y-6">
-                            <div className="bg-white border border-emerald-100 p-6 rounded-sm shadow-sm">
-                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <Activity className="text-emerald-600" size={18} /> Current Assessment
-                                </h3>
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-emerald-50/50 rounded-sm border-l-4 border-emerald-400">
-                                        <p className="text-xs text-emerald-800 leading-relaxed italic">
-                                            "Patient is showing consistent progress with protein targets. Next phase will focus on metabolic flexibility and evening habit stack."
-                                        </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div className="dd-card" style={{ padding: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                    <Activity size={18} style={{ color: '#16a34a' }} />
+                                    <h3 style={T.sectionTitle}>Current Assessment</h3>
+                                </div>
+                                <div style={{ 
+                                    padding: '16px', background: '#f0fdf4', borderRadius: '10px', 
+                                    borderLeft: '4px solid #16a34a', marginBottom: '20px' 
+                                }}>
+                                    <p style={{ fontSize: '0.8125rem', color: '#14532d', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                        "Patient is showing consistent progress with protein targets. Next phase will focus on metabolic flexibility and evening habit stack."
+                                    </p>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+                                        <div style={T.label}>Activity</div>
+                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient.activity_level}</div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-3 bg-gray-50 rounded-sm">
-                                            <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Activity Level</p>
-                                            <p className="text-sm font-bold text-gray-700">{patient.activity_level}</p>
-                                        </div>
-                                        <div className="p-3 bg-gray-50 rounded-sm">
-                                            <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Goal Status</p>
-                                            <p className="text-sm font-bold text-gray-700">{patient.goal}</p>
-                                        </div>
+                                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+                                        <div style={T.label}>Prime Goal</div>
+                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient.goal}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white border border-emerald-100 p-6 rounded-sm shadow-sm">
-                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <AlertCircle className="text-amber-500" size={18} /> Clinical History
-                                </h3>
-                                <div className="text-sm text-gray-600 space-y-2">
-                                    <p><span className="font-bold">Medical Notes:</span> {patient.medical_notes || "No previous records."}</p>
-                                    <p><span className="font-bold">Known Allergies:</span> None reported.</p>
+                            <div className="dd-card" style={{ padding: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                                    <AlertCircle size={18} style={{ color: '#f59e0b' }} />
+                                    <h3 style={T.sectionTitle}>Clinical Background</h3>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8125rem' }}>
+                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Medical:</span> {patient.medical_notes || "No previous records."}</div>
+                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Allergies:</span> None reported.</div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Recent Progress section */}
-                        <div className="space-y-6">
-                            <div className="bg-white border border-emerald-100 p-6 rounded-sm shadow-sm">
-                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <TrendingUp className="text-emerald-600" size={18} /> Weight Trend (Last 30 days)
-                                </h3>
-                                <div className="h-32 flex items-end gap-2 px-2 border-b border-gray-100 pb-2">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div className="dd-card" style={{ padding: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                    <TrendingUp size={18} style={{ color: '#16a34a' }} />
+                                    <h3 style={T.sectionTitle}>Weight Trend (30d)</h3>
+                                </div>
+                                <div style={{ height: '100px', display: 'flex', alignItems: 'end', gap: '8px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
                                     {[66.2, 65.8, 65.5, 65.2, 64.8, 64.5, 64.2].map((w, i) => (
-                                        <div key={i} className="flex-1 bg-emerald-100 hover:bg-emerald-400 transition-all cursor-help rounded-t-sm" style={{ height: `${(w - 60) * 10}%` }}></div>
+                                        <div key={i} style={{ 
+                                            flex: 1, background: '#dcfce7', borderRadius: '4px 4px 0 0',
+                                            height: `${(w - 60) * 12}%`, transition: 'background 0.2s',
+                                            cursor: 'pointer'
+                                        }} 
+                                        onMouseEnter={e => e.currentTarget.style.background = '#16a34a'}
+                                        onMouseLeave={e => e.currentTarget.style.background = '#dcfce7'}
+                                        />
                                     ))}
                                 </div>
-                                <div className="flex justify-between text-[10px] text-gray-400 mt-2">
-                                    <span>Jan 01</span>
-                                    <span>Jan 28</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', color: '#94a3b8', marginTop: '8px', fontWeight: 600 }}>
+                                    <span>JAN 01</span>
+                                    <span>TODAY</span>
                                 </div>
                             </div>
 
-                            <div className="bg-white border border-emerald-100 p-6 rounded-sm shadow-sm">
+                            <div className="dd-card" style={{ padding: '24px' }}>
                                 <ConsistencyPulse role="dietitian" />
                             </div>
                         </div>
                     </div>
                 )}
 
-                {activeTab === "goals" && (
-                    <GoalManager />
-                )}
+                {activeTab === "goals" && <div className="dd-card" style={{ padding: '24px' }}><GoalManager /></div>}
 
                 {activeTab === "reflections" && (
-                    <div className="max-w-4xl mx-auto">
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                         <ReflectionLog role="dietitian" patientId={patient.id} />
                     </div>
                 )}
 
                 {activeTab === "plans" && (
-                    <div className="bg-white border border-emerald-100 rounded-sm shadow-sm overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 text-[10px] uppercase font-bold text-gray-500">
-                                <tr>
-                                    <th className="px-6 py-4 text-left">Date</th>
-                                    <th className="px-6 py-4 text-left">Plan Name</th>
-                                    <th className="px-6 py-4 text-left">Status</th>
-                                    <th className="px-6 py-4"></th>
+                    <div className="dd-card" style={{ overflow: 'hidden' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                                    <th style={{ padding: '12px 20px', ...T.label }}>Date</th>
+                                    <th style={{ padding: '12px 20px', ...T.label }}>Plan Name</th>
+                                    <th style={{ padding: '12px 20px', ...T.label }}>Status</th>
+                                    <th style={{ padding: '12px 20px' }}></th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-emerald-50 text-sm">
-                                {history.plans.map(p => (
-                                    <tr key={p.id} className="hover:bg-emerald-50/50">
-                                        <td className="px-6 py-4 text-gray-500">{p.date}</td>
-                                        <td className="px-6 py-4 font-medium text-gray-800">{p.name}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`text-[10px] font-bold uppercase ${p.status === 'Completed' ? 'text-emerald-600' : 'text-gray-400'}`}>
-                                                {p.status}
-                                            </span>
+                            <tbody>
+                                {history.plans.map((p, idx) => (
+                                    <tr key={p.id} style={{ borderBottom: idx < history.plans.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                                        <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: '#64748b' }}>{p.date}</td>
+                                        <td style={{ padding: '14px 20px', fontSize: '0.8125rem', fontWeight: 600, color: '#1e293b' }}>{p.name}</td>
+                                        <td style={{ padding: '14px 20px' }}>
+                                            <span style={{ 
+                                                fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px',
+                                                background: p.status === 'Completed' ? '#dcfce7' : '#f1f5f9',
+                                                color: p.status === 'Completed' ? '#15803d' : '#64748b'
+                                            }}>{p.status}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-emerald-600 hover:underline">View PDF</button>
+                                        <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                                            <button className="btn-text" style={{ fontSize: '0.75rem' }}>
+                                                View PDF <ExternalLink size={12} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -212,40 +245,40 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 )}
 
                 {activeTab === "history" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Follow up history */}
-                        <div className="lg:col-span-2 space-y-4">
-                            <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
-                                <ClipboardList className="text-emerald-600" size={18} /> Follow-up Log
-                            </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                <ClipboardList size={18} style={{ color: '#16a34a' }} />
+                                <h3 style={T.sectionTitle}>Follow-up Log</h3>
+                            </div>
                             {history.followUps.map((f, i) => (
-                                <div key={i} className="bg-white border border-emerald-50 p-4 rounded-sm shadow-sm">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-sm">{f.date}</span>
-                                        <span className="text-xs text-gray-400">{f.type}</span>
+                                <div key={i} className="dd-card" style={{ padding: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '6px' }}>{f.date}</span>
+                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{f.type}</span>
                                     </div>
-                                    <p className="text-sm font-bold mb-1">Weight: {f.weight}</p>
-                                    <p className="text-sm text-gray-600 italic">"{f.note}"</p>
+                                    <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '4px' }}>Weight: {f.weight}</div>
+                                    <p style={{ fontSize: '0.8125rem', color: '#64748b', fontStyle: 'italic', lineHeight: 1.4 }}>"{f.note}"</p>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Recent Progress Notes */}
-                        <div className="space-y-4">
-                            <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
-                                <FileText className="text-emerald-600" size={18} /> Clinical Notes
-                            </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                <FileText size={18} style={{ color: '#16a34a' }} />
+                                <h3 style={T.sectionTitle}>Clinical Notes</h3>
+                            </div>
                             {history.notes.map(note => (
-                                <div key={note.id} className="bg-amber-50/30 border border-amber-100 p-4 rounded-sm">
-                                    <div className="flex justify-between mb-2">
-                                        <span className="text-[10px] font-bold text-amber-700">{note.date}</span>
-                                        <span className="text-[10px] font-bold text-gray-400">{note.author}</span>
+                                <div key={note.id} style={{ padding: '16px', background: '#fffbeb', borderRadius: '10px', border: '1px solid #fef3c7' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#92400e' }}>{note.date}</span>
+                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#b45309' }}>{note.author}</span>
                                     </div>
-                                    <p className="text-xs text-amber-900 leading-relaxed">{note.text}</p>
+                                    <p style={{ fontSize: '0.75rem', color: '#92400e', lineHeight: 1.5 }}>{note.text}</p>
                                 </div>
                             ))}
-                            <button className="w-full py-2 bg-white border border-emerald-100 text-emerald-600 text-xs font-bold rounded-sm hover:bg-emerald-50 transition-all border-dashed">
-                                + ADD NEW CLINICAL NOTE
+                            <button className="btn-secondary" style={{ borderStyle: 'dashed', background: '#ffffff', color: '#16a34a', fontSize: '0.75rem' }}>
+                                + Add New Clinical Note
                             </button>
                         </div>
                     </div>

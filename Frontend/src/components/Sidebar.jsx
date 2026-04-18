@@ -8,91 +8,304 @@ import {
     Settings,
     Menu,
     X,
-    LogOut
+    LogOut,
+    ChevronRight
 } from 'lucide-react';
 
-export default function Sidebar({ activeView, onNavigate, onLogout, username }) {
-    const [isOpen, setIsOpen] = useState(false);
+const NAV_ITEMS = [
+    { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard },
+    { id: 'patients',   label: 'Patients',     icon: Users },
+    { id: 'plans',      label: 'Plans',        icon: FileText },
+    { id: 'progress',   label: 'Progress',     icon: Activity },
+    { id: 'settings',   label: 'Settings',     icon: Settings },
+];
 
-    const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'patients', label: 'Patients', icon: Users },
-        { id: 'create', label: 'Create Plan', icon: PlusCircle, highlight: true },
-        { id: 'plans', label: 'Plans', icon: FileText },
-        { id: 'progress', label: 'Progress', icon: Activity },
-        { id: 'settings', label: 'Settings', icon: Settings },
-    ];
+const CREATE_ITEM = { id: 'create', label: 'Create Plan', icon: PlusCircle };
 
-    const NavContent = () => (
-        <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4">
-            <div className="flex items-center gap-3 px-2 mb-10 mt-2">
-                <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-black text-xl">D</div>
-                <h1 className="text-xl font-black text-white tracking-tight uppercase">DIETDESK</h1>
+function NavItem({ item, active, onClick }) {
+    const Icon = item.icon;
+    const isCreate = item.id === 'create';
+
+    if (isCreate) {
+        return (
+            <button
+                onClick={() => onClick(item.id)}
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.01em',
+                    background: '#16a34a',
+                    color: 'white',
+                    boxShadow: '0 2px 8px rgba(22,163,74,0.35)',
+                    transition: 'background 0.15s ease, box-shadow 0.15s ease',
+                    marginTop: '6px',
+                    marginBottom: '6px',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#15803d'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#16a34a'; }}
+            >
+                <Icon size={17} strokeWidth={2.2} />
+                {item.label}
+            </button>
+        );
+    }
+
+    return (
+        <button
+            onClick={() => onClick(item.id)}
+            style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '0.875rem',
+                fontWeight: active ? 600 : 400,
+                background: active ? 'rgba(255,255,255,0.10)' : 'transparent',
+                color: active ? '#ffffff' : 'rgba(255,255,255,0.55)',
+                transition: 'background 0.15s ease, color 0.15s ease',
+                position: 'relative',
+            }}
+            onMouseEnter={e => {
+                if (!active) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.85)';
+                }
+            }}
+            onMouseLeave={e => {
+                if (!active) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+                }
+            }}
+        >
+            {active && (
+                <span style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '3px',
+                    height: '18px',
+                    background: '#22c55e',
+                    borderRadius: '0 3px 3px 0',
+                }} />
+            )}
+            <Icon
+                size={17}
+                strokeWidth={active ? 2.2 : 1.8}
+                style={{ color: active ? '#22c55e' : 'inherit', flexShrink: 0 }}
+            />
+            {item.label}
+        </button>
+    );
+}
+
+function SidebarContent({ activeView, onNavigate, onLogout, username }) {
+    const initial = username ? username[0].toUpperCase() : 'D';
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0' }}>
+            {/* Logo */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '22px 20px 18px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                flexShrink: 0,
+            }}>
+                <div style={{
+                    width: 32, height: 32,
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px', fontWeight: 800, color: 'white',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 8px rgba(22,163,74,0.4)',
+                }}>D</div>
+                <div>
+                    <div style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'white', letterSpacing: '-0.01em' }}>DietDesk</div>
+                    <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.35)', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Clinical</div>
+                </div>
             </div>
 
-            <nav className="flex-1 space-y-1">
-                {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                onNavigate(item.id);
-                                setIsOpen(false);
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${item.highlight
-                                    ? 'bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 my-4'
-                                    : activeView === item.id
-                                        ? 'bg-white/10 text-white font-semibold'
-                                        : 'hover:bg-white/5 hover:text-white'
-                                }`}
-                        >
-                            <Icon size={20} className={activeView === item.id ? 'text-white' : 'text-slate-400 group-hover:text-white'} />
-                            <span>{item.label}</span>
-                        </button>
-                    );
-                })}
+            {/* Nav */}
+            <nav style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+                <div style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', padding: '0 14px', marginBottom: '8px' }}>
+                    Menu
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {NAV_ITEMS.slice(0, 2).map(item => (
+                        <NavItem key={item.id} item={item} active={activeView === item.id} onClick={onNavigate} />
+                    ))}
+                    <div style={{ margin: '6px 0' }}>
+                        <NavItem item={CREATE_ITEM} active={false} onClick={onNavigate} />
+                    </div>
+                    {NAV_ITEMS.slice(2).map(item => (
+                        <NavItem key={item.id} item={item} active={activeView === item.id} onClick={onNavigate} />
+                    ))}
+                </div>
             </nav>
 
-            <div className="pt-6 mt-6 border-t border-white/10 space-y-4">
-                <div className="px-4 py-2">
-                    <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-1">Signed in as</p>
-                    <p className="text-sm font-semibold text-white truncate">{username || 'Dietitian'}</p>
+            {/* Profile + Logout */}
+            <div style={{
+                padding: '14px 12px',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                flexShrink: 0,
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    marginBottom: '4px',
+                    background: 'rgba(255,255,255,0.04)',
+                }}>
+                    <div style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #1e3a5f, #2d6a4f)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.8125rem', fontWeight: 700, color: 'white', flexShrink: 0,
+                    }}>{initial}</div>
+                    <div style={{ overflow: 'hidden' }}>
+                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {username || 'Dietitian'}
+                        </div>
+                        <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>Dietitian</div>
+                    </div>
                 </div>
                 <button
                     onClick={onLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all font-semibold"
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '9px 14px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        background: 'transparent',
+                        color: 'rgba(248, 113, 113, 0.7)',
+                        transition: 'background 0.15s ease, color 0.15s ease',
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(248,113,113,0.1)';
+                        e.currentTarget.style.color = '#f87171';
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'rgba(248, 113, 113, 0.7)';
+                    }}
                 >
-                    <LogOut size={20} />
-                    <span>Logout</span>
+                    <LogOut size={16} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+                    Sign out
                 </button>
             </div>
         </div>
     );
+}
+
+export default function Sidebar({ activeView, onNavigate, onLogout, username }) {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const handleNavigate = (id) => {
+        onNavigate(id);
+        setDrawerOpen(false);
+    };
+
+    const sidebarStyle = {
+        width: 240,
+        background: '#0f172a',
+        height: '100vh',
+        flexShrink: 0,
+    };
 
     return (
         <>
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-slate-200 shadow-sm shrink-0">
-                <NavContent />
+            <aside
+                className="hidden lg:block"
+                style={{ ...sidebarStyle, position: 'sticky', top: 0, overflowY: 'auto' }}
+            >
+                <SidebarContent activeView={activeView} onNavigate={handleNavigate} onLogout={onLogout} username={username} />
             </aside>
 
-            {/* Mobile Header & Hamburger */}
-            <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-white/10 sticky top-0 z-[60]">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-emerald-500 rounded-md flex items-center justify-center text-white font-black text-lg">D</div>
-                    <h1 className="text-lg font-black text-white tracking-tight uppercase">DIETDESK</h1>
+            {/* Mobile Top Bar */}
+            <div
+                className="lg:hidden"
+                style={{
+                    position: 'sticky', top: 0, zIndex: 60,
+                    background: '#0f172a',
+                    borderBottom: '1px solid rgba(255,255,255,0.07)',
+                    padding: '0 16px',
+                    height: 56,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexShrink: 0,
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                        width: 28, height: 28, borderRadius: '7px',
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '14px', fontWeight: 800, color: 'white',
+                        boxShadow: '0 2px 6px rgba(22,163,74,0.4)',
+                    }}>D</div>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'white', letterSpacing: '-0.01em' }}>DietDesk</span>
                 </div>
-                <button onClick={() => setIsOpen(!isOpen)} className="text-white p-1">
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
+                <button
+                    onClick={() => setDrawerOpen(true)}
+                    style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center' }}
+                >
+                    <Menu size={20} />
                 </button>
             </div>
 
-            {/* Mobile Sidebar Overlay */}
-            {isOpen && (
-                <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
-                    <div className="w-64 h-full" onClick={(e) => e.stopPropagation()}>
-                        <NavContent />
+            {/* Mobile Drawer */}
+            {drawerOpen && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 200,
+                        background: 'rgba(0,0,0,0.55)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                    }}
+                    onClick={() => setDrawerOpen(false)}
+                >
+                    <div
+                        style={{ ...sidebarStyle, height: '100%', overflowY: 'auto' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 10 }}>
+                            <button
+                                onClick={() => setDrawerOpen(false)}
+                                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'white', display: 'flex' }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <SidebarContent activeView={activeView} onNavigate={handleNavigate} onLogout={onLogout} username={username} />
                     </div>
                 </div>
             )}

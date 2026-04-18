@@ -4,223 +4,284 @@ import {
     Users,
     FileText,
     TrendingUp,
-    Clock,
-    ChevronRight,
     Bell,
     CheckCircle2,
-    Calendar,
-    ArrowUpRight
+    Clock,
+    ChevronRight,
+    ArrowUpRight,
 } from "lucide-react";
 import { getPatients } from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { 
-    Grid, 
-    Stack, 
-    Box, 
-    Typography, 
-    Card, 
-    CardContent, 
-    Button, 
-    Avatar,
-    Divider,
-    IconButton
-} from "@mui/material";
+
+const T = {
+    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#94a3b8' },
+    heading: { fontSize: '1.375rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1.2 },
+    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
+    sectionTitle: { fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', letterSpacing: '0.01em' },
+    body: { fontSize: '0.875rem', fontWeight: 500, color: '#0f172a' },
+    bodyMuted: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
+    stat: { fontSize: '1.625rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 },
+};
+
+const card = {
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+};
+
+const STAT_CONFIG = [
+    { label: "Total Patients", icon: Users,      iconBg: '#eff6ff', iconColor: '#3b82f6' },
+    { label: "Active Plans",   icon: FileText,    iconBg: '#f0fdf4', iconColor: '#16a34a' },
+    { label: "Engagement",     icon: TrendingUp,  iconBg: '#faf5ff', iconColor: '#9333ea' },
+    { label: "Alerts",         icon: Bell,        iconBg: '#fffbeb', iconColor: '#d97706' },
+];
+
+const TASKS = [
+    { id: 1, title: "Review Maria's meal logs",      time: "2h ago",  priority: "high" },
+    { id: 2, title: "Initial assessment: David S.",  time: "4h ago",  priority: "medium" },
+    { id: 3, title: "Update macro targets for John", time: "Today",   priority: "low" },
+];
+
+const PRIORITY_DOT = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
 
 export default function Dashboard({ onCreatePlan, onSelectClient }) {
     const { user } = useAuth();
     const role = user?.role || "client";
-    const [activeClients, setActiveClients] = useState([]);
-    const [loading, setLoading] = useState(role === "dietitian");
+    const [patients, setPatients] = useState([]);
+    const [loadingPatients, setLoadingPatients] = useState(role === "dietitian");
 
     useEffect(() => {
-        if (role === "dietitian") {
-            const fetchPatients = async () => {
-                const response = await getPatients();
-                if (response.success && Array.isArray(response.data)) {
-                    setActiveClients(response.data);
-                }
-                setLoading(false);
-            };
-            fetchPatients();
-        } else {
-            setLoading(false);
-        }
+        if (role !== "dietitian") { setLoadingPatients(false); return; }
+        getPatients().then(res => {
+            if (res.success && Array.isArray(res.data)) setPatients(res.data);
+            setLoadingPatients(false);
+        });
     }, [role]);
 
-    const stats = [
-        { label: "Total Patients", value: activeClients.length, icon: Users, color: "bg-blue-500", text: "text-blue-500" },
-        { label: "Plans Active", value: "24", icon: FileText, color: "bg-emerald-500", text: "text-emerald-500" },
-        { label: "Engagement", value: "88%", icon: TrendingUp, color: "bg-violet-500", text: "text-violet-500" },
-        { label: "New Alerts", value: "5", icon: Bell, color: "bg-amber-500", text: "text-amber-500" },
-    ];
+    const statsValues = [patients.length, "24", "88%", "5"];
 
-    const tasks = [
-        { id: 1, title: "Review Maria's meal logs", time: "2h ago", type: "review" },
-        { id: 2, title: "Initial assessment: David S.", time: "4h ago", type: "assessment" },
-        { id: 3, title: "Update macro targets for John", time: "Today", type: "update" },
-    ];
+    const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    });
 
     if (role !== "dietitian") {
         return (
-            <Box className="fade-up p-6">
-                <Typography variant="h4" className="font-black mb-6">Welcome, {user?.username}!</Typography>
-                <Card className="glass-panel">
-                    <CardContent>
-                        <Typography color="textSecondary">Client dashboard view is being updated...</Typography>
-                    </CardContent>
-                </Card>
-            </Box>
+            <div className="fade-up" style={{ padding: '32px 28px' }}>
+                <h2 style={T.heading}>Welcome, {user?.username}!</h2>
+                <p style={{ ...T.subheading, marginTop: 6 }}>Your client dashboard is being prepared.</p>
+            </div>
         );
     }
 
     return (
-        <Box className="fade-up p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-            {/* Header */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Box>
-                    <Typography variant="h4" className="font-extrabold text-slate-900 tracking-tight">
-                        Hello, {user?.username || 'Clinician'} 👋
-                    </Typography>
-                    <Typography variant="body2" className="text-slate-500 font-medium">
-                        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    </Typography>
-                </Box>
-                <IconButton className="bg-white shadow-sm border border-slate-100">
-                    <Bell size={20} />
-                </IconButton>
-            </Stack>
+        <div className="fade-up" style={{ padding: '28px', maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            
+            {/* ── Header ── */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                    <h1 style={T.heading}>
+                        Good morning, {user?.username || 'Clinician'} 👋
+                    </h1>
+                    <p style={{ ...T.subheading, marginTop: 4 }}>{today}</p>
+                </div>
+                <button
+                    style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 38, height: 38,
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '9px',
+                        cursor: 'pointer',
+                        color: '#64748b',
+                        position: 'relative',
+                        transition: 'border-color 0.15s ease',
+                        flexShrink: 0,
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = '#94a3b8'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                >
+                    <Bell size={16} strokeWidth={1.8} />
+                    <span style={{
+                        position: 'absolute', top: 7, right: 7,
+                        width: 7, height: 7, borderRadius: '50%',
+                        background: '#ef4444', border: '2px solid white'
+                    }} />
+                </button>
+            </div>
 
-            {/* Stats Grid */}
-            <Grid container spacing={3}>
-                {stats.map((stat, i) => {
-                    const Icon = stat.icon;
+            {/* ── Stats ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+                {STAT_CONFIG.map((cfg, i) => {
+                    const Icon = cfg.icon;
                     return (
-                        <Grid item xs={12} sm={6} md={3} key={i}>
-                            <Card className="glass-panel hover:translate-y-[-4px] transition-all cursor-default">
-                                <CardContent className="p-5">
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                        <div className={`p-3 rounded-2xl ${stat.color} bg-opacity-10 ${stat.text}`}>
-                                            <Icon size={24} />
-                                        </div>
-                                        <Box>
-                                            <Typography variant="caption" className="font-bold uppercase tracking-widest text-slate-400">
-                                                {stat.label}
-                                            </Typography>
-                                            <Typography variant="h5" className="font-black text-slate-900">
-                                                {stat.value}
-                                            </Typography>
-                                        </Box>
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                        <div key={i} style={{ ...card, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.2s ease' }}
+                            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.07)'}
+                            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
+                        >
+                            <div style={{
+                                width: 42, height: 42, borderRadius: '10px',
+                                background: cfg.iconBg, flexShrink: 0,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <Icon size={20} style={{ color: cfg.iconColor }} strokeWidth={1.8} />
+                            </div>
+                            <div>
+                                <div style={T.label}>{cfg.label}</div>
+                                <div style={{ ...T.stat, marginTop: 2 }}>{statsValues[i]}</div>
+                            </div>
+                        </div>
                     );
                 })}
-            </Grid>
+            </div>
 
-            {/* CTA Section */}
-            <Card className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-900/10">
-                <CardContent className="p-8 md:p-12 relative">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center" justifyContent="space-between" position="relative" zIndex={1}>
-                        <Box className="text-center md:text-left">
-                            <Typography variant="h4" className="text-white font-black mb-2">Create Clinical Nutrition Plan</Typography>
-                            <Typography className="text-slate-400 font-medium">Start a new personalized protocol for your patient in seconds.</Typography>
-                        </Box>
-                        <Button 
-                            onClick={onCreatePlan}
-                            variant="contained" 
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-xl shadow-emerald-500/20 transform transition-transform active:scale-95"
-                            startIcon={<Plus size={24} />}
-                        >
-                            CREATE NEW PLAN
-                        </Button>
-                    </Stack>
-                </CardContent>
-            </Card>
+            {/* ── CTA Banner ── */}
+            <div style={{
+                ...card,
+                background: '#0f172a',
+                border: '1px solid rgba(255,255,255,0.06)',
+                padding: '24px 28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 16,
+                position: 'relative',
+                overflow: 'hidden',
+            }}>
+                {/* Subtle glow */}
+                <div style={{
+                    position: 'absolute', right: -60, top: -60,
+                    width: 200, height: 200,
+                    background: 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)',
+                    borderRadius: '50%', pointerEvents: 'none',
+                }} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.01em', marginBottom: 4 }}>
+                        Create a New Nutrition Plan
+                    </div>
+                    <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.45)', fontWeight: 400 }}>
+                        Build a personalized protocol for your patient in minutes.
+                    </div>
+                </div>
+                <button
+                    onClick={onCreatePlan}
+                    className="btn-primary"
+                    style={{ flexShrink: 0, position: 'relative', zIndex: 1 }}
+                >
+                    <Plus size={16} strokeWidth={2.5} />
+                    Create New Plan
+                </button>
+            </div>
 
-            {/* Patients & Tasks */}
-            <Grid container spacing={4}>
+            {/* ── Patients + Tasks ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,340px)', gap: 16, alignItems: 'start' }}
+                className="responsive-grid-collapse">
+                
                 {/* Recent Patients */}
-                <Grid item xs={12} lg={8}>
-                    <Card className="glass-panel h-full">
-                        <Box className="p-6 border-b border-slate-100 flex justify-between items-center">
-                            <Typography className="font-black text-slate-900 uppercase tracking-widest text-sm">Recent Patients</Typography>
-                            <Button size="small" className="text-emerald-600 font-bold hover:bg-emerald-50">View All</Button>
-                        </Box>
-                        <CardContent className="p-0">
-                            <Box className="divide-y divide-slate-50">
-                                {loading ? (
-                                    <Box className="p-12 text-center text-slate-400 font-medium italic">Loading patient data...</Box>
-                                ) : activeClients.slice(0, 5).map((client) => (
-                                    <Box 
-                                        key={client.id} 
-                                        onClick={() => onSelectClient(client)}
-                                        className="p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group"
-                                    >
-                                        <Avatar className="bg-emerald-100 text-emerald-700 font-bold">
-                                            {client.name.charAt(0)}
-                                        </Avatar>
-                                        <Box className="flex-1">
-                                            <Typography className="font-bold text-slate-900">{client.name}</Typography>
-                                            <Typography variant="caption" className="text-slate-400 font-medium">{client.goal} • {client.age}y</Typography>
-                                        </Box>
-                                        <Box className="hidden sm:block text-right mr-4">
-                                            <Typography variant="caption" className="font-bold text-slate-400 uppercase tracking-widest block">Status</Typography>
-                                            <Typography variant="caption" className="font-black text-emerald-600 uppercase">Active Now</Typography>
-                                        </Box>
-                                        <IconButton className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ChevronRight size={18} />
-                                        </IconButton>
-                                    </Box>
-                                ))}
-                                {activeClients.length === 0 && !loading && (
-                                    <Box className="p-12 text-center text-slate-400 italic">No patient records found.</Box>
-                                )}
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                <div style={card}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '16px 20px',
+                        borderBottom: '1px solid #f1f5f9',
+                    }}>
+                        <span style={T.sectionTitle}>Recent Patients</span>
+                        <button className="btn-text" style={{ padding: '4px 8px' }}>
+                            View All <ArrowUpRight size={13} />
+                        </button>
+                    </div>
+                    <div>
+                        {loadingPatients ? (
+                            <div style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
+                                Loading patient data…
+                            </div>
+                        ) : patients.length === 0 ? (
+                            <div style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
+                                No patient records yet.
+                            </div>
+                        ) : patients.slice(0, 6).map((client, idx) => (
+                            <button
+                                key={client.id}
+                                onClick={() => onSelectClient(client)}
+                                style={{
+                                    width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                                    padding: '13px 20px',
+                                    borderTop: idx > 0 ? '1px solid #f8fafc' : 'none',
+                                    border: 'none', cursor: 'pointer',
+                                    background: 'transparent', textAlign: 'left',
+                                    transition: 'background 0.12s ease',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                                {/* Avatar */}
+                                <div style={{
+                                    width: 36, height: 36, borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '0.875rem', fontWeight: 700, color: '#15803d',
+                                    flexShrink: 0,
+                                }}>
+                                    {client.name?.charAt(0)?.toUpperCase()}
+                                </div>
+                                <div style={{ flex: 1, overflow: 'hidden' }}>
+                                    <div style={{ ...T.body, fontSize: '0.875rem' }}>{client.name}</div>
+                                    <div style={{ ...T.bodyMuted, fontSize: '0.75rem', marginTop: 1 }}>
+                                        {client.goal} · {client.age}y
+                                    </div>
+                                </div>
+                                <span className="badge-active">Active</span>
+                                <ChevronRight size={15} style={{ color: '#cbd5e1', flexShrink: 0 }} strokeWidth={1.8} />
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
-                {/* Alerts / Tasks */}
-                <Grid item xs={12} lg={4}>
-                    <Card className="glass-panel h-full">
-                        <Box className="p-6 border-b border-slate-100">
-                            <Typography className="font-black text-slate-900 uppercase tracking-widest text-sm">Priority Tasks</Typography>
-                        </Box>
-                        <CardContent className="p-6">
-                            <Stack spacing={3}>
-                                {tasks.map((task) => (
-                                    <Box key={task.id} className="flex gap-4">
-                                        <div className="mt-1">
-                                            <div className="w-2 h-2 rounded-full bg-amber-400 ring-4 ring-amber-50"></div>
-                                        </div>
-                                        <Box>
-                                            <Typography className="text-sm font-bold text-slate-800">{task.title}</Typography>
-                                            <Stack direction="row" spacing={1} alignItems="center" mt={0.5}>
-                                                <Clock size={12} className="text-slate-400" />
-                                                <Typography variant="caption" className="text-slate-400 font-medium">{task.time}</Typography>
-                                            </Stack>
-                                        </Box>
-                                    </Box>
-                                ))}
-                                <Divider />
-                                <Box className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                        <div className="bg-white p-2 rounded-xl text-emerald-600">
-                                            <CheckCircle2 size={18} />
-                                        </div>
-                                        <Box>
-                                            <Typography className="text-xs font-bold text-emerald-900">Good Job!</Typography>
-                                            <Typography variant="caption" className="text-emerald-700 font-medium">5 plans finalized today.</Typography>
-                                        </Box>
-                                    </Stack>
-                                </Box>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-        </Box>
+                {/* Priority Tasks */}
+                <div style={card}>
+                    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                        <span style={T.sectionTitle}>Priority Tasks</span>
+                    </div>
+                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {TASKS.map(task => (
+                            <div key={task.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                <div style={{ marginTop: 5, flexShrink: 0 }}>
+                                    <div style={{
+                                        width: 7, height: 7, borderRadius: '50%',
+                                        background: PRIORITY_DOT[task.priority],
+                                        boxShadow: `0 0 0 3px ${PRIORITY_DOT[task.priority]}20`,
+                                    }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#1e293b', lineHeight: 1.4 }}>
+                                        {task.title}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
+                                        <Clock size={11} style={{ color: '#94a3b8' }} />
+                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>{task.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Achievement notice */}
+                        <div style={{
+                            marginTop: 6,
+                            padding: '12px 14px',
+                            background: '#f0fdf4',
+                            border: '1px solid #dcfce7',
+                            borderRadius: '9px',
+                            display: 'flex', alignItems: 'center', gap: 10,
+                        }}>
+                            <CheckCircle2 size={16} style={{ color: '#16a34a', flexShrink: 0 }} strokeWidth={2} />
+                            <div>
+                                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#14532d' }}>Great work today!</div>
+                                <div style={{ fontSize: '0.75rem', color: '#15803d', marginTop: 1, fontWeight: 400 }}>5 plans finalized this session.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
