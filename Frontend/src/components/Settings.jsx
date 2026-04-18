@@ -33,26 +33,35 @@ export default function Settings() {
     const { mode, toggleColorMode } = useColorMode();
     
     // Notifications state
-    const [notifications, setNotifications] = useState({
-        email: true,
-        patientUpdates: true,
-        marketing: false
+    const [notifications, setNotifications] = useState(() => {
+        const saved = localStorage.getItem('dietdesk_notifications');
+        return saved ? JSON.parse(saved) : {
+            email: true,
+            patientUpdates: true,
+            marketing: false
+        };
     });
 
     // Profile state
-    const [profile, setProfile] = useState({
-        name: 'Dr. Sarah Mitchell',
-        email: 'sarah.mitchell@dietdesk.com',
-        specialization: 'Clinical Nutritionist',
-        bio: 'Passionate about personalized nutrition and clinical weight management. 10+ years experience in metabolic health.'
+    const [profile, setProfile] = useState(() => {
+        const saved = localStorage.getItem('dietdesk_profile');
+        return saved ? JSON.parse(saved) : {
+            name: 'Dr. Sarah Mitchell',
+            email: 'sarah.mitchell@dietdesk.com',
+            specialization: 'Clinical Nutritionist',
+            bio: 'Passionate about personalized nutrition and clinical weight management. 10+ years experience in metabolic health.'
+        };
     });
 
     // Clinic state
-    const [clinic, setClinic] = useState({
-        name: 'Mitchell Clinical Health',
-        address: '123 Wellness Ave, Suite 400, New York, NY',
-        license: 'RD-884210-SA',
-        phone: '+1 (555) 0123-4567'
+    const [clinic, setClinic] = useState(() => {
+        const saved = localStorage.getItem('dietdesk_clinic');
+        return saved ? JSON.parse(saved) : {
+            name: 'Mitchell Clinical Health',
+            address: '123 Wellness Ave, Suite 400, New York, NY',
+            license: 'RD-884210-SA',
+            phone: '+1 (555) 0123-4567'
+        };
     });
 
     // Security state
@@ -74,8 +83,18 @@ export default function Settings() {
 
     const simulateSave = async (sectionName) => {
         setLoadingSection(sectionName);
+        
+        // Actually persist to localStorage for realism
+        if (sectionName === 'Profile') {
+            localStorage.setItem('dietdesk_profile', JSON.stringify(profile));
+        } else if (sectionName === 'Clinic details') {
+            localStorage.setItem('dietdesk_clinic', JSON.stringify(clinic));
+        } else if (sectionName === 'Preferences') {
+            localStorage.setItem('dietdesk_notifications', JSON.stringify(notifications));
+        }
+
         // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setLoadingSection(null);
         showToast(`${sectionName} updated successfully!`);
     };
