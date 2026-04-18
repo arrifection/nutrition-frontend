@@ -20,52 +20,73 @@ const Login = ({ onToggle }) => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 md:mt-20 p-6 md:p-8 bg-white rounded-2xl shadow-xl border border-emerald-50">
-            <h2 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-4 md:mb-6 text-center">Welcome Back</h2>
-            <p className="text-gray-500 text-center mb-6 md:mb-8">Login to your NutriPro account</p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                        placeholder="you@example.com"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                        placeholder="••••••••"
-                    />
+        <div className="fade-up" style={{ padding: '20px', width: '100%', maxWidth: '440px' }}>
+            <div className="dd-card" style={{ padding: '40px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                    <div style={{
+                        width: 48, height: 48,
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                        borderRadius: '12px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '24px', fontWeight: 800, color: 'white',
+                        margin: '0 auto 16px',
+                        boxShadow: '0 4px 12px rgba(22,163,74,0.4)',
+                    }}>D</div>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>Welcome back</h2>
+                    <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '8px' }}>Login to your clinical dashboard</p>
                 </div>
 
-                {error && <p className="text-red-500 text-sm font-medium text-center">{error}</p>}
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div>
+                        <label className="form-label">Email Address</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="input-premium"
+                            placeholder="you@clinic.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="form-label">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="input-premium"
+                            placeholder="••••••••"
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-emerald-200 disabled:opacity-50"
-                >
-                    {loading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+                    {error && (
+                        <div style={{ 
+                            padding: '10px', background: '#fef2f2', border: '1px solid #fee2e2', 
+                            borderRadius: '8px', color: '#b91c1c', fontSize: '0.8125rem', textAlign: 'center' 
+                        }}>
+                            {error}
+                        </div>
+                    )}
 
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                <p className="text-gray-500 text-sm">
-                    Don't have an account?{" "}
-                    <button onClick={onToggle} className="text-emerald-600 font-bold hover:underline">
-                        Sign up instead
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary"
+                        style={{ width: '100%', padding: '12px', marginTop: '8px' }}
+                    >
+                        {loading ? "Signing in..." : "Sign In"}
                     </button>
-                </p>
+                </form>
+
+                <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
+                    <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                        New to DietDesk?{" "}
+                        <button onClick={onToggle} className="btn-text">
+                            Create an account
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
     );

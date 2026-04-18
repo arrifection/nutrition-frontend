@@ -110,6 +110,15 @@
     transform: scale(0.98);
   }
 
+  .btn-success {
+    @apply btn-primary;
+    background: #15803d;
+  }
+  
+  .btn-success:hover {
+    background: #166534;
+  }
+
   .btn-secondary {
     display: inline-flex;
     align-items: center;
@@ -265,6 +274,28 @@
 
   .remaining-value {
     @apply font-bold;
+  }
+
+  /* Range input styling */
+  input[type="range"] {
+    @apply h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-emerald-600 rounded-full border-2 border-white shadow-md;
+  }
+
+  /* Tables */
+  table {
+    @apply w-full border-collapse;
+  }
+  
+  th {
+    @apply text-left text-xs font-bold text-slate-400 uppercase tracking-widest py-3 px-4;
+  }
+  
+  td {
+    @apply py-3 px-4 border-t border-slate-50;
   }
 
   /* Section label */

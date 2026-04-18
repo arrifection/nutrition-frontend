@@ -22,74 +22,95 @@ const Signup = ({ onToggle }) => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 md:mt-20 p-6 md:p-8 bg-white rounded-2xl shadow-xl border border-emerald-50">
-            <h2 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-4 md:mb-6 text-center">Create Account</h2>
-            <p className="text-gray-500 text-center mb-6 md:mb-8">Join NutriPro today</p>
+        <div className="fade-up" style={{ padding: '20px', width: '100%', maxWidth: '440px' }}>
+            <div className="dd-card" style={{ padding: '40px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                    <div style={{
+                        width: 48, height: 48,
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                        borderRadius: '12px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '24px', fontWeight: 800, color: 'white',
+                        margin: '0 auto 16px',
+                        boxShadow: '0 4px 12px rgba(22,163,74,0.4)',
+                    }}>D</div>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>Create account</h2>
+                    <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '8px' }}>Join our clinical network today</p>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">I am a...</label>
-                    <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all bg-white"
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div>
+                        <label className="form-label">I am a...</label>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            className="form-select"
+                        >
+                            <option value="client">Client / Patient</option>
+                            <option value="dietitian">Dietitian / Professional</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label">Username</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            className="input-premium"
+                            placeholder="johndoe"
+                        />
+                    </div>
+                    <div>
+                        <label className="form-label">Email Address</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="input-premium"
+                            placeholder="you@example.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="form-label">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="input-premium"
+                            placeholder="••••••••"
+                        />
+                    </div>
+
+                    {error && (
+                        <div style={{ 
+                            padding: '10px', background: '#fef2f2', border: '1px solid #fee2e2', 
+                            borderRadius: '8px', color: '#b91c1c', fontSize: '0.8125rem', textAlign: 'center' 
+                        }}>
+                            {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary"
+                        style={{ width: '100%', padding: '12px', marginTop: '8px' }}
                     >
-                        <option value="client">Client / Patient</option>
-                        <option value="dietitian">Dietitian / Professional</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                        placeholder="johndoe"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                        placeholder="you@example.com"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                        placeholder="••••••••"
-                    />
-                </div>
-
-                {error && <p className="text-red-500 text-sm font-medium text-center">{error}</p>}
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-emerald-200 disabled:opacity-50"
-                >
-                    {loading ? "Creating account..." : "Sign Up"}
-                </button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                <p className="text-gray-500 text-sm">
-                    Already have an account?{" "}
-                    <button onClick={onToggle} className="text-emerald-600 font-bold hover:underline">
-                        Login instead
+                        {loading ? "Creating account..." : "Create Account"}
                     </button>
-                </p>
+                </form>
+
+                <div style={{ marginTop: '28px', textAlign: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
+                    <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                        Already have an account?{" "}
+                        <button onClick={onToggle} className="btn-text">
+                            Sign in instead
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
     );
