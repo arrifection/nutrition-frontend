@@ -7,7 +7,8 @@ import {
     Typography, 
     Stack, 
     TextField,
-    Paper
+    Paper,
+    Grid
 } from '@mui/material';
 import { Search, ChevronRight, UserPlus, Filter, ArrowLeft } from 'lucide-react';
 import { getPatients } from '../services/api';
@@ -184,11 +185,4 @@ export default function Patients({ onBack, onSelectPatient }) {
             )}
         </Box>
     );
-}
-
-// Grid shim
-function Grid({ children, container, item, xs, sx, spacing }) {
-    if (container) return <Box sx={{ display: 'flex', flexWrap: 'wrap', m: -(spacing || 0) / 2, ...sx }}>{children}</Box>;
-    if (item) return <Box sx={{ p: (spacing || 0) / 2, width: xs === 12 ? '100%' : 'auto', ...sx }}>{children}</Box>;
-    return children;
 }
