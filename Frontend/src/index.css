@@ -158,8 +158,8 @@
     @apply btn-secondary;
   }
 
-  /* Input */
-  .input-premium {
+  /* Form Elements */
+  .input-premium, .form-input, .form-select, .form-textarea {
     width: 100%;
     padding: 10px 14px;
     background: var(--surface);
@@ -172,13 +172,99 @@
     font-family: 'Inter', sans-serif;
   }
 
-  .input-premium:focus {
+  .input-premium:focus, .form-input:focus, .form-select:focus, .form-textarea:focus {
     border-color: var(--brand-green);
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.08);
   }
 
-  .input-premium::placeholder {
-    color: var(--text-muted);
+  .form-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  /* Layout Utilities */
+  .responsive-grid-collapse {
+    display: grid;
+  }
+  
+  @media (max-width: 900px) {
+    .responsive-grid-collapse {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  .section {
+    @apply dd-card p-6 md:p-8;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-slate-900 mb-2;
+  }
+
+  .data-box {
+    @apply bg-slate-50 border border-slate-100 p-5 rounded-2xl;
+  }
+
+  .data-label {
+    @apply text-xs font-bold text-slate-400 uppercase tracking-widest mb-1;
+  }
+
+  .data-value {
+    @apply text-2xl font-black text-slate-900;
+  }
+
+  /* Meal Planner Specifics */
+  .meal-section {
+    @apply border border-slate-100 rounded-xl p-4 bg-white shadow-sm;
+  }
+
+  .meal-header {
+    @apply flex justify-between items-center mb-4 border-b border-slate-50 pb-2;
+  }
+
+  .meal-title {
+    @apply text-sm font-bold text-slate-800;
+  }
+
+  .meal-count {
+    @apply text-xs text-slate-400 font-medium;
+  }
+
+  .remaining-box {
+    @apply bg-slate-900 text-white rounded-2xl p-6 shadow-xl;
+  }
+
+  .remaining-title {
+    @apply text-xs font-bold text-slate-500 uppercase tracking-widest mb-4;
+  }
+
+  .remaining-item {
+    @apply flex justify-between items-center py-2 border-b border-white/5 last:border-0;
+  }
+
+  .remaining-label {
+    @apply text-sm text-slate-400;
+  }
+
+  .remaining-value {
+    @apply font-bold;
   }
 
   /* Section label */

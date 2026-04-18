@@ -29,9 +29,29 @@ const cardStyle = {
 export default function Settings() {
     const [darkMode, setDarkMode] = useState(false);
     const [notifications, setNotifications] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = () => {
+        setSaving(true);
+        setTimeout(() => {
+            setSaving(false);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+        }, 800);
+    };
 
     return (
         <div className="fade-up" style={{ padding: '32px 28px', maxWidth: '1000px', margin: '0 auto' }}>
+            {saved && (
+                <div style={{ 
+                    position: 'fixed', top: 20, right: 20, background: '#16a34a', color: 'white', 
+                    padding: '12px 24px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    zIndex: 1000, fontWeight: 600
+                }} className="fade-in">
+                    Settings saved successfully!
+                </div>
+            )}
             <div style={{ marginBottom: '32px' }}>
                 <h1 style={T.heading}>Settings</h1>
                 <p style={T.subheading}>Manage your account preferences and clinical workspace.</p>
@@ -156,9 +176,8 @@ export default function Settings() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
-                <button className="btn-primary">
-                    <Save size={18} />
-                    Save All Changes
+                <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                    {saving ? 'Saving...' : <><Save size={18} /> Save All Changes</>}
                 </button>
             </div>
         </div>

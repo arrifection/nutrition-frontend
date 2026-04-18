@@ -111,7 +111,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient }) {
             </div>
 
             {/* ── Stats ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}>
                 {STAT_CONFIG.map((cfg, i) => {
                     const Icon = cfg.icon;
                     return (
