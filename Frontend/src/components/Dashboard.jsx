@@ -230,7 +230,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                                                     {patient.goal} • {patient.age}y
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ px: 1.5, py: 0.5, borderRadius: '20px', background: '#dcfce7', color: '#15803d', fontSize: '0.65rem', fontWeight: 800 }}>Active</Typography>
+                                            <Box sx={{ px: 1.5, py: 0.5, borderRadius: '20px', background: '#dcfce7', color: '#15803d', fontSize: '0.65rem', fontWeight: 800 }}>Active</Box>
                                             <ChevronRight size={18} color="var(--text-muted)" />
                                         </Box>
                                     ))}
@@ -333,10 +333,4 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
             
         </Box>
     );
-}
-
-// Internal Typography/Tooltip Shim if not imported globally correctly
-function Tooltip({ children, title }) {
-    if (!title) return children;
-    return <Box sx={{ cursor: 'pointer' }}>{children}</Box>;
 }
