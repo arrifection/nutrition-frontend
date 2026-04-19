@@ -32,6 +32,7 @@ import {
 const NAV_ITEMS = [
     { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard },
     { id: 'patients',   label: 'Patients',     icon: Users },
+    { id: 'create',     label: 'Create Plan',  icon: PlusCircle },
     { id: 'plans',      label: 'Plans',        icon: FileText },
     { id: 'progress',   label: 'Progress',     icon: Activity },
     { id: 'settings',   label: 'Settings',     icon: Settings },
@@ -64,16 +65,15 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
             width: collapsed && !isMobile ? 80 : 250,
             transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             overflowX: 'hidden',
-            borderRight: '1px solid rgba(255,255,255,0.07)'
         }}>
             {/* Branding Header */}
             <Box sx={{ 
-                p: '24px 20px', 
+                p: collapsed && !isMobile ? '24px 0' : '24px 24px', 
                 display: 'flex', 
                 alignItems: 'center', 
+                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
                 gap: '12px',
                 minHeight: 80,
-                borderBottom: '1px solid rgba(255,255,255,0.06)'
             }}>
                 <Box sx={{
                     width: 36, height: 36,
@@ -86,27 +86,32 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                 }}>D</Box>
                 {(!collapsed || isMobile) && (
                     <Box sx={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        <Typography sx={{ fontSize: '1rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'white', display: 'block' }}>DietDesk</Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block' }}>Clinical SaaS</Typography>
+                        <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>DietDesk</Typography>
+                        <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clinician Portal</Typography>
                     </Box>
                 )}
             </Box>
 
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)', mx: 2 }} />
+
             {/* Navigation */}
-            <Box sx={{ flex: 1, py: 2, px: collapsed && !isMobile ? 1.5 : 2, overflowY: 'auto', overflowX: 'hidden' }}>
-                <Typography sx={{ 
-                    fontSize: '0.65rem', 
-                    fontWeight: 800, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.1em', 
-                    color: 'rgba(255,255,255,0.25)', 
-                    px: (collapsed && !isMobile) ? 1 : 2, 
-                    mb: 1,
-                    textAlign: (collapsed && !isMobile) ? 'center' : 'left',
-                    display: 'block'
-                }}>
-                    { (collapsed && !isMobile) ? '•' : 'Main Menu' }
-                </Typography>
+            <Box sx={{ flex: 1, py: 3, px: collapsed && !isMobile ? 1.5 : 2, overflowY: 'auto', overflowX: 'hidden' }}>
+                {!collapsed || isMobile ? (
+                    <Typography sx={{ 
+                        fontSize: '0.65rem', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.1em', 
+                        color: 'rgba(255,255,255,0.25)', 
+                        px: 2, 
+                        mb: 2,
+                        display: 'block'
+                    }}>
+                        Main Menu
+                    </Typography>
+                ) : (
+                    <Box sx={{ height: 26, mb: 2 }} />
+                )}
                 
                 <List sx={{ p: 0, gap: '4px', display: 'flex', flexDirection: 'column' }}>
                     {NAV_ITEMS.map((item) => {
@@ -121,12 +126,12 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                                             borderRadius: '10px',
                                             justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start',
                                             px: (collapsed && !isMobile) ? 0 : 2,
-                                            height: 44,
-                                            backgroundColor: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                                            height: 48,
+                                            backgroundColor: active ? 'var(--sidebar-active)' : 'transparent',
                                             color: active ? '#ffffff' : 'rgba(255,255,255,0.5)',
                                             '&:hover': {
-                                                backgroundColor: 'rgba(255,255,255,0.05)',
-                                                color: 'rgba(255,255,255,0.9)'
+                                                backgroundColor: 'var(--sidebar-hover)',
+                                                color: '#ffffff'
                                             },
                                             transition: 'all 0.2s ease'
                                         }}
@@ -155,72 +160,36 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                         );
                     })}
                 </List>
-
-                {/* Quick Action */}
-                <Box sx={{ mt: 3, px: (collapsed && !isMobile) ? 0 : 1 }}>
-                    {collapsed && !isMobile ? (
-                        <Tooltip title="Create New Plan" placement="right">
-                            <IconButton 
-                                onClick={() => handleNavigate('create')}
-                                sx={{ 
-                                    width: 44, height: 44, mx: 'auto', display: 'flex', 
-                                    backgroundColor: '#16a34a', color: 'white',
-                                    '&:hover': { backgroundColor: '#15803d' },
-                                    boxShadow: '0 4px 12px rgba(22,163,74,0.3)'
-                                }}
-                            >
-                                <PlusCircle size={20} />
-                            </IconButton>
-                        </Tooltip>
-                    ) : (
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            onClick={() => handleNavigate('create')}
-                            startIcon={<PlusCircle size={18} />}
-                            sx={{
-                                backgroundColor: '#16a34a',
-                                height: 44,
-                                borderRadius: '10px',
-                                textTransform: 'none',
-                                fontWeight: 700,
-                                fontSize: '0.875rem',
-                                boxShadow: '0 4px 12px rgba(22,163,74,0.3)',
-                                '&:hover': { backgroundColor: '#15803d' }
-                            }}
-                        >
-                            Create Plan
-                        </Button>
-                    )}
-                </Box>
             </Box>
 
             {/* Profile Section */}
             <Box sx={{ 
                 p: '16px', 
+                mt: 'auto',
                 borderTop: '1px solid rgba(255,255,255,0.06)',
-                backgroundColor: 'rgba(0,0,0,0.1)'
+                backgroundColor: 'rgba(0,0,0,0.15)'
             }}>
                 <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '12px',
-                    mb: 1,
+                    mb: 1.5,
                     px: (collapsed && !isMobile) ? 0 : 1,
                     justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start'
                 }}>
                     <Box sx={{
-                        width: 32, height: 32, borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #1e3a5f, #2d6a4f)',
+                        width: 36, height: 36, borderRadius: '10px',
+                        background: 'linear-gradient(135deg, #1e293b, #334155)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.8rem', fontWeight: 800, color: 'white', flexShrink: 0,
+                        fontSize: '0.9rem', fontWeight: 800, color: 'white', flexShrink: 0,
+                        border: '1px solid rgba(255,255,255,0.1)'
                     }}>{initial}</Box>
                     {(!collapsed || isMobile) && (
                         <Box sx={{ overflow: 'hidden' }}>
-                            <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {username || 'Clinician'}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, display: 'block' }}>Dietitian</Typography>
+                            <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textTransform: 'uppercase' }}>Administrator</Typography>
                         </Box>
                     )}
                 </Box>
@@ -231,34 +200,38 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                         sx={{
                             borderRadius: '8px',
                             justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start',
-                            color: 'rgba(248, 113, 113, 0.7)',
+                            color: '#fca5a5',
                             px: (collapsed && !isMobile) ? 0 : 1,
-                            minHeight: 36,
+                            minHeight: 40,
                             '&:hover': {
-                                backgroundColor: 'rgba(248,113,113,0.1)',
-                                color: '#f87171'
+                                backgroundColor: 'rgba(239,68,68,0.1)',
+                                color: '#ef4444'
                             }
                         }}
                     >
-                        <ListItemIcon sx={{ minWidth: (collapsed && !isMobile) ? 0 : 30, color: 'inherit', display: 'flex', justifyContent: 'center' }}>
-                            <LogOut size={16} />
+                        <ListItemIcon sx={{ minWidth: (collapsed && !isMobile) ? 0 : 32, color: 'inherit', display: 'flex', justifyContent: 'center' }}>
+                            <LogOut size={18} />
                         </ListItemIcon>
                         {(!collapsed || isMobile) && (
-                            <ListItemText primary="Sign out" primaryTypographyProps={{ fontSize: '0.8rem', fontWeight: 600 }} />
+                            <ListItemText primary="Sign out" primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600 }} />
                         )}
                     </ListItemButton>
                 </Tooltip>
             </Box>
 
-            {/* Collapse Toggle (Desktop only) */}
+            {/* Collapse Toggle */}
             {!isMobile && (
                 <Box sx={{ 
-                    px: 2, py: 1.5, display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end',
-                    borderTop: '1px solid rgba(255,255,255,0.03)'
+                    px: 2, py: 2, display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end',
+                    background: 'rgba(0,0,0,0.2)',
                 }}>
                     <IconButton 
                         onClick={() => setCollapsed(!collapsed)}
-                        sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: 'white', backgroundColor: 'rgba(255,255,255,0.05)' } }}
+                        size="small"
+                        sx={{ 
+                            color: 'rgba(255,255,255,0.4)', 
+                            '&:hover': { color: 'white', backgroundColor: 'rgba(255,255,255,0.1)' } 
+                        }}
                     >
                         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                     </IconButton>
@@ -269,29 +242,35 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
 
     return (
         <>
-            {/* Desktop Sidebar Container */}
+            {/* Desktop Layout Helper */}
             {!isMobile && (
                 <Box component="nav" sx={{ width: collapsed ? 80 : 250, transition: 'width 0.2s', flexShrink: 0 }}>
-                    <Box sx={{ position: 'sticky', top: 0, height: '100vh' }}>
+                    <Box sx={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: collapsed ? 80 : 250, transition: 'width 0.2s', zIndex: 1200 }}>
                         {sidebarContent}
                     </Box>
                 </Box>
             )}
 
-            {/* Mobile Sidebar (Drawer) */}
+            {/* Mobile Header + Drawer */}
             {isMobile && (
                 <>
                     <Box sx={{ 
                         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100, 
-                        height: 60, display: 'flex', alignItems: 'center', px: 2,
-                        background: 'var(--sidebar-bg)', borderBottom: '1px solid rgba(255,255,255,0.1)'
+                        height: 64, display: 'flex', alignItems: 'center', px: 2,
+                        background: 'var(--sidebar-bg)', borderBottom: '1px solid rgba(255,255,255,0.06)'
                     }}>
                         <IconButton onClick={handleDrawerToggle} sx={{ color: 'white' }}>
                             <Menu size={24} />
                         </IconButton>
-                        <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 24, height: 24, backgroundColor: '#22c55e', borderRadius: '4px' }} />
-                            <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.9rem' }}>DietDesk</Typography>
+                        <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                             <Box sx={{
+                                width: 28, height: 28,
+                                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                                borderRadius: '6px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '14px', fontWeight: 800, color: 'white',
+                            }}>D</Box>
+                            <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.02em' }}>DietDesk</Typography>
                         </Box>
                     </Box>
                     <Drawer
@@ -300,11 +279,14 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                         onClose={handleDrawerToggle}
                         ModalProps={{ keepMounted: true }}
                         sx={{
-                            '& .MuiDrawer-paper': { width: 250, boxSizing: 'border-box', border: 'none' },
+                            '& .MuiDrawer-paper': { width: 260, border: 'none' },
+                            zIndex: 1300
                         }}
                     >
                         {sidebarContent}
                     </Drawer>
+                    {/* Spacer for mobile fixed header */}
+                    <Box sx={{ height: 64 }} />
                 </>
             )}
         </>
