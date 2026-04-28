@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getExchangeList } from "../../services/api";
+import { Globe } from "lucide-react";
 
 export default function Step4MealPlanner({
     macroTargets,
@@ -16,6 +17,7 @@ export default function Step4MealPlanner({
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedMeal, setSelectedMeal] = useState("breakfast");
     const [expandedGroup, setExpandedGroup] = useState(null);
+    const [lang, setLang] = useState("en");
 
     // Default targets
     const targets = macroTargets || {
@@ -58,10 +60,13 @@ export default function Step4MealPlanner({
     const groupedFoods = useMemo(() => {
         if (!allFoods || allFoods.length === 0) return {};
 
+        const search = searchTerm.toLowerCase();
         const filtered = allFoods.filter(
             (f) =>
-                (f.food_name?.en || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (f.group?.en || "").toLowerCase().includes(searchTerm.toLowerCase())
+                (f.food_name?.en || "").toLowerCase().includes(search) ||
+                (f.food_name?.ur_patient || "").includes(searchTerm) ||
+                (f.food_name?.ur_clinical || "").includes(searchTerm) ||
+                (f.group?.en || "").toLowerCase().includes(search)
         );
 
         const groupOrder = [
@@ -89,6 +94,24 @@ export default function Step4MealPlanner({
 
         return groups;
     }, [allFoods, searchTerm]);
+
+    // Helper to get display name based on language
+    const getFoodDisplayName = (food) => {
+        if (lang === "ur") {
+            return food.food_name?.ur_patient || food.food_name?.ur_clinical || food.food_name?.en || food.name || "Unknown";
+        }
+        return food.food_name?.en || food.name || "Unknown";
+    };
+
+    const getGroupDisplayName = (groupKey) => {
+        if (lang === "ur") {
+            const items = groupedFoods[groupKey];
+            if (items && items.length > 0) {
+                return items[0].group?.ur || groupKey;
+            }
+        }
+        return groupKey;
+    };
 
     // Calculations
     const getMealTotals = (mealKey) => {
@@ -207,13 +230,24 @@ export default function Step4MealPlanner({
                                 ))}
                             </select>
 
-                            <label className="form-label mt-4">Search foods:</label>
+                            <div className="flex items-center justify-between mt-4">
+                                <label className="form-label">{lang === "ur" ? "تلاش کریں:" : "Search foods:"}</label>
+                                <button
+                                    onClick={() => setLang(prev => prev === "en" ? "ur" : "en")}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 transition-colors border border-gray-200"
+                                    title="Switch Language"
+                                >
+                                    <Globe size={13} />
+                                    {lang === "en" ? "اردو" : "EN"}
+                                </button>
+                            </div>
                             <input
                                 type="text"
-                                placeholder="e.g. Rice, Apple..."
+                                placeholder={lang === "ur" ? "مثلاً چاول، سیب..." : "e.g. Rice, Apple..."}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="form-input"
+                                dir={lang === "ur" ? "rtl" : "ltr"}
                             />
                         </div>
 
@@ -227,9 +261,9 @@ export default function Step4MealPlanner({
                                             onClick={() => setExpandedGroup(expandedGroup === group ? null : group)}
                                             className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
                                         >
-                                            <span className="text-sm font-medium text-gray-700">{group}</span>
+                                            <span className={`text-sm font-medium text-gray-700 ${lang === "ur" ? "font-urdu" : ""}`}>{getGroupDisplayName(group)}</span>
                                             <span className="text-xs text-gray-400">
-                                                {groupedFoods[group].length} items {expandedGroup === group ? "−" : "+"}
+                                                {groupedFoods[group].length} {lang === "ur" ? "آئٹمز" : "items"} {expandedGroup === group ? "−" : "+"}
                                             </span>
                                         </button>
 
@@ -238,7 +272,7 @@ export default function Step4MealPlanner({
                                                 {groupedFoods[group].map((food, idx) => (
                                                     <div key={idx} className="px-4 py-2 flex items-center justify-between border-b border-gray-100 last:border-0 hover:bg-white">
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm text-gray-800 truncate">{food.food_name?.en || food.name}</p>
+                                                            <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
                                                             <p className="text-xs text-gray-400">{food.serving_size || food.portion} • {food.macros?.calories || food.calories} kcal</p>
                                                         </div>
                                                         <button
@@ -274,7 +308,7 @@ export default function Step4MealPlanner({
                                             {list.map((food) => (
                                                 <div key={food.instanceId} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm text-gray-800 truncate">{food.food_name?.en || food.name}</p>
+                                                        <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
                                                         <p className="text-xs text-gray-400">{food.macros?.calories || food.calories} kcal</p>
                                                     </div>
                                                     <button onClick={() => removeFood(meal.key, food.instanceId)} className="ml-2 text-gray-400 hover:text-red-500 text-sm">×</button>
