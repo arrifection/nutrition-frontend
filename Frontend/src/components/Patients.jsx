@@ -6,12 +6,14 @@ import {
     InputAdornment, 
     Typography, 
     Stack, 
+    IconButton,
     TextField,
     Paper,
-    Grid
+    Grid,
+    Tooltip
 } from '@mui/material';
-import { Search, ChevronRight, UserPlus, Filter, ArrowLeft } from 'lucide-react';
-import { getPatients } from '../services/api';
+import { Search, ChevronRight, UserPlus, Filter, ArrowLeft, Trash2, RefreshCw } from 'lucide-react';
+import { getPatients, deletePatient } from '../services/api';
 
 const T = {
     heading: { fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' },
@@ -24,19 +26,32 @@ export default function Patients({ onBack, onSelectPatient }) {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchPatients = async () => {
-            setLoading(true);
-            const response = await getPatients();
-            if (response.success && Array.isArray(response.data)) {
-                setPatients(response.data);
-            } else {
-                setError(response.error || 'Unable to load patients.');
-            }
-            setLoading(false);
-        };
         fetchPatients();
     }, []);
+
+    const fetchPatients = async () => {
+        setLoading(true);
+        const response = await getPatients();
+        if (response.success && Array.isArray(response.data)) {
+            setPatients(response.data);
+            setError('');
+        } else {
+            setError(response.error || 'Unable to load patients.');
+        }
+        setLoading(false);
+    };
+
+    const handleDelete = async (e, id, name) => {
+        e.stopPropagation(); // Prevent navigating to patient detail
+        if (window.confirm(`Are you sure you want to delete patient "${name}"? This action cannot be undone.`)) {
+            const response = await deletePatient(id);
+            if (response.success) {
+                setPatients(prev => prev.filter(p => p.id !== id));
+            } else {
+                alert("Failed to delete patient: " + response.error);
+            }
+        }
+    };
 
     const filteredPatients = useMemo(() => {
         if (!search.trim()) return patients;
@@ -106,6 +121,12 @@ export default function Patients({ onBack, onSelectPatient }) {
                         ),
                     }}
                 />
+                <IconButton 
+                    onClick={fetchPatients}
+                    sx={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '10px' }}
+                >
+                    <RefreshCw size={18} color="var(--text-secondary)" />
+                </IconButton>
                 <IconButton sx={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '10px' }}>
                     <Filter size={18} color="var(--text-secondary)" />
                 </IconButton>
@@ -173,9 +194,18 @@ export default function Patients({ onBack, onSelectPatient }) {
                                         </Typography>
                                     </Stack>
                                 </Box>
-                                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', textAlign: 'right', mb: 0.5 }}>Last Active</Typography>
-                                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>Today</Typography>
+                                <Box sx={{ display: { xs: 'none', md: 'block' }, ml: 2 }}>
+                                    <Tooltip title="Delete Patient">
+                                        <IconButton 
+                                            onClick={(e) => handleDelete(e, patient.id, patient.name)}
+                                            sx={{ 
+                                                color: 'var(--text-muted)',
+                                                '&:hover': { color: '#ef4444', background: '#fee2e2' }
+                                            }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Box>
                                 <ChevronRight size={20} color="var(--text-muted)" />
                             </Box>
