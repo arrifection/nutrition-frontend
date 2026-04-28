@@ -20,11 +20,13 @@ const T = {
     subheading: { fontSize: '0.875rem', fontWeight: 400, color: 'var(--text-secondary)' },
 };
 
-export default function Patients({ onBack, onSelectPatient }) {
+export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
+    const [sortBy, setSortBy] = useState('name'); // 'name', 'age', 'id' (for newest)
+    const [showSort, setShowSort] = useState(false);
     useEffect(() => {
         fetchPatients();
     }, []);
@@ -54,14 +56,26 @@ export default function Patients({ onBack, onSelectPatient }) {
     };
 
     const filteredPatients = useMemo(() => {
-        if (!search.trim()) return patients;
-        const query = search.toLowerCase();
-        return patients.filter((patient) =>
-            patient.name?.toLowerCase().includes(query) ||
-            patient.goal?.toLowerCase().includes(query) ||
-            String(patient.age).includes(query)
-        );
-    }, [patients, search]);
+        let result = [...patients];
+        
+        // Search filter
+        if (search.trim()) {
+            const query = search.toLowerCase();
+            result = result.filter((patient) =>
+                (patient.name || "").toLowerCase().includes(query) ||
+                (patient.goal || "").toLowerCase().includes(query) ||
+                String(patient.age || "").includes(query)
+            );
+        }
+
+        // Sorting
+        return result.sort((a, b) => {
+            if (sortBy === 'name') return (a.name || "").localeCompare(b.name || "");
+            if (sortBy === 'age') return (b.age || 0) - (a.age || 0);
+            if (sortBy === 'id') return (b.id || "").localeCompare(a.id || ""); // Assuming string IDs, reverse for newest
+            return 0;
+        });
+    }, [patients, search, sortBy]);
 
     return (
         <Box className="fade-up" sx={{ p: { xs: 2.5, md: 4, lg: 5 }, maxWidth: 1200, mx: 'auto' }}>
@@ -82,6 +96,7 @@ export default function Patients({ onBack, onSelectPatient }) {
                 </Box>
                 <Button
                     variant="contained"
+                    onClick={onAddPatient}
                     startIcon={<UserPlus size={18} />}
                     sx={{
                         background: 'var(--brand-green)',
@@ -127,9 +142,38 @@ export default function Patients({ onBack, onSelectPatient }) {
                 >
                     <RefreshCw size={18} color="var(--text-secondary)" />
                 </IconButton>
-                <IconButton sx={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-                    <Filter size={18} color="var(--text-secondary)" />
-                </IconButton>
+                <Box sx={{ position: 'relative' }}>
+                    <IconButton 
+                        onClick={() => setShowSort(!showSort)}
+                        sx={{ background: showSort ? 'var(--brand-green-light)' : 'var(--background)', border: '1px solid var(--border)', borderRadius: '10px' }}
+                    >
+                        <Filter size={18} color={showSort ? 'var(--brand-green)' : 'var(--text-secondary)'} />
+                    </IconButton>
+
+                    {showSort && (
+                        <Paper sx={{ 
+                            position: 'absolute', top: '100%', right: 0, mt: 1, zIndex: 10,
+                            width: 160, borderRadius: '10px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                        }}>
+                            <Stack>
+                                {['name', 'age', 'id'].map((opt) => (
+                                    <Button 
+                                        key={opt}
+                                        onClick={() => { setSortBy(opt); setShowSort(false); }}
+                                        sx={{ 
+                                            justifyContent: 'flex-start', px: 2, py: 1.5, fontSize: '0.75rem',
+                                            textTransform: 'none', color: sortBy === opt ? 'var(--brand-green)' : 'var(--text-primary)',
+                                            background: sortBy === opt ? 'var(--brand-green-light)' : 'transparent',
+                                            '&:hover': { background: 'var(--background-hover)' }
+                                        }}
+                                    >
+                                        Sort by {opt === 'id' ? 'Newest' : opt === 'age' ? 'Age' : 'Name'}
+                                    </Button>
+                                ))}
+                            </Stack>
+                        </Paper>
+                    )}
+                </Box>
             </Box>
 
             {/* Main Content */}

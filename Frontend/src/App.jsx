@@ -149,6 +149,7 @@ function App() {
             return (
                 <Patients 
                     onBack={() => setView('dashboard')} 
+                    onAddPatient={() => handleNavigate('create')}
                     onSelectPatient={(client) => {
                         setSelectedPatient(client);
                         setView('profile');

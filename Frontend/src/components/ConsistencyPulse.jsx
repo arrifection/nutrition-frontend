@@ -37,6 +37,14 @@ export default function ConsistencyPulse({ role = "client", data = null }) {
         }
         return count;
     })();
+    const getIntensityClass = (intensity) => {
+        switch (intensity) {
+            case 3: return "bg-emerald-500";
+            case 2: return "bg-emerald-300";
+            case 1: return "bg-emerald-100";
+            default: return "bg-gray-100";
+        }
+    };
 
     if (role === "dietitian") {
         return (
