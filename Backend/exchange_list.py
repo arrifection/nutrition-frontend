@@ -42,17 +42,54 @@ class FoodItem(BaseModel):
     notes: Optional[str] = None
 
 def food_helper(food) -> dict:
-    """Helper to convert MongoDB document to response dict."""
+    """Helper to convert MongoDB document to response dict.
+    Handles both old flat schema and new nested multilingual schema safely.
+    """
+    # --- Safely extract nested 'group' ---
+    raw_group = food.get("group", {})
+    if isinstance(raw_group, dict):
+        group = raw_group
+    else:
+        group = {"en": str(raw_group), "ur": None}
+
+    # --- Safely extract nested 'subcategory' ---
+    raw_sub = food.get("subcategory", {})
+    if isinstance(raw_sub, dict):
+        subcategory = raw_sub
+    else:
+        subcategory = {"en": str(raw_sub) if raw_sub else "General", "ur": None}
+
+    # --- Safely extract nested 'food_name' ---
+    raw_name = food.get("food_name", {})
+    if isinstance(raw_name, dict):
+        food_name = raw_name
+    else:
+        # Old schema used "name" as a flat string
+        fallback_name = food.get("name", str(raw_name) if raw_name else "Unknown")
+        food_name = {"en": fallback_name, "ur_clinical": None, "ur_patient": None}
+
+    # --- Safely extract macros (new nested or old flat) ---
+    raw_macros = food.get("macros", {})
+    if isinstance(raw_macros, dict) and raw_macros:
+        macros = raw_macros
+    else:
+        macros = {
+            "carbs_g":   food.get("carbohydrates", food.get("carbs_g", 0)),
+            "protein_g": food.get("protein", food.get("protein_g", 0)),
+            "fat_g":     food.get("fat", food.get("fat_g", 0)),
+            "calories":  food.get("calories", 0),
+        }
+
     return {
-        "id": food["id"],
-        "group": food["group"],
-        "subcategory": food["subcategory"],
-        "food_name": food["food_name"],
-        "serving_size": food["serving_size"],
-        "macros": food["macros"],
+        "id":                 food.get("id", str(food.get("_id", "unknown"))),
+        "group":              group,
+        "subcategory":        subcategory,
+        "food_name":          food_name,
+        "serving_size":       food.get("serving_size", food.get("portion", "")),
+        "macros":             macros,
         "translation_status": food.get("translation_status", "draft"),
-        "is_active": food.get("is_active", True),
-        "notes": food.get("notes", "")
+        "is_active":          food.get("is_active", True),
+        "notes":              food.get("notes", ""),
     }
 
 async def _do_seed():
@@ -73,11 +110,11 @@ async def seed_food_data():
 
     try:
         count = await food_collection.count_documents({})
-        # Always re-seed if we find old schema (missing 'macros' field at top level or similar)
-        # or if the count is too low.
         sample = await food_collection.find_one({})
-        needs_reseed = count < _FULL_SEED_THRESHOLD or (sample and "macros" not in sample)
-        
+        # Re-seed if: count too low, OR old schema detected (no 'macros' or no 'id')
+        is_old_schema = sample and ("macros" not in sample or "id" not in sample)
+        needs_reseed = count < _FULL_SEED_THRESHOLD or is_old_schema
+
         if count == 0 or needs_reseed:
             inserted = await _do_seed()
             print(f"[OK] Food Exchange List seeded: {inserted} items inserted (Multilingual)")
