@@ -144,12 +144,8 @@ export function generateDietPlanPDF({
                 if (foods.length === 0) {
                     tableData.push([label, "-", "-", "-", "-", "-"]);
                 } else {
-                    // Pick name based on patient language
-                    const lang = patientData.language || "en";
+                    // Always use English names in PDF (jsPDF cannot render Urdu/Arabic script)
                     const foodNames = foods.map(f => {
-                        if (lang === "ur" && f.food_name?.ur_patient) {
-                            return f.food_name.ur_patient;
-                        }
                         return f.food_name?.en || f.name || "Unknown";
                     }).join(", ");
 

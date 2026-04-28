@@ -42,10 +42,10 @@ export default function Step5WeeklyPlan({
             .flat()
             .reduce(
                 (acc, food) => ({
-                    carbs: acc.carbs + (food.carbohydrates || 0),
-                    protein: acc.protein + (food.protein || 0),
-                    fat: acc.fat + (food.fat || 0),
-                    calories: acc.calories + (food.calories || 0),
+                    carbs: acc.carbs + (food.macros?.carbs_g ?? food.carbohydrates ?? 0),
+                    protein: acc.protein + (food.macros?.protein_g ?? food.protein ?? 0),
+                    fat: acc.fat + (food.macros?.fat_g ?? food.fat ?? 0),
+                    calories: acc.calories + (food.macros?.calories ?? food.calories ?? 0),
                     count: acc.count + 1,
                 }),
                 { carbs: 0, protein: 0, fat: 0, calories: 0, count: 0 }
@@ -249,9 +249,9 @@ export default function Step5WeeklyPlan({
                                                 key={food.id}
                                                 className="text-sm text-gray-600 flex justify-between"
                                             >
-                                                <span className="truncate">{food.name}</span>
+                                                <span className="truncate">{food.food_name?.en || food.name}</span>
                                                 <span className="text-gray-400 ml-2">
-                                                    {food.calories}
+                                                    {food.macros?.calories || food.calories}
                                                 </span>
                                             </li>
                                         ))}
