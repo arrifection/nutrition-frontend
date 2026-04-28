@@ -25,7 +25,7 @@ export default function Patients({ onBack, onSelectPatient }) {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
-
+    useEffect(() => {
         fetchPatients();
     }, []);
 

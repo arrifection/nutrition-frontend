@@ -70,8 +70,8 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h1 style={T.heading}>{patient.name}</h1>
-                        <p style={T.subheading}>Patient ID: #P-{patient.id || '00' + patient.name.length} • Registered Jan 2024</p>
+                        <h1 style={T.heading}>{patient?.name || "Unnamed Patient"}</h1>
+                        <p style={T.subheading}>Patient ID: #P-{patient?.id || '00' + (patient?.name?.length || 0)} • Registered Jan 2024</p>
                     </div>
                 </div>
                 <button onClick={() => onEditPlan(patient)} className="btn-primary">
@@ -90,15 +90,15 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Demographics</div>
-                    <div style={{ ...T.value, marginTop: '4px' }}>{patient.age}y • {patient.gender}</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{patient?.age || 'N/A'}y • {patient?.gender || 'N/A'}</div>
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Vitals</div>
-                    <div style={{ ...T.value, marginTop: '4px' }}>{patient.height}cm • {patient.weight}kg</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{patient?.height || '--'}cm • {patient?.weight || '--'}kg</div>
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Metabolic BMI</div>
-                    <div style={{ ...T.value, marginTop: '4px', color: '#16a34a' }}>{patient.bmi || '23.4'} (Normal)</div>
+                    <div style={{ ...T.value, marginTop: '4px', color: '#16a34a' }}>{patient?.bmi || '--'} (Normal)</div>
                 </div>
             </div>
 
@@ -149,11 +149,11 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                     <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
                                         <div style={T.label}>Activity</div>
-                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient.activity_level}</div>
+                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient?.activity_level || 'N/A'}</div>
                                     </div>
                                     <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
                                         <div style={T.label}>Prime Goal</div>
-                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient.goal}</div>
+                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient?.goal || 'General Health'}</div>
                                     </div>
                                 </div>
                             </div>
@@ -164,7 +164,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                                     <h3 style={T.sectionTitle}>Clinical Background</h3>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8125rem' }}>
-                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Medical:</span> {patient.medical_notes || "No previous records."}</div>
+                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Medical:</span> {patient?.medical_notes || "No previous records."}</div>
                                     <div><span style={{ fontWeight: 700, color: '#475569' }}>Allergies:</span> None reported.</div>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
 
                 {activeTab === "reflections" && (
                     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                        <ReflectionLog role="dietitian" patientId={patient.id} />
+                        <ReflectionLog role="dietitian" patientId={patient?.id} />
                     </div>
                 )}
 
