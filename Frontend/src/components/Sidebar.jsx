@@ -11,6 +11,7 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
+    UtensilsCrossed,
 } from 'lucide-react';
 import { 
     Tooltip, 
@@ -30,12 +31,13 @@ import {
 } from '@mui/material';
 
 const NAV_ITEMS = [
-    { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard },
-    { id: 'patients',   label: 'Patients',     icon: Users },
-    { id: 'create',     label: 'Create Plan',  icon: PlusCircle },
-    { id: 'plans',      label: 'Plans',        icon: FileText },
-    { id: 'progress',   label: 'Progress',     icon: Activity },
-    { id: 'settings',   label: 'Settings',     icon: Settings },
+    { id: 'dashboard',     label: 'Dashboard',     icon: LayoutDashboard },
+    { id: 'patients',      label: 'Patients',       icon: Users },
+    { id: 'create',        label: 'Create Plan',    icon: PlusCircle },
+    { id: 'plans',         label: 'Plans',          icon: FileText },
+    { id: 'exchange-list', label: 'Food Database',  icon: UtensilsCrossed },
+    { id: 'progress',      label: 'Progress',       icon: Activity },
+    { id: 'settings',      label: 'Settings',       icon: Settings },
 ];
 
 export default function Sidebar({ activeView, onNavigate, onLogout, username }) {

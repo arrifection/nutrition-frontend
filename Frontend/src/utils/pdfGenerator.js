@@ -144,11 +144,22 @@ export function generateDietPlanPDF({
                 if (foods.length === 0) {
                     tableData.push([label, "-", "-", "-", "-", "-"]);
                 } else {
-                    const foodNames = foods.map(f => f.name).join(", ");
-                    const totalCals = foods.reduce((s, f) => s + (f.calories || 0), 0);
-                    const totalCarbs = foods.reduce((s, f) => s + (f.carbohydrates || 0), 0);
-                    const totalProtein = foods.reduce((s, f) => s + (f.protein || 0), 0);
-                    const totalFat = foods.reduce((s, f) => s + (f.fat || 0), 0);
+                    // Pick name based on patient language
+                    const lang = patientData.language || "en";
+                    const foodNames = foods.map(f => {
+                        if (lang === "ur" && f.food_name?.ur_patient) {
+                            return f.food_name.ur_patient;
+                        }
+                        return f.food_name?.en || f.name || "Unknown";
+                    }).join(", ");
+
+                    // Use the new macros structure if available, fallback to old flat structure
+                    const getVal = (f, key, oldKey) => (f.macros ? f.macros[key] : f[oldKey]) || 0;
+
+                    const totalCals = foods.reduce((s, f) => s + getVal(f, "calories", "calories"), 0);
+                    const totalCarbs = foods.reduce((s, f) => s + getVal(f, "carbs_g", "carbohydrates"), 0);
+                    const totalProtein = foods.reduce((s, f) => s + getVal(f, "protein_g", "protein"), 0);
+                    const totalFat = foods.reduce((s, f) => s + getVal(f, "fat_g", "fat"), 0);
 
                     tableData.push([
                         label,
@@ -163,12 +174,13 @@ export function generateDietPlanPDF({
 
             // Add totals row
             const allFoods = Object.values(dayMeals).flat();
+            const getVal = (f, key, oldKey) => (f.macros ? f.macros[key] : f[oldKey]) || 0;
             const dayTotals = allFoods.reduce(
                 (acc, f) => ({
-                    cals: acc.cals + (f.calories || 0),
-                    carbs: acc.carbs + (f.carbohydrates || 0),
-                    protein: acc.protein + (f.protein || 0),
-                    fat: acc.fat + (f.fat || 0),
+                    cals: acc.cals + getVal(f, "calories", "calories"),
+                    carbs: acc.carbs + getVal(f, "carbs_g", "carbohydrates"),
+                    protein: acc.protein + getVal(f, "protein_g", "protein"),
+                    fat: acc.fat + getVal(f, "fat_g", "fat"),
                 }),
                 { cals: 0, carbs: 0, protein: 0, fat: 0 }
             );
@@ -202,7 +214,48 @@ export function generateDietPlanPDF({
                 },
             });
 
-            y = doc.lastAutoTable.finalY + 12;
+            y = doc.lastAutoTable.finalY + 10;
+
+            // ==========================================
+            // NEW SECTION: DAILY EXCHANGE SUMMARY (Per Day)
+            // ==========================================
+            if (allFoods.length > 0) {
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold");
+                doc.text("Daily Exchange Summary:", 14, y);
+                y += 6;
+
+                // Count servings per group
+                const exchangeCounts = allFoods.reduce((acc, f) => {
+                    const group = f.group?.en || f.group || "Other";
+                    acc[group] = (acc[group] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const groupsToShow = [
+                    "Starches",
+                    "Fruits",
+                    "Milk",
+                    "Vegetables",
+                    "Meat",
+                    "Fats",
+                    "Sweets"
+                ];
+
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                let countX = 14;
+                groupsToShow.forEach((g, idx) => {
+                    const count = exchangeCounts[g] || 0;
+                    if (countX > 160) {
+                        countX = 14;
+                        y += 5;
+                    }
+                    doc.text(`${g}: ${count}`, countX, y);
+                    countX += 45;
+                });
+                y += 10;
+            }
         });
 
         // ==========================================
@@ -221,7 +274,8 @@ export function generateDietPlanPDF({
             Object.keys(weekPlan).forEach((day) => {
                 const dayMeals = weekPlan[day] || {};
                 const allFoods = Object.values(dayMeals).flat();
-                const totalCals = allFoods.reduce((s, f) => s + (f.calories || 0), 0);
+                const getVal = (f, key, oldKey) => (f.macros ? f.macros[key] : f[oldKey]) || 0;
+                const totalCals = allFoods.reduce((s, f) => s + getVal(f, "calories", "calories"), 0);
                 const itemCount = allFoods.length;
 
                 summaryData.push([day, itemCount, Math.round(totalCals)]);

@@ -17,6 +17,7 @@ import { useAuth } from "./context/AuthContext";
 import { Box, Stack, Typography } from "@mui/material";
 import Settings from "./components/Settings";
 import PlaceholderPage from "./components/ui/PlaceholderPage";
+import ExchangeList from "./components/ExchangeList";
 import { Users, FileText, Activity } from "lucide-react";
 
 function App() {
@@ -153,6 +154,18 @@ function App() {
                         setView('profile');
                     }} 
                 />
+            );
+        }
+
+        if (view === 'exchange-list') {
+            return (
+                <div style={{ padding: '24px' }}>
+                    <ExchangeList
+                        isAdmin={true}
+                        onError={handleError}
+                        onAddFood={(meal, food) => showToast(`${food.food_name?.en} added to ${meal}`, 'success')}
+                    />
+                </div>
             );
         }
 

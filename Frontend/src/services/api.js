@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 15000, // Increased timeout for slow DB connections
     headers: {
         'Content-Type': 'application/json',
     },
@@ -27,9 +28,15 @@ const handleResp = async (fn) => {
         const response = await fn();
         return { success: true, data: response.data };
     } catch (error) {
+        console.error('API Error:', error);
+        const message = error.response?.data?.detail 
+            || error.message 
+            || 'API request failed';
+        const url = error.config?.url ? ` (${error.config.url})` : '';
+        
         return {
             success: false,
-            error: error.response?.data?.detail || 'API request failed'
+            error: `${message}${url}`
         };
     }
 };
