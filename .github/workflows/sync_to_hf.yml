@@ -19,13 +19,17 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Use git-filter-repo or simple subtree push to send only the Backend folder
-          git config --global user.email "bot@dietdesk.ai"
-          git config --global user.name "DietDesk Bot"
+          # Go into the Backend directory
+          cd Backend
           
-          # Add the Hugging Face space as a remote
-          git remote add hf https://arrifection:$HF_TOKEN@huggingface.co/spaces/arrifection/nutrition-backend
+          # Initialize a temporary git repo here
+          git init
+          git config user.email "bot@dietdesk.ai"
+          git config user.name "DietDesk Bot"
           
-          # Push the 'Backend' folder to the 'main' branch of the Hugging Face space
-          # We use subtree push so only the contents of Backend/ are sent to the root of HF
-          git subtree push --prefix Backend hf main --force
+          # Add all files in Backend folder
+          git add .
+          git commit -m "Auto-sync from GitHub"
+          
+          # Force push to the root of the Hugging Face space
+          git push --force https://arrifection:$HF_TOKEN@huggingface.co/spaces/arrifection/nutrition-backend main
