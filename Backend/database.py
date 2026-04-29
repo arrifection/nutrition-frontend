@@ -66,7 +66,8 @@ def patient_helper(patient) -> dict:
         "bmi": patient.get("bmi"),
         "bmr": patient.get("bmr"),
         "tdee": patient.get("tdee"),
-        "medical_notes": patient.get("medical_notes")
+        "medical_notes": patient.get("medical_notes"),
+        "owner_id": patient.get("owner_id")
     }
 
 def user_helper(user) -> dict:

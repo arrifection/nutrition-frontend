@@ -13,6 +13,7 @@ class PatientProfile(BaseModel):
     dietary_restrictions: Optional[str] = None
     medical_notes: Optional[str] = None
     goal: str
+    owner_id: Optional[str] = None
     bmi: Optional[float] = None
     bmr: Optional[float] = None
     tdee: Optional[float] = None

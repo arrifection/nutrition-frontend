@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from patient import PatientProfile
 from database import patients_collection, patient_helper
+from auth_router import get_current_user
 from bson import ObjectId
 
 router = APIRouter(prefix="/api/v1", tags=["patients"])
@@ -42,11 +43,14 @@ def calculate_metrics(profile_dict: dict) -> dict:
 
 
 @router.post("/patients", response_model=PatientProfile)
-async def create_patient(profile: PatientProfile):
+async def create_patient(profile: PatientProfile, current_user: dict = Depends(get_current_user)):
     """Create a new patient in the database"""
-    print(f"📥 Received new patient request: {profile.name}")
-    profile_dict = profile.model_dump(exclude={"id"})
+    print(f"📥 Received new patient request: {profile.name} from user: {current_user['email']}")
+    profile_dict = profile.model_dump(exclude={"id", "owner_id"})
     profile_dict = calculate_metrics(profile_dict)
+    
+    # Automatically set the owner_id from the logged-in user
+    profile_dict["owner_id"] = current_user["id"]
 
     
     result = await patients_collection.insert_one(profile_dict)
@@ -56,10 +60,13 @@ async def create_patient(profile: PatientProfile):
 
 
 @router.get("/patients/{patient_id}", response_model=PatientProfile)
-async def get_patient(patient_id: str):
-    """Get a patient by ID"""
+async def get_patient(patient_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a patient by ID (only if owned by current user)"""
     try:
-        patient = await patients_collection.find_one({"_id": ObjectId(patient_id)})
+        patient = await patients_collection.find_one({
+            "_id": ObjectId(patient_id),
+            "owner_id": current_user["id"]
+        })
     except:
         raise HTTPException(status_code=400, detail="Invalid patient ID format")
     
@@ -70,10 +77,13 @@ async def get_patient(patient_id: str):
 
 
 @router.put("/patients/{patient_id}", response_model=PatientProfile)
-async def update_patient(patient_id: str, updated_profile: PatientProfile):
-    """Update an existing patient"""
+async def update_patient(patient_id: str, updated_profile: PatientProfile, current_user: dict = Depends(get_current_user)):
+    """Update an existing patient (only if owned by current user)"""
     try:
-        existing = await patients_collection.find_one({"_id": ObjectId(patient_id)})
+        existing = await patients_collection.find_one({
+            "_id": ObjectId(patient_id),
+            "owner_id": current_user["id"]
+        })
     except:
         raise HTTPException(status_code=400, detail="Invalid patient ID format")
     
@@ -93,10 +103,13 @@ async def update_patient(patient_id: str, updated_profile: PatientProfile):
 
 
 @router.delete("/patients/{patient_id}")
-async def delete_patient(patient_id: str):
-    """Delete a patient by ID"""
+async def delete_patient(patient_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a patient by ID (only if owned by current user)"""
     try:
-        result = await patients_collection.delete_one({"_id": ObjectId(patient_id)})
+        result = await patients_collection.delete_one({
+            "_id": ObjectId(patient_id),
+            "owner_id": current_user["id"]
+        })
     except:
         raise HTTPException(status_code=400, detail="Invalid patient ID format")
     
@@ -107,9 +120,9 @@ async def delete_patient(patient_id: str):
 
 
 @router.get("/patients", response_model=list[PatientProfile])
-async def list_patients():
-    """Get all patients from the database"""
+async def list_patients(current_user: dict = Depends(get_current_user)):
+    """Get all patients owned by the current user"""
     patients = []
-    async for patient in patients_collection.find():
+    async for patient in patients_collection.find({"owner_id": current_user["id"]}):
         patients.append(patient_helper(patient))
     return patients

@@ -18,6 +18,7 @@ class DayPlan(BaseModel):
 
 class WeeklyPlan(BaseModel):
     patient_id: Optional[str] = None
+    owner_id: Optional[str] = None
     # Map "Monday" -> DayPlan, etc.
     days: Dict[str, DayPlan] = {
         "Monday": DayPlan(), 
