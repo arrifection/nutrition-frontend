@@ -1,3 +1,4 @@
+# Backend for DietDesk MVP
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from bmi import router as bmi_router
