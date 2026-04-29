@@ -19,17 +19,11 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Go into the Backend directory
           cd Backend
-          
-          # Initialize a temporary git repo here
-          git init
+          git init -b main
           git config user.email "bot@dietdesk.ai"
           git config user.name "DietDesk Bot"
-          
-          # Add all files in Backend folder
           git add .
           git commit -m "Auto-sync from GitHub"
-          
-          # Force push to the root of the Hugging Face space
-          git push --force https://arrifection:$HF_TOKEN@huggingface.co/spaces/arrifection/nutrition-backend main
+          git remote add hf https://arrifection:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/arrifection/nutrition-backend
+          git push hf main --force
