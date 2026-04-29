@@ -1,0 +1,31 @@
+name: Sync to Hugging Face Hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Backend/**'
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Use git-filter-repo or simple subtree push to send only the Backend folder
+          git config --global user.email "bot@dietdesk.ai"
+          git config --global user.name "DietDesk Bot"
+          
+          # Add the Hugging Face space as a remote
+          git remote add hf https://arrifection:$HF_TOKEN@huggingface.co/spaces/arrifection/nutrition-backend
+          
+          # Push the 'Backend' folder to the 'main' branch of the Hugging Face space
+          # We use subtree push so only the contents of Backend/ are sent to the root of HF
+          git subtree push --prefix Backend hf main --force
