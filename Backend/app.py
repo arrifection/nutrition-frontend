@@ -1,4 +1,4 @@
-# Backend for DietDesk MVP - v2.1 Sync (Bulletproof)
+# Backend for DietDesk MVP - v2.1 Sync (Auth Fix)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from bmi import router as bmi_router
