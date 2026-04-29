@@ -63,4 +63,4 @@ app.include_router(history_router)
 
 @app.get("/")
 def home():
-    return {"message": "Backend is running successfully - v2.2 (Privacy Fix)"}
+    return {"message": "Backend is running successfully - v2.3 (Auth Fix)"}

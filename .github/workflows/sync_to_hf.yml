@@ -19,11 +19,15 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "Error: HF_TOKEN is not set in GitHub Secrets."
+            exit 1
+          fi
           cd Backend
           git init -b main
           git config user.email "bot@dietdesk.ai"
           git config user.name "DietDesk Bot"
           git add .
           git commit -m "Auto-sync from GitHub"
-          # Using 'token' as the username is the most reliable way for HF sync
-          git push --force https://token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/arrifection/nutrition-backend main
+          git push --force https://arrifection:$HF_TOKEN@huggingface.co/spaces/arrifection/nutrition-backend main
+
