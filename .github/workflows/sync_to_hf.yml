@@ -25,5 +25,5 @@ jobs:
           git config user.name "DietDesk Bot"
           git add .
           git commit -m "Auto-sync from GitHub"
-          # We use the token as the 'username' to avoid password errors
-          git push --force https://arrifection:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/arrifection/nutrition-backend main
+          # Using 'token' as the username is the most reliable way for HF sync
+          git push --force https://token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/arrifection/nutrition-backend main
