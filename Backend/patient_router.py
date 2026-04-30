@@ -90,16 +90,23 @@ async def update_patient(patient_id: str, updated_profile: PatientProfile, curre
     if existing is None:
         raise HTTPException(status_code=404, detail="Patient not found")
     
-    profile_dict = updated_profile.model_dump(exclude={"id"})
+    # Exclude ID and Owner ID from update to prevent tampering
+    profile_dict = updated_profile.model_dump(exclude={"id", "owner_id"})
     profile_dict = calculate_metrics(profile_dict)
     
-    await patients_collection.update_one(
-        {"_id": ObjectId(patient_id)},
+    # Ensure we only update if the owner matches (Double-check)
+    result = await patients_collection.update_one(
+        {"_id": ObjectId(patient_id), "owner_id": current_user["id"]},
         {"$set": profile_dict}
     )
     
+    if result.modified_count == 0:
+        # This could happen if the data is identical or if ownership changed (which shouldn't happen)
+        pass
+    
     updated = await patients_collection.find_one({"_id": ObjectId(patient_id)})
     return patient_helper(updated)
+
 
 
 @router.delete("/patients/{patient_id}")
