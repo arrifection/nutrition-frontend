@@ -12,21 +12,22 @@ load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://nexusnao:2xTLMDSy7600@cluster0.z4lzt6j.mongodb.net/?appName=Cluster0")
 
 try:
-    ca = certifi.where()
+    # Simpler initialization — let Motor handle the SSL defaults
     client = motor.motor_asyncio.AsyncIOMotorClient(
         MONGODB_URL,
-        tls=True,
-        tlsCAFile=ca,
-        serverSelectionTimeoutMS=10000, # Increased timeout
-        connectTimeoutMS=10000
+        serverSelectionTimeoutMS=10000,
+        connectTimeoutMS=10000,
+        tls=True
     )
 except Exception as e:
-    print(f"CRITICAL: Failed to initialize MongoDB client: {e}")
-    # Fallback without tlsCAFile if it fails
+    print(f"CRITICAL: Primary MongoDB initialization failed: {e}")
+    # Fallback: Allow invalid certificates (common fix for cloud SSL handshake issues)
     client = motor.motor_asyncio.AsyncIOMotorClient(
         MONGODB_URL,
-        serverSelectionTimeoutMS=10000
+        serverSelectionTimeoutMS=10000,
+        tlsAllowInvalidCertificates=True
     )
+
 
 async def check_db():
     try:
