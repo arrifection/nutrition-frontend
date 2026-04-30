@@ -35,4 +35,6 @@ uvicorn main:app --reload
 
 ## Deployment
 
-This app is ready for deployment on platforms like Render, Railway, or Heroku.
+This app is deployed to Hugging Face Spaces.
+Last updated: 2026-04-30
+
