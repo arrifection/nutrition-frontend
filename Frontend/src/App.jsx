@@ -223,23 +223,21 @@ function App() {
             );
         }
 
-        if (view === 'verify-email') {
-            return (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                    <VerifyEmail onGoToLogin={() => setView('dashboard')} />
-                </Box>
-            );
-        }
-
         return <Box p={4}><Typography color="textSecondary">Section under development...</Typography></Box>;
     };
+
+    if (view === 'verify-email') {
+        return (
+            <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
+                <VerifyEmail onGoToLogin={() => setView(user ? 'dashboard' : 'login')} />
+            </Box>
+        );
+    }
 
     if (!user && !loading) {
         return (
             <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-                {view === 'verify-email' ? (
-                    <VerifyEmail onGoToLogin={() => setView('login')} />
-                ) : view === 'signup' ? (
+                {view === 'signup' ? (
                     <Signup onToggle={() => setView('login')} />
                 ) : (
                     <Login onToggle={() => setView('signup')} />

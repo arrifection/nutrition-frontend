@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
 import { 
     User, 
-    Bell, 
     Shield, 
     Moon, 
     Sun, 
     Grid, 
-    Mail, 
     Building2,
     Save,
-    Lock,
-    KeyRound,
-    CheckCircle2
+    Lock
 } from 'lucide-react';
 import { 
     Snackbar, 
     Alert, 
     CircularProgress, 
-    Switch,
-    IconButton
+    Switch
 } from '@mui/material';
 import { useColorMode } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { resendVerification } from '../services/api';
+import { Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const T = {
     heading: { fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' },
@@ -31,6 +29,7 @@ const T = {
 
 export default function Settings() {
     const { mode, toggleColorMode } = useColorMode();
+    const { user } = useAuth();
     
     // Notifications state
     const [notifications, setNotifications] = useState(() => {
@@ -46,10 +45,10 @@ export default function Settings() {
     const [profile, setProfile] = useState(() => {
         const saved = localStorage.getItem('dietdesk_profile');
         return saved ? JSON.parse(saved) : {
-            name: 'Dr. Sarah Mitchell',
-            email: 'sarah.mitchell@dietdesk.com',
-            specialization: 'Clinical Nutritionist',
-            bio: 'Passionate about personalized nutrition and clinical weight management. 10+ years experience in metabolic health.'
+            name: user?.username || '',
+            email: user?.email || '',
+            specialization: '',
+            bio: ''
         };
     });
 
@@ -62,13 +61,6 @@ export default function Settings() {
             license: 'RD-884210-SA',
             phone: '+1 (555) 0123-4567'
         };
-    });
-
-    // Security state
-    const [security, setSecurity] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
     });
 
     // UI Feedback state
@@ -97,24 +89,6 @@ export default function Settings() {
         await new Promise(resolve => setTimeout(resolve, 1000));
         setLoadingSection(null);
         showToast(`${sectionName} updated successfully!`);
-    };
-
-    const handlePasswordUpdate = async (e) => {
-        e.preventDefault();
-        if (security.newPassword.length < 8) {
-            showToast('New password must be at least 8 characters long', 'error');
-            return;
-        }
-        if (security.newPassword !== security.confirmPassword) {
-            showToast('New passwords do not match', 'error');
-            return;
-        }
-        
-        setLoadingSection('security');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setLoadingSection(null);
-        setSecurity({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        showToast('Password updated successfully!');
     };
 
     return (
@@ -322,7 +296,70 @@ export default function Settings() {
                     </div>
                 </div>
 
-                {/* 4. Security */}
+                {/* 4. Email Verification */}
+                <div className="dd-card p-6 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className={`p-2 rounded-lg ${user?.email_verified ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400'}`}>
+                            {user?.email_verified ? <CheckCircle size={22} strokeWidth={2.5} /> : <Mail size={22} strokeWidth={2.5} />}
+                        </div>
+                        <h2 style={T.sectionTitle}>Email Verification</h2>
+                    </div>
+
+                    <div className="flex-1 space-y-6">
+                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full ${user?.email_verified ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]'}`} />
+                                <span className="text-sm font-bold">
+                                    {user?.email_verified ? 'Account Verified' : 'Action Required'}
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                {user?.email_verified 
+                                    ? 'Your email address has been successfully verified. You have full access to all clinical features.' 
+                                    : 'Please verify your email address to ensure uninterrupted access to your clinical workspace.'}
+                            </p>
+                            {!user?.email_verified && user?.verification_deadline && (
+                                <div className="mt-3 flex items-center gap-2 text-rose-600 font-bold text-[10px] uppercase tracking-wider">
+                                    <AlertTriangle size={12} />
+                                    Deadline: {new Date(user.verification_deadline).toLocaleDateString()}
+                                </div>
+                            )}
+                        </div>
+
+                        {!user?.email_verified && (
+                            <button 
+                                className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
+                                onClick={async () => {
+                                    setLoadingSection('Resend');
+                                    const res = await resendVerification();
+                                    setLoadingSection(null);
+                                    if (res.success) showToast('Verification email sent!', 'success');
+                                    else showToast(res.error, 'error');
+                                }}
+                                disabled={loadingSection === 'Resend'}
+                            >
+                                {loadingSection === 'Resend' ? (
+                                    <CircularProgress size={16} color="inherit" />
+                                ) : (
+                                    <>
+                                        <Mail size={16} className="group-hover:scale-110 transition-transform" />
+                                        Resend Verification Email
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                            Status: <span className={user?.email_verified ? 'text-emerald-500' : 'text-rose-500'}>
+                                {user?.email_verified ? 'Active' : 'Restricted'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 5. Security */}
                 <div className="dd-card p-6 flex flex-col h-full">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-red-50 text-red-600 rounded-lg dark:bg-red-950 dark:text-red-400">
@@ -330,65 +367,30 @@ export default function Settings() {
                         </div>
                         <h2 style={T.sectionTitle}>Security & Password</h2>
                     </div>
-                    
-                    <form onSubmit={handlePasswordUpdate} className="space-y-5 flex-1">
-                        <div>
-                            <label style={T.label}>Current Password</label>
-                            <div className="relative">
-                                <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input 
-                                    className="input-premium pl-10" 
-                                    type="password" 
-                                    value={security.currentPassword}
-                                    onChange={(e) => setSecurity({...security, currentPassword: e.target.value})}
-                                    placeholder="Enter current password"
-                                    required
-                                />
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label style={T.label}>New Password</label>
-                                <div className="relative">
-                                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
-                                        className="input-premium pl-10" 
-                                        type="password" 
-                                        value={security.newPassword}
-                                        onChange={(e) => setSecurity({...security, newPassword: e.target.value})}
-                                        placeholder="At least 8 chars"
-                                        required
-                                    />
-                                </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50">
+                            <div className="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+                                <Lock size={16} />
+                                Password controls are being connected
                             </div>
-                            <div>
-                                <label style={T.label}>Confirm New Password</label>
-                                <div className="relative">
-                                    <CheckCircle2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
-                                        className="input-premium pl-10" 
-                                        type="password" 
-                                        value={security.confirmPassword}
-                                        onChange={(e) => setSecurity({...security, confirmPassword: e.target.value})}
-                                        placeholder="Confirm new password"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                            <p className="text-xs text-slate-500 mt-2">
+                                Password update and session management will be enabled with backend email verification rollout.
+                            </p>
                         </div>
 
                         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button 
-                                type="submit"
-                                className="btn-primary flex items-center gap-2 bg-red-600 hover:bg-red-700"
-                                disabled={loadingSection === 'security'}
+                            <button
+                                type="button"
+                                className="btn-secondary flex items-center gap-2"
+                                disabled
+                                style={{ cursor: 'not-allowed', opacity: 0.7 }}
                             >
-                                {loadingSection === 'security' ? <CircularProgress size={18} color="inherit" /> : <Shield size={18} />}
-                                Update Password
+                                <Shield size={18} />
+                                Coming Soon
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
 

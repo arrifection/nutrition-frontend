@@ -102,6 +102,48 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
     return (
         <Box sx={{ p: { xs: 2.5, md: 4, lg: 5 }, maxWidth: 1400, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
             
+            {/* ── Verification Warning Banner ── */}
+            {user?.email_verified === false && (
+                <Box sx={{ 
+                    background: 'linear-gradient(90deg, #fff1f2 0%, #fff 100%)', 
+                    border: '1px solid #fda4af',
+                    borderRadius: '12px',
+                    p: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    animation: 'fade-in 0.5s ease-out'
+                }}>
+                    <Box sx={{ 
+                        width: 40, height: 40, borderRadius: '10px', 
+                        background: '#ffe4e6', display: 'flex', 
+                        alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                    }}>
+                        <Bell size={20} color="#e11d48" strokeWidth={2.5} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, color: '#9f1239' }}>
+                            Email Verification Required
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: '#be123c' }}>
+                            Please verify your email within 2 days to maintain access to your account. 
+                            {user.verification_deadline && ` Deadline: ${new Date(user.verification_deadline).toLocaleDateString()}`}
+                        </Typography>
+                    </Box>
+                    <Button 
+                        size="small" 
+                        variant="outlined" 
+                        onClick={() => onNavigate('settings')}
+                        sx={{ 
+                            borderRadius: '8px', textTransform: 'none', fontWeight: 700, 
+                            borderColor: '#fda4af', color: '#e11d48',
+                            '&:hover': { borderColor: '#e11d48', background: '#fff1f2' }
+                        }}
+                    >
+                        Verify Now
+                    </Button>
+                </Box>
+            )}
             {/* ── Page Header ── */}
             <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" spacing={2.5}>
                 <Box>
@@ -116,7 +158,8 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                 <Stack direction="row" spacing={1.5} alignItems="center">
                     <Tooltip title="Notifications">
                         <IconButton 
-                            onClick={handleNotifClick}
+                            onClick={state.notifications.length > 0 ? handleNotifClick : undefined}
+                            disabled={state.notifications.length === 0}
                             sx={{ 
                                 background: 'var(--surface)', 
                                 border: '1px solid var(--border)',
@@ -260,6 +303,9 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                                     <Box sx={{ textAlign: 'center', py: 2 }}>
                                         <Typography sx={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                                             No priority tasks right now.
+                                        </Typography>
+                                        <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', mt: 1 }}>
+                                            Task automation module is being connected.
                                         </Typography>
                                     </Box>
                                 ) : (

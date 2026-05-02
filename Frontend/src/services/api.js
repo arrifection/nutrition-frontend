@@ -1,13 +1,15 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const TOKEN_KEY = 'dietdesk_token';
+const USER_KEY = 'dietdesk_user';
 
 
 
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 15000, // Increased timeout for slow DB connections
+    timeout: 20000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -15,12 +17,29 @@ const api = axios.create({
 
 // Attach Bearer token from localStorage to every request automatically
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('dietdesk_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error.response?.status;
+        const detail = (error.response?.data?.detail || '').toString().toLowerCase();
+        const isExpiredToken = status === 401 && detail.includes('invalid or expired token');
+
+        if (isExpiredToken) {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            window.dispatchEvent(new Event('dietdesk:auth-expired'));
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 // Helper for unified response handling
 const handleResp = async (fn) => {
@@ -29,9 +48,11 @@ const handleResp = async (fn) => {
         return { success: true, data: response.data };
     } catch (error) {
         console.error('API Error:', error);
-        const message = error.response?.data?.detail 
-            || error.message 
-            || 'API request failed';
+        const message = error.code === 'ECONNABORTED'
+            ? 'Backend/database connection timed out. Please check MongoDB Atlas Network Access.'
+            : error.response?.data?.detail
+                || error.message
+                || 'API request failed';
         const url = error.config?.url ? ` (${error.config.url})` : '';
         
         return {
@@ -77,5 +98,6 @@ export const getExchangeList = (category = null) => {
 export const loginUser    = (data) => handleResp(() => api.post('/auth/login', data));
 export const registerUser = (data) => handleResp(() => api.post('/auth/register', data));
 export const getMe        = ()     => handleResp(() => api.get('/auth/me'));
+export const resendVerification = () => handleResp(() => api.post('/auth/resend-verification'));
 
 export default api;
