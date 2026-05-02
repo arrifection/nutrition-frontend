@@ -91,6 +91,8 @@ async def register(user_data: UserRegister):
         
         result = await users_collection.insert_one(new_user)
         if result.inserted_id:
+            print(f"[DEBUG] Registered user: {user_data.email}")
+            print(f"[DEBUG] Saved Token Hash: {new_user['verification_token_hash']}")
             print(f"SUCCESS: User {user_data.email} registered. Sending verification email...")
             await send_verification_email(user_data.email, verification_token)
             return {"message": "Account created. You can use Diet Desk now, but please verify your email within 2 days."}
@@ -196,10 +198,10 @@ async def dev_delete_user(email: str):
     TEMPORARY: Deletes a user by email so you can sign up again.
     """
     try:
-        result = await users_collection.delete_one({"email": email.lower()})
+        result = await users_collection.delete_many({"email": email.lower()})
         if result.deleted_count == 0:
             return {"message": "User not found"}
-        return {"message": f"User {email} deleted successfully. You can now register again."}
+        return {"message": f"User {email} deleted successfully ({result.deleted_count} records removed). You can now register again."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 # ---------------------------------------
