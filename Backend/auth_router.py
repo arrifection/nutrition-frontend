@@ -190,7 +190,7 @@ async def dev_send_verification(data: EmailTest):
         print(f"DEV ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/dev-delete-user", tags=["Development Only"])
+@router.get("/dev-delete-user", tags=["Development Only"])
 async def dev_delete_user(email: str):
     """
     TEMPORARY: Deletes a user by email so you can sign up again.
