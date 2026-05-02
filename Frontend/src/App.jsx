@@ -17,8 +17,7 @@ import { useAuth } from "./context/AuthContext";
 import { Box, Stack, Typography } from "@mui/material";
 import Settings from "./components/Settings";
 import PlaceholderPage from "./components/ui/PlaceholderPage";
-import ExchangeList from "./components/ExchangeList";
-import { Users, FileText, Activity } from "lucide-react";
+import { FileText, Activity, UtensilsCrossed } from "lucide-react";
 import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
@@ -170,15 +169,7 @@ function App() {
         }
 
         if (view === 'exchange-list') {
-            return (
-                <div style={{ padding: '24px' }}>
-                    <ExchangeList
-                        isAdmin={true}
-                        onError={handleError}
-                        onAddFood={(meal, food) => showToast(`${food.food_name?.en} added to ${meal}`, 'success')}
-                    />
-                </div>
-            );
+            return <PlaceholderPage title="Food Database" description="Food exchange search and clinic-wide reference tools are being prepared for a future release. Food selection inside the diet plan creator remains available for MVP plan building." icon={UtensilsCrossed} />;
         }
 
         if (view === 'plans') {

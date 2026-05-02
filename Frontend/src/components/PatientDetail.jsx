@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     User,
     History as HistoryIcon,
@@ -8,42 +8,239 @@ import {
     Plus,
     ArrowLeft,
     FileText,
-    Calendar,
     Target,
     Activity,
     MessageCircle,
-    ChevronRight,
-    ExternalLink
 } from "lucide-react";
-import GoalManager from "./GoalManager";
 import ReflectionLog from "./ReflectionLog";
-import ConsistencyPulse from "./ConsistencyPulse";
+import { getLogs, getPlan } from "../services/api";
 
 const T = {
-    heading: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' },
-    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: '#64748b' },
-    sectionTitle: { fontSize: '0.9375rem', fontWeight: 700, color: '#0f172a' },
-    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#94a3b8' },
-    value: { fontSize: '0.875rem', fontWeight: 600, color: '#1e293b' }
+    heading: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' },
+    subheading: { fontSize: '0.8125rem', fontWeight: 400, color: 'var(--text-secondary)' },
+    sectionTitle: { fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' },
+    label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' },
+    value: { fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }
 };
+
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const formatValue = (value, suffix = "") => {
+    if (value === null || value === undefined || value === "") return "Not recorded";
+    return `${value}${suffix}`;
+};
+
+const getFoodCalories = (food) => Number(food?.macros?.calories ?? food?.calories ?? 0) || 0;
+
+const getPlanStats = (plan) => {
+    const days = plan?.days || {};
+    let totalItems = 0;
+    let totalCalories = 0;
+    let daysWithMeals = 0;
+
+    DAY_NAMES.forEach((day) => {
+        const meals = days[day] || {};
+        const items = Object.values(meals).flat().filter(Boolean);
+        if (items.length > 0) {
+            daysWithMeals += 1;
+            totalItems += items.length;
+            totalCalories += items.reduce((sum, food) => sum + getFoodCalories(food), 0);
+        }
+    });
+
+    return {
+        hasPlan: totalItems > 0,
+        totalItems,
+        daysWithMeals,
+        totalCalories,
+        avgCalories: daysWithMeals ? Math.round(totalCalories / daysWithMeals) : null,
+    };
+};
+
+const normalizeDateKey = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().slice(0, 10);
+};
+
+const getLogDateKey = (log) => normalizeDateKey(log.created_at || log.date);
+
+const getLast28Days = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Array.from({ length: 28 }, (_, index) => {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (27 - index));
+        return {
+            key: date.toISOString().slice(0, 10),
+            label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        };
+    });
+};
+
+const extractWeightHistory = (patient) => {
+    const possibleSources = [
+        patient?.weight_history,
+        patient?.weightHistory,
+        patient?.progress_records,
+        patient?.progressRecords,
+        patient?.follow_ups,
+        patient?.followUps,
+        patient?.measurements,
+    ];
+
+    return possibleSources
+        .filter(Array.isArray)
+        .flat()
+        .map((entry, index) => {
+            const weight = Number(entry?.weight ?? entry?.weight_kg ?? entry?.weightKg ?? entry?.value);
+            const date = entry?.date || entry?.created_at || entry?.createdAt || entry?.recorded_at || entry?.recordedAt;
+            return {
+                id: entry?.id || `${date || 'weight'}-${index}`,
+                weight,
+                date,
+                label: date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : `Record ${index + 1}`,
+            };
+        })
+        .filter((entry) => Number.isFinite(entry.weight))
+        .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+};
+
+const getClinicalRows = (patient) => [
+    { label: "Medical history", value: patient?.medical_notes },
+    { label: "Allergies", value: patient?.allergies },
+    { label: "Dietary restrictions", value: patient?.dietary_restrictions },
+    { label: "Medications", value: patient?.medications },
+    { label: "Diagnosis", value: patient?.diagnosis },
+    { label: "Labs", value: patient?.labs },
+].filter((row) => row.value);
+
+function EmptyChartState({ children }) {
+    return (
+        <div className="chart-empty-state">
+            <p>{children}</p>
+        </div>
+    );
+}
+
+function MetricTile({ label, value, accent = false }) {
+    return (
+        <div className="metric-tile">
+            <div style={T.label}>{label}</div>
+            <div style={{ ...T.value, marginTop: '4px', color: accent ? 'var(--brand-green)' : 'var(--text-primary)' }}>
+                {value}
+            </div>
+        </div>
+    );
+}
+
+function WeightTrendChart({ points }) {
+    if (!points.length) {
+        return (
+            <EmptyChartState>
+                No weight trend yet. Add follow-up weight records to track progress.
+            </EmptyChartState>
+        );
+    }
+
+    const min = Math.min(...points.map((point) => point.weight));
+    const max = Math.max(...points.map((point) => point.weight));
+    const range = Math.max(max - min, 1);
+
+    return (
+        <div>
+            <div className="trend-chart" aria-label="Weight trend chart">
+                {points.map((point) => {
+                    const height = 24 + ((point.weight - min) / range) * 72;
+                    return (
+                        <div key={point.id} className="trend-column" title={`${point.label}: ${point.weight}kg`}>
+                            <div className="trend-value">{point.weight}kg</div>
+                            <div className="trend-bar" style={{ height: `${height}%` }} />
+                            <div className="trend-label">{point.label}</div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+function ConsistencyHeatmap({ logs }) {
+    if (!logs.length) {
+        return (
+            <EmptyChartState>
+                No consistency data yet. Daily check-ins will appear here.
+            </EmptyChartState>
+        );
+    }
+
+    const days = getLast28Days();
+    const counts = logs.reduce((acc, log) => {
+        const key = getLogDateKey(log);
+        if (!key) return acc;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+    }, {});
+    const max = Math.max(1, ...Object.values(counts));
+
+    return (
+        <div>
+            <div className="heatmap-grid" aria-label="Consistency heatmap">
+                {days.map((day) => {
+                    const count = counts[day.key] || 0;
+                    const level = count === 0 ? 0 : Math.max(1, Math.ceil((count / max) * 3));
+                    return (
+                        <div
+                            key={day.key}
+                            className={`heatmap-cell heatmap-level-${level}`}
+                            title={`${day.label}: ${count} check-in${count === 1 ? "" : "s"}`}
+                        />
+                    );
+                })}
+            </div>
+            <div className="chart-meta-row">
+                <span>Last 28 days</span>
+                <span>{logs.length} journal/check-in entries</span>
+            </div>
+        </div>
+    );
+}
 
 export default function PatientDetail({ patient, onBack, onEditPlan }) {
     const [activeTab, setActiveTab] = useState("overview");
+    const [plan, setPlan] = useState(null);
+    const [logs, setLogs] = useState([]);
+    const [loadingPlan, setLoadingPlan] = useState(false);
 
-    const history = {
-        plans: [
-            { id: 1, date: "2024-01-10", name: "High Protein / Low Carb Version 1", status: "Completed" },
-            { id: 2, date: "2023-11-15", name: "Maintenance Plan", status: "Archived" }
-        ],
-        followUps: [
-            { date: "2024-01-28", weight: "64.2kg", note: "Adherence is good, feeling more energetic.", type: "In-person" },
-            { date: "2024-01-14", weight: "65.5kg", note: "Adjusting to new calorie deficit.", type: "Remote" }
-        ],
-        notes: [
-            { id: 1, date: "2024-01-28", author: "Dr. Sarah", text: "Patient reported slight hunger in evenings. Added 10g protein to dinner snack." },
-            { id: 2, date: "2024-01-10", author: "Dr. Sarah", text: "Initial assessment. Patient motivated. No clinical red flags." }
-        ]
-    };
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadPatientContext = async () => {
+            if (!patient?.id) return;
+            setLoadingPlan(true);
+            const [planResponse, logsResponse] = await Promise.all([
+                getPlan(patient.id),
+                getLogs(patient.id),
+            ]);
+
+            if (cancelled) return;
+            if (planResponse.success) setPlan(planResponse.data);
+            else setPlan(null);
+            if (logsResponse.success && Array.isArray(logsResponse.data)) setLogs(logsResponse.data);
+            else setLogs([]);
+            setLoadingPlan(false);
+        };
+
+        loadPatientContext();
+        return () => {
+            cancelled = true;
+        };
+    }, [patient?.id]);
+
+    const planStats = useMemo(() => getPlanStats(plan), [plan]);
+    const weightHistory = useMemo(() => extractWeightHistory(patient), [patient]);
+    const clinicalRows = useMemo(() => getClinicalRows(patient), [patient]);
 
     const tabs = [
         { id: "overview", label: "Overview", icon: User },
@@ -53,25 +250,32 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
         { id: "history", label: "History", icon: HistoryIcon },
     ];
 
+    const assessmentHasData = Boolean(
+        patient?.activity_level ||
+        patient?.goal ||
+        patient?.bmi ||
+        patient?.tdee ||
+        planStats.hasPlan
+    );
+
     return (
         <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button 
+                    <button
                         onClick={onBack}
-                        style={{ 
-                            width: '36px', height: '36px', borderRadius: '10px', 
-                            background: '#ffffff', border: '1px solid #e2e8f0',
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '10px',
+                            background: 'var(--surface)', border: '1px solid var(--border)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#64748b', cursor: 'pointer'
+                            color: 'var(--text-secondary)', cursor: 'pointer'
                         }}
                     >
                         <ArrowLeft size={18} />
                     </button>
                     <div>
                         <h1 style={T.heading}>{patient?.name || "Unnamed Patient"}</h1>
-                        <p style={T.subheading}>Patient ID: #P-{patient?.id || '00' + (patient?.name?.length || 0)} • Registered Jan 2024</p>
+                        <p style={T.subheading}>Patient ID: #P-{patient?.id || 'Pending'}</p>
                     </div>
                 </div>
                 <button onClick={() => onEditPlan(patient)} className="btn-primary">
@@ -80,30 +284,30 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 </button>
             </div>
 
-            {/* Metrics Row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
                 <div className="dd-card" style={{ padding: '16px' }}>
-                    <div style={T.label}>Status</div>
+                    <div style={T.label}>Plan Status</div>
                     <div style={{ marginTop: '4px' }}>
-                        <span className="badge-active">On Track</span>
+                        <span className={planStats.hasPlan ? "badge-active" : "status-pill"}>
+                            {planStats.hasPlan ? "Saved plan" : "No saved plan"}
+                        </span>
                     </div>
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Demographics</div>
-                    <div style={{ ...T.value, marginTop: '4px' }}>{patient?.age || 'N/A'}y • {patient?.gender || 'N/A'}</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{formatValue(patient?.age, "y")} / {formatValue(patient?.gender)}</div>
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Vitals</div>
-                    <div style={{ ...T.value, marginTop: '4px' }}>{patient?.height || '--'}cm • {patient?.weight || '--'}kg</div>
+                    <div style={{ ...T.value, marginTop: '4px' }}>{formatValue(patient?.height, "cm")} / {formatValue(patient?.weight, "kg")}</div>
                 </div>
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Metabolic BMI</div>
-                    <div style={{ ...T.value, marginTop: '4px', color: '#16a34a' }}>{patient?.bmi || '--'} (Normal)</div>
+                    <div style={{ ...T.value, marginTop: '4px', color: patient?.bmi ? 'var(--brand-green)' : 'var(--text-muted)' }}>{formatValue(patient?.bmi)}</div>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', overflowX: 'auto', paddingBottom: '2px' }}>
+            <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border)', overflowX: 'auto', paddingBottom: '2px' }}>
                 {tabs.map(tab => {
                     const Icon = tab.icon;
                     const active = activeTab === tab.id;
@@ -115,8 +319,8 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                                 display: 'flex', alignItems: 'center', gap: '8px',
                                 padding: '10px 16px', border: 'none', background: 'transparent',
                                 cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600,
-                                color: active ? '#16a34a' : '#64748b',
-                                borderBottom: active ? '2px solid #16a34a' : '2px solid transparent',
+                                color: active ? 'var(--brand-green)' : 'var(--text-secondary)',
+                                borderBottom: active ? '2px solid var(--brand-green)' : '2px solid transparent',
                                 transition: 'all 0.15s ease',
                                 whiteSpace: 'nowrap'
                             }}
@@ -124,38 +328,36 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                             <Icon size={16} strokeWidth={active ? 2.5 : 2} />
                             {tab.label}
                         </button>
-                    )
+                    );
                 })}
             </div>
 
-            {/* Content Area */}
             <div style={{ minHeight: '400px' }}>
                 {activeTab === "overview" && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div className="dd-card" style={{ padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                                    <Activity size={18} style={{ color: '#16a34a' }} />
+                                    <Activity size={18} style={{ color: 'var(--brand-green)' }} />
                                     <h3 style={T.sectionTitle}>Current Assessment</h3>
                                 </div>
-                                <div style={{ 
-                                    padding: '16px', background: '#f0fdf4', borderRadius: '10px', 
-                                    borderLeft: '4px solid #16a34a', marginBottom: '20px' 
-                                }}>
-                                    <p style={{ fontSize: '0.8125rem', color: '#14532d', fontStyle: 'italic', lineHeight: 1.5 }}>
-                                        "Patient is showing consistent progress with protein targets. Next phase will focus on metabolic flexibility and evening habit stack."
-                                    </p>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
-                                        <div style={T.label}>Activity</div>
-                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient?.activity_level || 'N/A'}</div>
+
+                                {!assessmentHasData ? (
+                                    <EmptyChartState>
+                                        Assessment will appear after patient profile and plan are completed.
+                                    </EmptyChartState>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                                        <MetricTile label="Activity" value={formatValue(patient?.activity_level)} />
+                                        <MetricTile label="Goal" value={formatValue(patient?.goal)} />
+                                        <MetricTile label="BMI" value={formatValue(patient?.bmi)} accent={Boolean(patient?.bmi)} />
+                                        <MetricTile
+                                            label="Plan Calories"
+                                            value={planStats.avgCalories ? `${planStats.avgCalories} kcal/day avg` : formatValue(patient?.tdee, " kcal target")}
+                                            accent={Boolean(planStats.avgCalories || patient?.tdee)}
+                                        />
                                     </div>
-                                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
-                                        <div style={T.label}>Prime Goal</div>
-                                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: '2px' }}>{patient?.goal || 'General Health'}</div>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="dd-card" style={{ padding: '24px' }}>
@@ -163,45 +365,67 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                                     <AlertCircle size={18} style={{ color: '#f59e0b' }} />
                                     <h3 style={T.sectionTitle}>Clinical Background</h3>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8125rem' }}>
-                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Medical:</span> {patient?.medical_notes || "No previous records."}</div>
-                                    <div><span style={{ fontWeight: 700, color: '#475569' }}>Allergies:</span> None reported.</div>
-                                </div>
+                                {clinicalRows.length === 0 ? (
+                                    <EmptyChartState>No clinical background recorded yet.</EmptyChartState>
+                                ) : (
+                                    <div className="clinical-row-list">
+                                        {clinicalRows.map((row) => (
+                                            <div key={row.label} className="clinical-row">
+                                                <span>{row.label}</span>
+                                                <strong>{row.value}</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div className="dd-card" style={{ padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                                    <TrendingUp size={18} style={{ color: '#16a34a' }} />
-                                    <h3 style={T.sectionTitle}>Weight Trend (30d)</h3>
+                                    <TrendingUp size={18} style={{ color: 'var(--brand-green)' }} />
+                                    <h3 style={T.sectionTitle}>Weight Trend</h3>
                                 </div>
-                                <div style={{ height: '100px', display: 'flex', alignItems: 'end', gap: '8px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
-                                    {[66.2, 65.8, 65.5, 65.2, 64.8, 64.5, 64.2].map((w, i) => (
-                                        <div key={i} style={{ 
-                                            flex: 1, background: '#dcfce7', borderRadius: '4px 4px 0 0',
-                                            height: `${(w - 60) * 12}%`, transition: 'background 0.2s',
-                                            cursor: 'pointer'
-                                        }} 
-                                        onMouseEnter={e => e.currentTarget.style.background = '#16a34a'}
-                                        onMouseLeave={e => e.currentTarget.style.background = '#dcfce7'}
-                                        />
-                                    ))}
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', color: '#94a3b8', marginTop: '8px', fontWeight: 600 }}>
-                                    <span>JAN 01</span>
-                                    <span>TODAY</span>
-                                </div>
+                                <WeightTrendChart points={weightHistory} />
                             </div>
 
                             <div className="dd-card" style={{ padding: '24px' }}>
-                                <ConsistencyPulse role="dietitian" />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                                    <TrendingUp size={18} style={{ color: 'var(--brand-green)' }} />
+                                    <h3 style={T.sectionTitle}>Consistency Heatmap</h3>
+                                </div>
+                                <ConsistencyHeatmap logs={logs} />
                             </div>
                         </div>
                     </div>
                 )}
 
-                {activeTab === "goals" && <div className="dd-card" style={{ padding: '24px' }}><GoalManager /></div>}
+                {activeTab === "goals" && (
+                    <div className="dd-card" style={{ padding: '24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                            <Target size={18} style={{ color: 'var(--brand-green)' }} />
+                            <h3 style={T.sectionTitle}>Goals</h3>
+                        </div>
+                        {patient?.goal ? (
+                            <div className="goal-summary-card">
+                                <div>
+                                    <div style={T.label}>Current profile goal</div>
+                                    <strong>{patient.goal}</strong>
+                                </div>
+                                <div>
+                                    <div style={T.label}>Daily energy target</div>
+                                    <strong>{formatValue(patient?.tdee, " kcal")}</strong>
+                                </div>
+                                <div>
+                                    <div style={T.label}>Saved plan coverage</div>
+                                    <strong>{planStats.hasPlan ? `${planStats.daysWithMeals}/7 days` : "No saved plan"}</strong>
+                                </div>
+                            </div>
+                        ) : (
+                            <EmptyChartState>No goals recorded yet.</EmptyChartState>
+                        )}
+                    </div>
+                )}
 
                 {activeTab === "reflections" && (
                     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -211,36 +435,45 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
 
                 {activeTab === "plans" && (
                     <div className="dd-card" style={{ overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <thead>
-                                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
-                                    <th style={{ padding: '12px 20px', ...T.label }}>Date</th>
-                                    <th style={{ padding: '12px 20px', ...T.label }}>Plan Name</th>
-                                    <th style={{ padding: '12px 20px', ...T.label }}>Status</th>
-                                    <th style={{ padding: '12px 20px' }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.plans.map((p, idx) => (
-                                    <tr key={p.id} style={{ borderBottom: idx < history.plans.length - 1 ? '1px solid #f8fafc' : 'none' }}>
-                                        <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: '#64748b' }}>{p.date}</td>
-                                        <td style={{ padding: '14px 20px', fontSize: '0.8125rem', fontWeight: 600, color: '#1e293b' }}>{p.name}</td>
-                                        <td style={{ padding: '14px 20px' }}>
-                                            <span style={{ 
-                                                fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px',
-                                                background: p.status === 'Completed' ? '#dcfce7' : '#f1f5f9',
-                                                color: p.status === 'Completed' ? '#15803d' : '#64748b'
-                                            }}>{p.status}</span>
-                                        </td>
-                                        <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                                            <button className="btn-text" style={{ fontSize: '0.75rem' }}>
-                                                View PDF <ExternalLink size={12} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                            <div>
+                                <h3 style={T.sectionTitle}>Saved Diet Plan</h3>
+                                <p style={{ ...T.subheading, margin: '4px 0 0' }}>
+                                    {loadingPlan ? "Loading latest plan..." : planStats.hasPlan ? `${planStats.totalItems} foods across ${planStats.daysWithMeals} planned days.` : "No saved plan yet."}
+                                </p>
+                            </div>
+                            <button className="btn-secondary" onClick={() => onEditPlan(patient)}>Update Plan</button>
+                        </div>
+
+                        {!planStats.hasPlan ? (
+                            <EmptyChartState>No saved diet plan yet. Create and save a plan to review it here.</EmptyChartState>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
+                                            <th style={{ padding: '12px 20px', ...T.label }}>Day</th>
+                                            <th style={{ padding: '12px 20px', ...T.label }}>Items</th>
+                                            <th style={{ padding: '12px 20px', ...T.label }}>Calories</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {DAY_NAMES.map((day) => {
+                                            const meals = plan?.days?.[day] || {};
+                                            const items = Object.values(meals).flat().filter(Boolean);
+                                            const calories = items.reduce((sum, food) => sum + getFoodCalories(food), 0);
+                                            return (
+                                                <tr key={day} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>{day}</td>
+                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length}</td>
+                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length ? `${Math.round(calories)} kcal` : "Not planned"}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -248,38 +481,43 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                <ClipboardList size={18} style={{ color: '#16a34a' }} />
-                                <h3 style={T.sectionTitle}>Follow-up Log</h3>
+                                <ClipboardList size={18} style={{ color: 'var(--brand-green)' }} />
+                                <h3 style={T.sectionTitle}>Follow-up Weights</h3>
                             </div>
-                            {history.followUps.map((f, i) => (
-                                <div key={i} className="dd-card" style={{ padding: '16px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '6px' }}>{f.date}</span>
-                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{f.type}</span>
-                                    </div>
-                                    <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '4px' }}>Weight: {f.weight}</div>
-                                    <p style={{ fontSize: '0.8125rem', color: '#64748b', fontStyle: 'italic', lineHeight: 1.4 }}>"{f.note}"</p>
+                            {weightHistory.length === 0 ? (
+                                <div className="dd-card" style={{ padding: '16px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                                    No follow-up weight records yet.
                                 </div>
-                            ))}
+                            ) : (
+                                weightHistory.map((entry) => (
+                                    <div key={entry.id} className="dd-card" style={{ padding: '16px' }}>
+                                        <div style={T.label}>{entry.label}</div>
+                                        <div style={{ ...T.value, marginTop: '4px' }}>{entry.weight}kg</div>
+                                    </div>
+                                ))
+                            )}
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                <FileText size={18} style={{ color: '#16a34a' }} />
-                                <h3 style={T.sectionTitle}>Clinical Notes</h3>
+                                <FileText size={18} style={{ color: 'var(--brand-green)' }} />
+                                <h3 style={T.sectionTitle}>Journal History</h3>
                             </div>
-                            {history.notes.map(note => (
-                                <div key={note.id} style={{ padding: '16px', background: '#fffbeb', borderRadius: '10px', border: '1px solid #fef3c7' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#92400e' }}>{note.date}</span>
-                                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#b45309' }}>{note.author}</span>
-                                    </div>
-                                    <p style={{ fontSize: '0.75rem', color: '#92400e', lineHeight: 1.5 }}>{note.text}</p>
+                            {logs.length === 0 ? (
+                                <div className="subtle-status-box" style={{ padding: '16px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                                    No journal or check-in history yet.
                                 </div>
-                            ))}
-                            <button className="btn-secondary" style={{ borderStyle: 'dashed', background: '#ffffff', color: '#16a34a', fontSize: '0.75rem' }}>
-                                + Add New Clinical Note
-                            </button>
+                            ) : (
+                                logs.map((log) => (
+                                    <div key={log.id} className="dd-card" style={{ padding: '16px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                                            <span style={T.label}>{log.date || "Undated"}</span>
+                                            <span className="status-pill">{log.status || "open"}</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{log.text}</p>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 )}

@@ -27,6 +27,27 @@ const T = {
     label: { fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }
 };
 
+const EMPTY_CLINIC = {
+    name: '',
+    address: '',
+    license: '',
+    phone: ''
+};
+
+const OLD_DEMO_CLINIC = {
+    name: 'Mitchell Clinical Health',
+    address: '123 Wellness Ave, Suite 400, New York, NY',
+    license: 'RD-884210-SA',
+    phone: '+1 (555) 0123-4567'
+};
+
+const isOldDemoClinic = (clinic) =>
+    clinic &&
+    clinic.name === OLD_DEMO_CLINIC.name &&
+    clinic.address === OLD_DEMO_CLINIC.address &&
+    clinic.license === OLD_DEMO_CLINIC.license &&
+    clinic.phone === OLD_DEMO_CLINIC.phone;
+
 export default function Settings() {
     const { mode, toggleColorMode } = useColorMode();
     const { user } = useAuth();
@@ -55,12 +76,10 @@ export default function Settings() {
     // Clinic state
     const [clinic, setClinic] = useState(() => {
         const saved = localStorage.getItem('dietdesk_clinic');
-        return saved ? JSON.parse(saved) : {
-            name: 'Mitchell Clinical Health',
-            address: '123 Wellness Ave, Suite 400, New York, NY',
-            license: 'RD-884210-SA',
-            phone: '+1 (555) 0123-4567'
-        };
+        if (!saved) return EMPTY_CLINIC;
+
+        const parsed = JSON.parse(saved);
+        return isOldDemoClinic(parsed) ? EMPTY_CLINIC : { ...EMPTY_CLINIC, ...parsed };
     });
 
     // UI Feedback state
@@ -181,7 +200,7 @@ export default function Settings() {
                                 type="text" 
                                 value={clinic.name}
                                 onChange={(e) => setClinic({...clinic, name: e.target.value})}
-                                placeholder="e.g. Mitchell Clinical Health"
+                                placeholder="Clinic or practice name"
                             />
                         </div>
                         <div>
@@ -191,7 +210,7 @@ export default function Settings() {
                                 type="text" 
                                 value={clinic.address}
                                 onChange={(e) => setClinic({...clinic, address: e.target.value})}
-                                placeholder="123 Wellness Ave, Suite 400"
+                                placeholder="Clinic address"
                             />
                         </div>
                         <div>
@@ -201,7 +220,7 @@ export default function Settings() {
                                 type="text" 
                                 value={clinic.license}
                                 onChange={(e) => setClinic({...clinic, license: e.target.value})}
-                                placeholder="RD-000000"
+                                placeholder="License or registration number"
                             />
                         </div>
                         <div>
@@ -211,7 +230,7 @@ export default function Settings() {
                                 type="text" 
                                 value={clinic.phone}
                                 onChange={(e) => setClinic({...clinic, phone: e.target.value})}
-                                placeholder="+1 (555) 000-0000"
+                                placeholder="Clinic phone number"
                             />
                         </div>
                     </div>
@@ -369,7 +388,7 @@ export default function Settings() {
                     </div>
 
                     <div className="flex-1 flex flex-col justify-between">
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50">
+                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800">
                             <div className="flex items-center gap-2 text-slate-700 font-semibold text-sm">
                                 <Lock size={16} />
                                 Password controls are being connected
