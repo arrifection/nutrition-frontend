@@ -20,7 +20,7 @@ async def send_verification_email(email: str, token: str):
         "Content-Type": "application/json",
     }
     
-    verification_link = f"{FRONTEND_URL}/verify-email?token={token}"
+    verification_link = f"{FRONTEND_URL}/?token={token}"
     
     payload = {
         "from": f"Diet Desk <{RESEND_FROM_EMAIL}>",
