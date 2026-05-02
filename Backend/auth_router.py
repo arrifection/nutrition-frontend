@@ -189,6 +189,19 @@ async def dev_send_verification(data: EmailTest):
     except Exception as e:
         print(f"DEV ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/dev-delete-user", tags=["Development Only"])
+async def dev_delete_user(email: str):
+    """
+    TEMPORARY: Deletes a user by email so you can sign up again.
+    """
+    try:
+        result = await users_collection.delete_one({"email": email.lower()})
+        if result.deleted_count == 0:
+            return {"message": "User not found"}
+        return {"message": f"User {email} deleted successfully. You can now register again."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 # ---------------------------------------
 
 @router.get("/me")
