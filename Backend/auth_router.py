@@ -212,13 +212,19 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
 async def verify_email(token: str):
     try:
         token_hash = hash_token(token)
+        print(f"[DEBUG] Incoming Token: {token}")
+        print(f"[DEBUG] Generated Hash: {token_hash}")
+        
         user = await users_collection.find_one({
             "verification_token_hash": token_hash,
             "email_verified": False
         })
         
         if not user:
+            print(f"[DEBUG] No unverified user found with hash: {token_hash}")
             raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+        
+        print(f"[DEBUG] Found user: {user.get('email')}. Verifying...")
         
         await users_collection.update_one(
             {"_id": user["_id"]},
@@ -229,9 +235,11 @@ async def verify_email(token: str):
         )
         
         return {"message": "Email verified successfully! You can now use all features."}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"ERROR in verify_email: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to verify email")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @router.post("/resend-verification")
 async def resend_verification(current_user: dict = Depends(get_current_user)):
