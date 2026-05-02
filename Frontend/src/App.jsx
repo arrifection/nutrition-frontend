@@ -51,7 +51,9 @@ function App() {
     // Auto-detect verification link
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('token')) {
+        const isVerifyPath = window.location.pathname.includes('verify-email');
+        
+        if (params.get('token') || isVerifyPath) {
             setView('verify-email');
         }
     }, []);
@@ -217,6 +219,14 @@ function App() {
                         </Box>
                     </Box>
                     <Box sx={{ maxWidth: '1000px', mx: 'auto', p: { xs: 2, md: 4 } }}>{renderStep()}</Box>
+                </Box>
+            );
+        }
+
+        if (view === 'verify-email') {
+            return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                    <VerifyEmail onGoToLogin={() => setView('dashboard')} />
                 </Box>
             );
         }
