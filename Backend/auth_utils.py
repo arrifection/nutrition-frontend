@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt as _bcrypt
+import hashlib
+import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -38,3 +40,11 @@ def decode_access_token(token: str):
         return payload
     except JWTError:
         return None
+
+def generate_verification_token() -> str:
+    """Generates a secure random token for email verification."""
+    return secrets.token_urlsafe(32)
+
+def hash_token(token: str) -> str:
+    """Hashes a token using SHA256 for secure storage."""
+    return hashlib.sha256(token.encode()).hexdigest()

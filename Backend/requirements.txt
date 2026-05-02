@@ -10,3 +10,4 @@ pyjwt
 bcrypt
 python-multipart
 python-jose[cryptography]
+httpx
