@@ -155,6 +155,42 @@ async def login(user_data: UserLogin):
         print(f"ERROR in login: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {type(e).__name__} - {str(e)}")
 
+# --- TEMPORARY DEV TESTING ENDPOINT ---
+class EmailTest(BaseModel):
+    email: EmailStr
+
+@router.post("/send-verification-to-existing-user", tags=["Development Only"])
+async def dev_send_verification(data: EmailTest):
+    """
+    TEMPORARY: Resets an existing user to unverified and sends an email.
+    USE ONLY FOR TESTING.
+    """
+    try:
+        user = await users_collection.find_one({"email": data.email.lower()})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        token = generate_verification_token()
+        deadline = datetime.utcnow() + timedelta(days=2)
+        
+        await users_collection.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "email_verified": False,
+                    "verification_deadline": deadline,
+                    "verification_token_hash": hash_token(token)
+                }
+            }
+        )
+        
+        await send_verification_email(user["email"], token)
+        return {"message": f"Dev Reset Success: Email sent to {user['email']}. User is now unverified with a 2-day grace period."}
+    except Exception as e:
+        print(f"DEV ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+# ---------------------------------------
+
 @router.get("/me")
 async def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
