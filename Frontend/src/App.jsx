@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import StepProgress from "./components/StepProgress";
 import Step1PatientInfo from "./components/steps/Step1PatientInfo";
 import Step2Calculations from "./components/steps/Step2Calculations";
@@ -19,6 +19,7 @@ import Settings from "./components/Settings";
 import PlaceholderPage from "./components/ui/PlaceholderPage";
 import ExchangeList from "./components/ExchangeList";
 import { Users, FileText, Activity } from "lucide-react";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
     const { user, logout, loading } = useAuth();
@@ -46,6 +47,14 @@ function App() {
         Sunday: { breakfast: [], snack: [], lunch: [], dinner: [] },
     });
     const [currentDay, setCurrentDay] = useState("Monday");
+    
+    // Auto-detect verification link
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('token')) {
+            setView('verify-email');
+        }
+    }, []);
 
     // Toast notifications
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
@@ -218,7 +227,13 @@ function App() {
     if (!user && !loading) {
         return (
             <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-                {view === 'signup' ? <Signup onToggle={() => setView('login')} /> : <Login onToggle={() => setView('signup')} />}
+                {view === 'verify-email' ? (
+                    <VerifyEmail onGoToLogin={() => setView('login')} />
+                ) : view === 'signup' ? (
+                    <Signup onToggle={() => setView('login')} />
+                ) : (
+                    <Login onToggle={() => setView('signup')} />
+                )}
                 <Toast message={toast.message} type={toast.type} isVisible={toast.visible} onClose={() => setToast((prev) => ({ ...prev, visible: false }))} />
             </Box>
         );
