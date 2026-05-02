@@ -8,14 +8,18 @@ const Signup = ({ onToggle }) => {
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("client");
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setSuccess("");
         setLoading(true);
         const result = await register(username, email, password, role);
-        if (!result.success) {
+        if (result.success) {
+            setSuccess("Account created. You can use Diet Desk now, but please verify your email within 2 days.");
+        } else {
             setError(result.error || 'Signup failed. Please try again.');
         }
         setLoading(false);
@@ -90,6 +94,16 @@ const Signup = ({ onToggle }) => {
                             borderRadius: '8px', color: '#b91c1c', fontSize: '0.8125rem', textAlign: 'center' 
                         }}>
                             {error}
+                        </div>
+                    )}
+
+                    {success && (
+                        <div style={{ 
+                            padding: '12px', background: '#ecfdf5', border: '1px solid #d1fae5', 
+                            borderRadius: '8px', color: '#059669', fontSize: '0.8125rem', textAlign: 'center',
+                            lineHeight: '1.4'
+                        }}>
+                            {success}
                         </div>
                     )}
 
