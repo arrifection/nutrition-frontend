@@ -184,9 +184,9 @@ export default function Step4MealPlanner({
     };
 
     const getRemainingColor = (value) => {
-        if (value < 0) return "text-red-600";
-        if (value < 20) return "text-amber-600";
-        return "text-gray-800";
+        if (value < 0) return "text-red-300";
+        if (value < 20) return "text-amber-200";
+        return "text-white";
     };
 
     return (
@@ -332,13 +332,13 @@ export default function Step4MealPlanner({
                 <div className="lg:col-span-1 order-3">
                     <div className="remaining-box sticky top-4">
                         <div className="remaining-title">Daily Summary</div>
-                        <div className="mb-4 pb-4 border-b border-gray-100">
-                            <div className="text-xs text-gray-500 mb-1">Calories</div>
+                        <div className="mb-4 pb-4 border-b border-white/10">
+                            <div className="remaining-label mb-1">Calories</div>
                             <div className="flex justify-between items-baseline">
-                                <span className="text-2xl font-semibold text-gray-800">{Math.round(totalConsumed.calories)}</span>
-                                <span className="text-sm text-gray-500">/ {targets.calories} kcal</span>
+                                <span className="text-2xl font-semibold text-white">{Math.round(totalConsumed.calories)}</span>
+                                <span className="text-sm font-medium text-slate-300">/ {targets.calories} kcal</span>
                             </div>
-                            <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="mt-2 h-2 bg-white/15 rounded-full overflow-hidden">
                                 <div className={`h-full transition-all ${totalConsumed.calories > targets.calories ? "bg-red-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(100, (totalConsumed.calories / targets.calories) * 100)}%` }} />
                             </div>
                         </div>

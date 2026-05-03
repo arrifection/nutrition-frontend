@@ -485,18 +485,19 @@
 
   .remaining-box {
     @apply bg-slate-900 text-white rounded-2xl p-6 shadow-xl;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .remaining-title {
-    @apply text-xs font-bold text-slate-500 uppercase tracking-widest mb-4;
+    @apply text-xs font-bold text-slate-300 uppercase tracking-widest mb-4;
   }
 
   .remaining-item {
-    @apply flex justify-between items-center py-2 border-b border-white/5 last:border-0;
+    @apply flex justify-between items-center py-2 border-b border-white/10 last:border-0;
   }
 
   .remaining-label {
-    @apply text-sm text-slate-400;
+    @apply text-sm font-medium text-slate-200;
   }
 
   .remaining-value {
