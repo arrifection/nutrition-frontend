@@ -42,6 +42,20 @@ const Signup = ({ onToggle }) => {
                     <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '8px' }}>Join our clinical network today</p>
                 </div>
 
+                <div style={{
+                    padding: '12px 14px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '10px',
+                    color: '#475569',
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.45,
+                    marginBottom: '20px',
+                    textAlign: 'center'
+                }}>
+                    For the best experience, please use DietDesk on desktop. Phone preview is coming soon.
+                </div>
+
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     <div>
                         <label className="form-label">I am a...</label>

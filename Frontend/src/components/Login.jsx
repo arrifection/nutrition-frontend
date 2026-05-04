@@ -39,6 +39,20 @@ const Login = ({ onToggle }) => {
                     <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '8px' }}>Login to your clinical dashboard</p>
                 </div>
 
+                <div style={{
+                    padding: '12px 14px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '10px',
+                    color: '#475569',
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.45,
+                    marginBottom: '22px',
+                    textAlign: 'center'
+                }}>
+                    For the best experience, please use DietDesk on desktop. Phone preview is coming soon.
+                </div>
+
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
                         <label className="form-label">Email Address</label>

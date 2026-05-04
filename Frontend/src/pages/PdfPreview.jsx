@@ -439,6 +439,9 @@ export default function PdfPreview() {
                         ))}
                     </select>
                 </label>
+                <button type="button" className="pdf-toolbar-scroll" onClick={scrollDown}>
+                    Scroll down
+                </button>
             </div>
             <button type="button" className="pdf-scroll-button" onClick={scrollDown}>
                 Scroll down

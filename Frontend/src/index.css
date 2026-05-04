@@ -723,6 +723,23 @@
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
+.pdf-toolbar-scroll {
+  align-self: end;
+  border: 1px solid #1d4ed8;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 11px 16px;
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.2);
+}
+
+.pdf-toolbar-scroll:hover {
+  background: #1e40af;
+}
+
 .pdf-preview-stage {
   display: flex;
   justify-content: center;
@@ -1369,6 +1386,7 @@
     display: none;
   }
 
+  .pdf-toolbar-scroll,
   .pdf-scroll-button {
     display: none;
   }
