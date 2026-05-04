@@ -40,7 +40,7 @@ const templates = [
     { id: "clinical-classic", name: "Clinical Classic" },
     { id: "green-minimal", name: "Green Minimal" },
     { id: "structured-chart", name: "Structured Chart" },
-    { id: "executive-summary", name: "Consultation Summary" },
+    { id: "consultation-summary", name: "Consultation Summary" },
     { id: "modern-blue", name: "Modern Blue" },
 ];
 
@@ -413,16 +413,13 @@ const templateMap = {
     "clinical-classic": ClinicalClassic,
     "green-minimal": GreenMinimal,
     "structured-chart": StructuredChart,
-    "executive-summary": ExecutiveSummary,
+    "consultation-summary": ExecutiveSummary,
     "modern-blue": ModernBlue,
 };
 
 export default function PdfPreview() {
     const [selectedTemplate, setSelectedTemplate] = useState(templates[0].id);
     const ActiveTemplate = useMemo(() => templateMap[selectedTemplate], [selectedTemplate]);
-    const scrollDown = () => {
-        window.scrollBy({ top: Math.round(window.innerHeight * 0.82), behavior: "smooth" });
-    };
 
     return (
         <main className="pdf-preview-page">
@@ -439,13 +436,7 @@ export default function PdfPreview() {
                         ))}
                     </select>
                 </label>
-                <button type="button" className="pdf-toolbar-scroll" onClick={scrollDown}>
-                    Scroll down
-                </button>
             </div>
-            <button type="button" className="pdf-scroll-button" onClick={scrollDown}>
-                Scroll down
-            </button>
             <div className="pdf-preview-stage">
                 <ActiveTemplate data={sampleData} />
             </div>

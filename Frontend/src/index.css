@@ -723,48 +723,11 @@
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-.pdf-toolbar-scroll {
-  align-self: end;
-  border: 1px solid #1d4ed8;
-  border-radius: 8px;
-  background: #1d4ed8;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 0.86rem;
-  font-weight: 800;
-  padding: 11px 16px;
-  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.2);
-}
-
-.pdf-toolbar-scroll:hover {
-  background: #1e40af;
-}
-
 .pdf-preview-stage {
   display: flex;
   justify-content: center;
   overflow-x: auto;
   padding: 10px 0 40px;
-}
-
-.pdf-scroll-button {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  z-index: 20;
-  border: 1px solid #cbd5e1;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 800;
-  padding: 11px 16px;
-}
-
-.pdf-scroll-button:hover {
-  background: #f8fafc;
 }
 
 .pdf-sheet {
@@ -1383,11 +1346,6 @@
   }
 
   .pdf-preview-toolbar {
-    display: none;
-  }
-
-  .pdf-toolbar-scroll,
-  .pdf-scroll-button {
     display: none;
   }
 

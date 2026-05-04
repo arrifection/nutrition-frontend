@@ -1,42 +1,152 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+export const PDF_TEMPLATE_OPTIONS = [
+    { id: "clinical-classic", name: "Clinical Classic" },
+    { id: "green-minimal", name: "Green Minimal" },
+    { id: "structured-chart", name: "Structured Chart" },
+    { id: "consultation-summary", name: "Consultation Summary" },
+    { id: "modern-blue", name: "Modern Blue" },
+];
+
+const PDF_TEMPLATE_STYLES = {
+    "clinical-classic": {
+        title: "Clinical Diet Plan Report",
+        accent: [37, 99, 235],
+        accentLight: [239, 246, 255],
+        text: [15, 23, 42],
+        headingText: [255, 255, 255],
+        tableTheme: "grid",
+    },
+    "green-minimal": {
+        title: "Nutrition Care Plan",
+        accent: [22, 163, 74],
+        accentLight: [240, 253, 244],
+        text: [20, 83, 45],
+        headingText: [255, 255, 255],
+        tableTheme: "plain",
+    },
+    "structured-chart": {
+        title: "Clinical Diet Record",
+        accent: [51, 65, 85],
+        accentLight: [241, 245, 249],
+        text: [15, 23, 42],
+        headingText: [255, 255, 255],
+        tableTheme: "grid",
+    },
+    "consultation-summary": {
+        title: "Consultation Summary",
+        accent: [100, 116, 139],
+        accentLight: [248, 250, 252],
+        text: [30, 41, 59],
+        headingText: [255, 255, 255],
+        tableTheme: "plain",
+    },
+    "modern-blue": {
+        title: "Diet Plan Report",
+        accent: [29, 78, 216],
+        accentLight: [239, 246, 255],
+        text: [15, 23, 42],
+        headingText: [255, 255, 255],
+        tableTheme: "grid",
+    },
+};
+
+const formatReportDate = (date = new Date()) => {
+    const value = date instanceof Date ? date : new Date(`${date}T00:00:00`);
+    if (Number.isNaN(value.getTime())) return String(date || "-");
+    return value.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).replace(",", "");
+};
+
 export function generateDietPlanPDF({
     patientData,
     macroTargets,
     weekPlan,
     dietaryFocus = "",
-    selectedDay = null
+    selectedDay = null,
+    templateId = "clinical-classic"
 }) {
     try {
-        console.log("Starting PDF generation...", { patientData, macroTargets, weekPlan });
+        console.log("Starting PDF generation...", { patientData, macroTargets, weekPlan, templateId });
 
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
-        let y = 20;
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const template = PDF_TEMPLATE_STYLES[templateId] || PDF_TEMPLATE_STYLES["clinical-classic"];
+        let y = 18;
 
         if (!patientData) {
             alert("No patient data found. Please complete Step 1.");
             return;
         }
 
+        const patientName = patientData.name || patientData.patient_name || "Patient";
+        const reportDate = formatReportDate(new Date());
+
+        const addReportHeader = () => {
+            if (templateId === "modern-blue") {
+                doc.setFillColor(...template.accent);
+                doc.rect(0, 0, pageWidth, 34, "F");
+                doc.setTextColor(...template.headingText);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("Diet Plan Report", 14, 16);
+                doc.setFontSize(8);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Patient: ${patientName}`, 14, 25);
+                doc.text(`Date: ${reportDate}`, 78, 25);
+                doc.text(`Goal: ${patientData.goal || "-"}`, 130, 25);
+                y = 45;
+                return;
+            }
+
+            doc.setTextColor(...template.text);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(templateId === "consultation-summary" ? 18 : 16);
+            doc.text(template.title, 14, y);
+            y += 8;
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100, 116, 139);
+            doc.text(`${patientName}  |  ${reportDate}`, 14, y);
+            doc.setDrawColor(...template.accent);
+            doc.setLineWidth(templateId === "green-minimal" ? 0.5 : 0.8);
+            doc.line(14, y + 5, pageWidth - 14, y + 5);
+            y += 16;
+        };
+
         // Helper to add section heading
         const addHeading = (text, size = 14) => {
-            doc.setFontSize(size);
+            if (y > pageHeight - 35) {
+                doc.addPage();
+                y = 18;
+            }
+            doc.setFillColor(...template.accent);
+            doc.roundedRect(14, y - 5, pageWidth - 28, 8, 1.5, 1.5, "F");
+            doc.setTextColor(...template.headingText);
+            doc.setFontSize(size > 12 ? 11 : size);
             doc.setFont("helvetica", "bold");
-            doc.text(text, 14, y);
-            y += 8;
+            doc.text(text, 17, y);
+            y += 10;
+            doc.setTextColor(...template.text);
         };
 
         // Helper to add label-value pair
         const addField = (label, value, col = 14) => {
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
+            doc.setTextColor(...template.text);
             doc.text(label + ":", col, y);
             doc.setFont("helvetica", "normal");
             doc.text(String(value || "-"), col + 40, y);
             y += 6;
         };
+
+        addReportHeader();
 
         // ==========================================
         // SECTION 1: PATIENT INFORMATION
@@ -52,7 +162,7 @@ export function generateDietPlanPDF({
             addField("Weight", `${patientData.weight} kg`);
             addField("Activity Level", patientData.activity_level);
             addField("Goal", patientData.goal);
-            addField("Date of Plan", new Date().toLocaleDateString());
+            addField("Date of Plan", reportDate);
 
             if (patientData.medical_notes) {
                 y += 2;
@@ -90,11 +200,12 @@ export function generateDietPlanPDF({
                     ["Protein", `${macroTargets.protein}g`, `${proteinPct}%`],
                     ["Fat", `${macroTargets.fat}g`, `${fatPct}%`],
                 ],
-                theme: "plain",
+                theme: template.tableTheme,
                 styles: { fontSize: 10, cellPadding: 3 },
-                headStyles: { fontStyle: "bold", fillColor: false, textColor: 0 },
+                headStyles: { fontStyle: "bold", fillColor: template.accent, textColor: template.headingText },
+                alternateRowStyles: { fillColor: template.accentLight },
                 columnStyles: { 0: { fontStyle: "bold" } },
-                tableLineColor: [0, 0, 0],
+                tableLineColor: template.accent,
                 tableLineWidth: 0.1,
             });
             y = doc.lastAutoTable.finalY + 10;
@@ -194,14 +305,15 @@ export function generateDietPlanPDF({
                 startY: y,
                 head: [["Meal", "Foods", "Calories", "Carbs (g)", "Protein (g)", "Fat (g)"]],
                 body: tableData,
-                theme: "plain",
+                theme: template.tableTheme,
                 styles: { fontSize: 9, cellPadding: 2 },
-                headStyles: { fontStyle: "bold", fillColor: false, textColor: 0 },
+                headStyles: { fontStyle: "bold", fillColor: template.accent, textColor: template.headingText },
+                alternateRowStyles: { fillColor: template.accentLight },
                 columnStyles: {
                     0: { fontStyle: "bold", cellWidth: 30 },
                     1: { cellWidth: 60 },
                 },
-                tableLineColor: [0, 0, 0],
+                tableLineColor: template.accent,
                 tableLineWidth: 0.1,
                 didParseCell: (data) => {
                     if (data.row.index === tableData.length - 1) {
@@ -281,18 +393,24 @@ export function generateDietPlanPDF({
                 startY: y,
                 head: [["Day", "Items", "Total Calories"]],
                 body: summaryData,
-                theme: "plain",
+                theme: template.tableTheme,
                 styles: { fontSize: 10, cellPadding: 3 },
-                headStyles: { fontStyle: "bold", fillColor: false, textColor: 0 },
+                headStyles: { fontStyle: "bold", fillColor: template.accent, textColor: template.headingText },
+                alternateRowStyles: { fillColor: template.accentLight },
                 columnStyles: { 0: { fontStyle: "bold" } },
-                tableLineColor: [0, 0, 0],
+                tableLineColor: template.accent,
                 tableLineWidth: 0.1,
             });
         }
 
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Template: ${PDF_TEMPLATE_OPTIONS.find((item) => item.id === templateId)?.name || "Clinical Classic"}`, 14, pageHeight - 10);
+
         // Save the PDF
+        const templateSlug = templateId.replace(/[^a-z0-9]+/gi, "_");
         const fileName = patientData?.name
-            ? `Diet_Plan_${patientData.name.replace(/\s+/g, "_")}.pdf`
+            ? `Diet_Plan_${patientData.name.replace(/\s+/g, "_")}_${templateSlug}.pdf`
             : "Diet_Plan.pdf";
 
         doc.save(fileName);

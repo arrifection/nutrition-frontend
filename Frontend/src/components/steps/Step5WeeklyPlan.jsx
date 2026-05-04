@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { savePlan } from "../../services/api";
-import { generateDietPlanPDF } from "../../utils/pdfGenerator";
+import { generateDietPlanPDF, PDF_TEMPLATE_OPTIONS } from "../../utils/pdfGenerator";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Step5WeeklyPlan({
@@ -17,6 +17,7 @@ export default function Step5WeeklyPlan({
     const [saving, setSaving] = useState(false);
     const [selectedDay, setSelectedDay] = useState("Monday");
     const [dietaryFocus, setDietaryFocus] = useState("");
+    const [selectedPdfTemplate, setSelectedPdfTemplate] = useState(PDF_TEMPLATE_OPTIONS[0].id);
 
     const days = [
         "Monday",
@@ -96,16 +97,8 @@ export default function Step5WeeklyPlan({
             weekPlan,
             dietaryFocus,
             selectedDay: null, // null = all days
+            templateId: selectedPdfTemplate,
         });
-    };
-
-    const handleScrollDown = () => {
-        const scrollContainer = document.querySelector("main");
-        if (scrollContainer) {
-            scrollContainer.scrollBy({ top: Math.round(window.innerHeight * 0.75), behavior: "smooth" });
-            return;
-        }
-        window.scrollBy({ top: Math.round(window.innerHeight * 0.75), behavior: "smooth" });
     };
 
     const selectedDayMeals = weekPlan[selectedDay] || {};
@@ -121,9 +114,6 @@ export default function Step5WeeklyPlan({
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={handleScrollDown} className="btn-secondary">
-                        Scroll down
-                    </button>
                     <button onClick={handleGeneratePDF} className="btn-secondary">
                         Download PDF
                     </button>
@@ -134,6 +124,26 @@ export default function Step5WeeklyPlan({
                     >
                         {saving ? "Saving..." : "Save Plan"}
                     </button>
+                </div>
+            </div>
+
+            <div className="mb-6 pb-6 border-b border-emerald-100">
+                <label className="form-label">PDF Template</label>
+                <div className="flex flex-col md:flex-row gap-3 md:items-center">
+                    <select
+                        value={selectedPdfTemplate}
+                        onChange={(event) => setSelectedPdfTemplate(event.target.value)}
+                        className="form-select md:max-w-sm"
+                    >
+                        {PDF_TEMPLATE_OPTIONS.map((template) => (
+                            <option key={template.id} value={template.id}>
+                                {template.name}
+                            </option>
+                        ))}
+                    </select>
+                    <p className="text-sm text-gray-500">
+                        Choose one of the professional templates, then click Download PDF.
+                    </p>
                 </div>
             </div>
 
