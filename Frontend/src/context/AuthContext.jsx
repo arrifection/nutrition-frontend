@@ -65,17 +65,22 @@ export const AuthProvider = ({ children }) => {
             return { success: false, error: result.error || "Login failed" };
         }
 
-        const { access_token, username, role, email_verified, verification_deadline } = result.data;
-        const userData = { 
-            username, 
-            email: result.data.email || normalizedEmail, 
-            role, 
-            email_verified: email_verified ?? false, 
-            verification_deadline 
-        };
+        const { access_token, username, role } = result.data;
 
         localStorage.setItem(TOKEN_KEY, access_token);
+
+        const meResult = await getMe();
+        const profile = meResult.success ? meResult.data : {};
+        const userData = {
+            username: profile.username || username,
+            email: profile.email || result.data.email || normalizedEmail,
+            role: profile.role || role || "client",
+            email_verified: profile.email_verified === true,
+            verification_deadline: profile.verification_deadline
+        };
+
         localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        sessionStorage.setItem("dietdesk_login_success", `Welcome, ${userData.username || userData.email}. Login successful.`);
         setUser(userData);
         return { success: true, user: userData };
     };

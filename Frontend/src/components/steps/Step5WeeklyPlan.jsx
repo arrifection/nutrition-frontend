@@ -99,6 +99,15 @@ export default function Step5WeeklyPlan({
         });
     };
 
+    const handleScrollDown = () => {
+        const scrollContainer = document.querySelector("main");
+        if (scrollContainer) {
+            scrollContainer.scrollBy({ top: Math.round(window.innerHeight * 0.75), behavior: "smooth" });
+            return;
+        }
+        window.scrollBy({ top: Math.round(window.innerHeight * 0.75), behavior: "smooth" });
+    };
+
     const selectedDayMeals = weekPlan[selectedDay] || {};
     const selectedDayTotals = getDayTotals(selectedDay);
 
@@ -112,6 +121,9 @@ export default function Step5WeeklyPlan({
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <button onClick={handleScrollDown} className="btn-secondary">
+                        Scroll down
+                    </button>
                     <button onClick={handleGeneratePDF} className="btn-secondary">
                         Download PDF
                     </button>

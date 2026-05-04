@@ -15,9 +15,6 @@ const Login = ({ onToggle }) => {
         const result = await login(email, password);
         if (!result.success) {
             setError(result.error || 'Login failed. Please try again.');
-        } else {
-            const name = result.user?.username || result.user?.email || "there";
-            sessionStorage.setItem("dietdesk_login_success", `Welcome, ${name}. Login successful.`);
         }
         setLoading(false);
     };
