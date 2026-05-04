@@ -78,6 +78,8 @@ export const deletePatient = (id) => handleResp(() => api.delete(`/api/v1/patien
 // Plans (DB)
 export const getPlan = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}`));
 export const savePlan = (patientId, data) => handleResp(() => api.post(`/api/v1/plans/${patientId}`, data));
+export const getPlanHistory = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}/history`));
+export const deletePlanHistoryItem = (patientId, planId) => handleResp(() => api.delete(`/api/v1/plans/${patientId}/history/${planId}`));
 
 // Clinical Logs (DB)
 export const getLogs = (patientId) => handleResp(() => api.get(`/api/v1/logs/${patientId}`));

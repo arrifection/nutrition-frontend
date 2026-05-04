@@ -298,10 +298,22 @@ export default function Step4MealPlanner({
                             const list = meals[meal.key] || [];
                             const totals = getMealTotals(meal.key);
                             return (
-                                <div key={meal.key} className="meal-section">
+                                <div
+                                    key={meal.key}
+                                    className={`meal-section cursor-pointer transition-all ${selectedMeal === meal.key ? "meal-section-selected" : ""}`}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setSelectedMeal(meal.key)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault();
+                                            setSelectedMeal(meal.key);
+                                        }
+                                    }}
+                                >
                                     <div className="meal-header">
                                         <span className="meal-title">{meal.label}</span>
-                                        <span className="meal-count">{list.length} items</span>
+                                        <span className="meal-count">{selectedMeal === meal.key ? "Adding here" : `${list.length} items`}</span>
                                     </div>
                                     {list.length > 0 ? (
                                         <div className="space-y-2">
@@ -311,7 +323,15 @@ export default function Step4MealPlanner({
                                                         <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
                                                         <p className="text-xs text-gray-400">{food.macros?.calories || food.calories} kcal</p>
                                                     </div>
-                                                    <button onClick={() => removeFood(meal.key, food.instanceId)} className="ml-2 text-gray-400 hover:text-red-500 text-sm">×</button>
+                                                    <button
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            removeFood(meal.key, food.instanceId);
+                                                        }}
+                                                        className="ml-2 text-gray-400 hover:text-red-500 text-sm"
+                                                    >
+                                                        ×
+                                                    </button>
                                                 </div>
                                             ))}
                                             <div className="pt-2 mt-2 border-t border-gray-100 text-xs text-gray-500 flex gap-3">

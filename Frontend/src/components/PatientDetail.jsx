@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
     User,
     History as HistoryIcon,
-    ClipboardList,
     TrendingUp,
     AlertCircle,
     Plus,
@@ -12,8 +11,7 @@ import {
     Activity,
     MessageCircle,
 } from "lucide-react";
-import ReflectionLog from "./ReflectionLog";
-import { getLogs, getPlan } from "../services/api";
+import { deletePlanHistoryItem, getLogs, getPlan, getPlanHistory } from "../services/api";
 
 const T = {
     heading: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' },
@@ -31,6 +29,23 @@ const formatValue = (value, suffix = "") => {
 };
 
 const getFoodCalories = (food) => Number(food?.macros?.calories ?? food?.calories ?? 0) || 0;
+
+const formatShortPatientId = (patient) => {
+    if (!patient?.id) return "PT-PENDING";
+    const suffix = String(patient.id).replace(/[^a-z0-9]/gi, "").slice(-6).toUpperCase();
+    return `PT-${suffix || "PENDING"}`;
+};
+
+const formatDisplayDate = (value) => {
+    if (!value) return "Date not recorded";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Date not recorded";
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).replace(",", "");
+};
 
 const getPlanStats = (plan) => {
     const days = plan?.days || {};
@@ -135,6 +150,87 @@ function MetricTile({ label, value, accent = false }) {
     );
 }
 
+function ComingSoonPanel({ title, description }) {
+    return (
+        <div className="dd-card" style={{ padding: '32px', textAlign: 'center' }}>
+            <div style={{ ...T.label, color: 'var(--brand-green)' }}>Coming soon</div>
+            <h3 style={{ ...T.sectionTitle, marginTop: '8px' }}>{title}</h3>
+            <p style={{ ...T.subheading, maxWidth: '520px', margin: '10px auto 0', lineHeight: 1.6 }}>
+                {description}
+            </p>
+        </div>
+    );
+}
+
+function PlanSummaryCard({ title, planItem, stats, active = false, onView, onDelete }) {
+    return (
+        <div className="dd-card" style={{ padding: '18px', borderColor: active ? 'var(--brand-green)' : 'var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                <div>
+                    <div style={T.label}>{active ? "Active Plan" : "Previous Plan"}</div>
+                    <h4 style={{ ...T.sectionTitle, marginTop: '6px' }}>{title}</h4>
+                    <p style={{ ...T.subheading, margin: '6px 0 0' }}>
+                        Saved {formatDisplayDate(planItem?.saved_at)}
+                    </p>
+                </div>
+                <span className={active ? "badge-active" : "status-pill"}>
+                    {active ? "Current" : "Previous"}
+                </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '16px' }}>
+                <MetricTile label="Days" value={`${stats.daysWithMeals}/7`} accent={active} />
+                <MetricTile label="Items" value={stats.totalItems} />
+                <MetricTile label="Avg kcal" value={stats.avgCalories ? `${stats.avgCalories}` : "-"} />
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+                <button className="btn-secondary" type="button" onClick={onView}>View</button>
+                <button
+                    className="btn-secondary"
+                    type="button"
+                    onClick={onDelete}
+                    style={{ color: '#b91c1c', borderColor: '#fecaca', background: '#fff' }}
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function PlanDayTable({ planItem }) {
+    if (!planItem) {
+        return <EmptyChartState>Select a plan to view details.</EmptyChartState>;
+    }
+
+    return (
+        <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                    <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
+                        <th style={{ padding: '12px 20px', ...T.label }}>Day</th>
+                        <th style={{ padding: '12px 20px', ...T.label }}>Items</th>
+                        <th style={{ padding: '12px 20px', ...T.label }}>Calories</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {DAY_NAMES.map((day) => {
+                        const meals = planItem?.days?.[day] || {};
+                        const items = Object.values(meals).flat().filter(Boolean);
+                        const calories = items.reduce((sum, food) => sum + getFoodCalories(food), 0);
+                        return (
+                            <tr key={day} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '14px 20px', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>{day}</td>
+                                <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length}</td>
+                                <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length ? `${Math.round(calories)} kcal` : "Not planned"}</td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
 function WeightTrendChart({ points }) {
     if (!points.length) {
         return (
@@ -210,6 +306,8 @@ function ConsistencyHeatmap({ logs }) {
 export default function PatientDetail({ patient, onBack, onEditPlan }) {
     const [activeTab, setActiveTab] = useState("overview");
     const [plan, setPlan] = useState(null);
+    const [planHistory, setPlanHistory] = useState([]);
+    const [viewingPlanId, setViewingPlanId] = useState(null);
     const [logs, setLogs] = useState([]);
     const [loadingPlan, setLoadingPlan] = useState(false);
 
@@ -219,14 +317,23 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
         const loadPatientContext = async () => {
             if (!patient?.id) return;
             setLoadingPlan(true);
-            const [planResponse, logsResponse] = await Promise.all([
+            const [planResponse, historyResponse, logsResponse] = await Promise.all([
                 getPlan(patient.id),
+                getPlanHistory(patient.id),
                 getLogs(patient.id),
             ]);
 
             if (cancelled) return;
             if (planResponse.success) setPlan(planResponse.data);
             else setPlan(null);
+            if (historyResponse.success && Array.isArray(historyResponse.data?.plans)) {
+                setPlanHistory(historyResponse.data.plans);
+                const current = historyResponse.data.plans.find((item) => item.is_current) || historyResponse.data.plans[0];
+                setViewingPlanId(current?.id || null);
+            } else {
+                setPlanHistory([]);
+                setViewingPlanId(null);
+            }
             if (logsResponse.success && Array.isArray(logsResponse.data)) setLogs(logsResponse.data);
             else setLogs([]);
             setLoadingPlan(false);
@@ -239,8 +346,36 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
     }, [patient?.id]);
 
     const planStats = useMemo(() => getPlanStats(plan), [plan]);
+    const activePlan = useMemo(() => planHistory.find((item) => item.is_current) || planHistory[0] || null, [planHistory]);
+    const previousPlans = useMemo(() => planHistory.filter((item) => item.id !== activePlan?.id), [planHistory, activePlan]);
+    const viewingPlan = useMemo(() => planHistory.find((item) => item.id === viewingPlanId) || activePlan, [planHistory, viewingPlanId, activePlan]);
+    const viewingPlanStats = useMemo(() => getPlanStats(viewingPlan), [viewingPlan]);
     const weightHistory = useMemo(() => extractWeightHistory(patient), [patient]);
     const clinicalRows = useMemo(() => getClinicalRows(patient), [patient]);
+
+    const handleDeletePlan = async (planItem) => {
+        if (!planItem?.id || !patient?.id) return;
+        const confirmed = window.confirm(`Do you want to delete the plan saved on ${formatDisplayDate(planItem.saved_at)}?`);
+        if (!confirmed) return;
+
+        const response = await deletePlanHistoryItem(patient.id, planItem.id);
+        if (!response.success) {
+            alert(response.error || "Could not delete plan.");
+            return;
+        }
+
+        const historyResponse = await getPlanHistory(patient.id);
+        if (historyResponse.success && Array.isArray(historyResponse.data?.plans)) {
+            setPlanHistory(historyResponse.data.plans);
+            const current = historyResponse.data.plans.find((item) => item.is_current) || historyResponse.data.plans[0] || null;
+            setViewingPlanId(current?.id || null);
+            setPlan(current || null);
+        } else {
+            setPlanHistory([]);
+            setViewingPlanId(null);
+            setPlan(null);
+        }
+    };
 
     const tabs = [
         { id: "overview", label: "Overview", icon: User },
@@ -275,7 +410,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                     </button>
                     <div>
                         <h1 style={T.heading}>{patient?.name || "Unnamed Patient"}</h1>
-                        <p style={T.subheading}>Patient ID: #P-{patient?.id || 'Pending'}</p>
+                        <p style={T.subheading}>Patient ID: {formatShortPatientId(patient)}</p>
                     </div>
                 </div>
                 <button onClick={() => onEditPlan(patient)} className="btn-primary">
@@ -401,125 +536,86 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 )}
 
                 {activeTab === "goals" && (
-                    <div className="dd-card" style={{ padding: '24px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                            <Target size={18} style={{ color: 'var(--brand-green)' }} />
-                            <h3 style={T.sectionTitle}>Goals</h3>
-                        </div>
-                        {patient?.goal ? (
-                            <div className="goal-summary-card">
-                                <div>
-                                    <div style={T.label}>Current profile goal</div>
-                                    <strong>{patient.goal}</strong>
-                                </div>
-                                <div>
-                                    <div style={T.label}>Daily energy target</div>
-                                    <strong>{formatValue(patient?.tdee, " kcal")}</strong>
-                                </div>
-                                <div>
-                                    <div style={T.label}>Saved plan coverage</div>
-                                    <strong>{planStats.hasPlan ? `${planStats.daysWithMeals}/7 days` : "No saved plan"}</strong>
-                                </div>
-                            </div>
-                        ) : (
-                            <EmptyChartState>No goals recorded yet.</EmptyChartState>
-                        )}
-                    </div>
+                    <ComingSoonPanel
+                        title="Goals"
+                        description="Goal setting, milestones, and adherence targets are coming soon. For now, use Overview and Plans for active clinical work."
+                    />
                 )}
 
                 {activeTab === "reflections" && (
-                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                        <ReflectionLog role="dietitian" patientId={patient?.id} />
-                    </div>
+                    <ComingSoonPanel
+                        title="Journal"
+                        description="Patient journal entries and check-ins are coming soon in this profile view."
+                    />
                 )}
 
                 {activeTab === "plans" && (
-                    <div className="dd-card" style={{ overflow: 'hidden' }}>
-                        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div className="dd-card" style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                             <div>
-                                <h3 style={T.sectionTitle}>Saved Diet Plan</h3>
+                                <h3 style={T.sectionTitle}>Plans</h3>
                                 <p style={{ ...T.subheading, margin: '4px 0 0' }}>
-                                    {loadingPlan ? "Loading latest plan..." : planStats.hasPlan ? `${planStats.totalItems} foods across ${planStats.daysWithMeals} planned days.` : "No saved plan yet."}
+                                    {loadingPlan ? "Loading plans..." : activePlan ? "Review the active plan or open a previous version." : "No saved plans yet."}
                                 </p>
                             </div>
-                            <button className="btn-secondary" onClick={() => onEditPlan(patient)}>Update Plan</button>
+                            <button className="btn-primary" onClick={() => onEditPlan(patient)}>
+                                <Plus size={16} strokeWidth={2.5} />
+                                New Plan
+                            </button>
                         </div>
 
-                        {!planStats.hasPlan ? (
+                        {!activePlan ? (
                             <EmptyChartState>No saved diet plan yet. Create and save a plan to review it here.</EmptyChartState>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                    <thead>
-                                        <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
-                                            <th style={{ padding: '12px 20px', ...T.label }}>Day</th>
-                                            <th style={{ padding: '12px 20px', ...T.label }}>Items</th>
-                                            <th style={{ padding: '12px 20px', ...T.label }}>Calories</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {DAY_NAMES.map((day) => {
-                                            const meals = plan?.days?.[day] || {};
-                                            const items = Object.values(meals).flat().filter(Boolean);
-                                            const calories = items.reduce((sum, food) => sum + getFoodCalories(food), 0);
-                                            return (
-                                                <tr key={day} style={{ borderBottom: '1px solid var(--border)' }}>
-                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>{day}</td>
-                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length}</td>
-                                                    <td style={{ padding: '14px 20px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{items.length ? `${Math.round(calories)} kcal` : "Not planned"}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <>
+                                <PlanSummaryCard
+                                    title="Current saved diet plan"
+                                    planItem={activePlan}
+                                    stats={getPlanStats(activePlan)}
+                                    active
+                                    onView={() => setViewingPlanId(activePlan.id)}
+                                    onDelete={() => handleDeletePlan(activePlan)}
+                                />
+
+                                <div className="dd-card" style={{ overflow: 'hidden' }}>
+                                    <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)' }}>
+                                        <h3 style={T.sectionTitle}>Viewing: {viewingPlan?.is_current ? "Current Plan" : "Previous Plan"}</h3>
+                                        <p style={{ ...T.subheading, margin: '4px 0 0' }}>
+                                            Saved {formatDisplayDate(viewingPlan?.saved_at)} · {viewingPlanStats.totalItems} foods · {viewingPlanStats.daysWithMeals}/7 planned days
+                                        </p>
+                                    </div>
+                                    <PlanDayTable planItem={viewingPlan} />
+                                </div>
+
+                                <div>
+                                    <h3 style={{ ...T.sectionTitle, marginBottom: '12px' }}>Previous Plans</h3>
+                                    {previousPlans.length === 0 ? (
+                                        <EmptyChartState>No previous plans yet. When you save a new plan, the old one will appear here.</EmptyChartState>
+                                    ) : (
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                                            {previousPlans.map((item, index) => (
+                                                <PlanSummaryCard
+                                                    key={item.id}
+                                                    title={`Previous plan ${previousPlans.length - index}`}
+                                                    planItem={item}
+                                                    stats={getPlanStats(item)}
+                                                    onView={() => setViewingPlanId(item.id)}
+                                                    onDelete={() => handleDeletePlan(item)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </div>
                 )}
 
                 {activeTab === "history" && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                <ClipboardList size={18} style={{ color: 'var(--brand-green)' }} />
-                                <h3 style={T.sectionTitle}>Follow-up Weights</h3>
-                            </div>
-                            {weightHistory.length === 0 ? (
-                                <div className="dd-card" style={{ padding: '16px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                                    No follow-up weight records yet.
-                                </div>
-                            ) : (
-                                weightHistory.map((entry) => (
-                                    <div key={entry.id} className="dd-card" style={{ padding: '16px' }}>
-                                        <div style={T.label}>{entry.label}</div>
-                                        <div style={{ ...T.value, marginTop: '4px' }}>{entry.weight}kg</div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                <FileText size={18} style={{ color: 'var(--brand-green)' }} />
-                                <h3 style={T.sectionTitle}>Journal History</h3>
-                            </div>
-                            {logs.length === 0 ? (
-                                <div className="subtle-status-box" style={{ padding: '16px', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                                    No journal or check-in history yet.
-                                </div>
-                            ) : (
-                                logs.map((log) => (
-                                    <div key={log.id} className="dd-card" style={{ padding: '16px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
-                                            <span style={T.label}>{log.date || "Undated"}</span>
-                                            <span className="status-pill">{log.status || "open"}</span>
-                                        </div>
-                                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{log.text}</p>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
+                    <ComingSoonPanel
+                        title="History"
+                        description="Detailed timeline, follow-up weights, and journal history are coming soon."
+                    />
                 )}
             </div>
         </div>
