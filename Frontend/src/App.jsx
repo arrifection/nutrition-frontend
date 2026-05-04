@@ -76,6 +76,15 @@ function App() {
 
     const handleSuccess = (msg) => showToast(msg, "success");
 
+    useEffect(() => {
+        if (!user) return;
+        const loginMessage = sessionStorage.getItem("dietdesk_login_success");
+        if (loginMessage) {
+            sessionStorage.removeItem("dietdesk_login_success");
+            showToast(loginMessage, "success");
+        }
+    }, [user, showToast]);
+
     // Navigation logic that responds to sidebar
     const handleNavigate = (newView) => {
         if (newView === 'create') {
@@ -239,6 +248,11 @@ function App() {
                 ) : (
                     <Login onToggle={() => setView('signup')} />
                 )}
+                <Box sx={{ px: 2, mt: -1, textAlign: 'center', maxWidth: 440 }}>
+                    <Typography sx={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5 }}>
+                        For the best experience, please use DietDesk on desktop. Phone preview is coming soon.
+                    </Typography>
+                </Box>
                 <Toast message={toast.message} type={toast.type} isVisible={toast.visible} onClose={() => setToast((prev) => ({ ...prev, visible: false }))} />
             </Box>
         );

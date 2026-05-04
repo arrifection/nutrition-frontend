@@ -56,8 +56,11 @@ export const AuthProvider = ({ children }) => {
         return () => window.removeEventListener("dietdesk:auth-expired", onAuthExpired);
     }, []);
 
+    const normalizeEmail = (value) => value.trim().toLowerCase();
+
     const login = async (email, password) => {
-        const result = await loginUser({ email, password });
+        const normalizedEmail = normalizeEmail(email);
+        const result = await loginUser({ email: normalizedEmail, password });
         if (!result.success) {
             return { success: false, error: result.error || "Login failed" };
         }
@@ -65,7 +68,7 @@ export const AuthProvider = ({ children }) => {
         const { access_token, username, role, email_verified, verification_deadline } = result.data;
         const userData = { 
             username, 
-            email: result.data.email || email, 
+            email: result.data.email || normalizedEmail, 
             role, 
             email_verified: email_verified ?? false, 
             verification_deadline 
@@ -74,11 +77,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem(TOKEN_KEY, access_token);
         localStorage.setItem(USER_KEY, JSON.stringify(userData));
         setUser(userData);
-        return { success: true };
+        return { success: true, user: userData };
     };
 
     const register = async (username, email, password, role) => {
-        const result = await registerUser({ username, email, password, role });
+        const result = await registerUser({ username, email: normalizeEmail(email), password, role });
         if (!result.success) {
             return { success: false, error: result.error || "Registration failed" };
         }

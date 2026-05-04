@@ -730,6 +730,26 @@
   padding: 10px 0 40px;
 }
 
+.pdf-scroll-button {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 20;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 11px 16px;
+}
+
+.pdf-scroll-button:hover {
+  background: #f8fafc;
+}
+
 .pdf-sheet {
   width: 210mm;
   min-height: 297mm;
@@ -1346,6 +1366,10 @@
   }
 
   .pdf-preview-toolbar {
+    display: none;
+  }
+
+  .pdf-scroll-button {
     display: none;
   }
 

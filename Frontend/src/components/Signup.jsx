@@ -18,7 +18,7 @@ const Signup = ({ onToggle }) => {
         setLoading(true);
         const result = await register(username, email, password, role);
         if (result.success) {
-            setSuccess("Account created. You can use Diet Desk now, but please verify your email within 2 days.");
+            setSuccess("Account created successfully. Please verify your email within 2 days.");
         } else {
             setError(result.error || 'Signup failed. Please try again.');
         }

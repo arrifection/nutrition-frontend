@@ -420,6 +420,9 @@ const templateMap = {
 export default function PdfPreview() {
     const [selectedTemplate, setSelectedTemplate] = useState(templates[0].id);
     const ActiveTemplate = useMemo(() => templateMap[selectedTemplate], [selectedTemplate]);
+    const scrollDown = () => {
+        window.scrollBy({ top: Math.round(window.innerHeight * 0.82), behavior: "smooth" });
+    };
 
     return (
         <main className="pdf-preview-page">
@@ -437,6 +440,9 @@ export default function PdfPreview() {
                     </select>
                 </label>
             </div>
+            <button type="button" className="pdf-scroll-button" onClick={scrollDown}>
+                Scroll down
+            </button>
             <div className="pdf-preview-stage">
                 <ActiveTemplate data={sampleData} />
             </div>
