@@ -19,9 +19,11 @@ import Settings from "./components/Settings";
 import PlaceholderPage from "./components/ui/PlaceholderPage";
 import { FileText, Activity, UtensilsCrossed } from "lucide-react";
 import VerifyEmail from "./pages/VerifyEmail";
+import PdfPreview from "./pages/PdfPreview";
 
 function App() {
     const { user, logout, loading } = useAuth();
+    const isPdfPreviewRoute = window.location.pathname === '/pdf-preview';
     // View state ('dashboard', 'planner', 'profile', 'history', 'login', 'signup', 'patients', 'plans', 'progress', 'settings')
     const [view, setView] = useState('dashboard');
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -216,6 +218,10 @@ function App() {
 
         return <Box p={4}><Typography color="textSecondary">Section under development...</Typography></Box>;
     };
+
+    if (isPdfPreviewRoute) {
+        return <PdfPreview />;
+    }
 
     if (view === 'verify-email') {
         return (
