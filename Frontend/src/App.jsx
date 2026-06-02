@@ -10,19 +10,20 @@ import VerifyEmail from "./pages/VerifyEmail";
 import PdfPreview from "./pages/PdfPreview";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
+import ProtectedRoute from "./components/ProtectedRoute";
+import FullPageSpinner from "./components/ui/FullPageSpinner";
 
-function LoadingScreen() {
-    return (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
-        </Box>
-    );
-}
+function RootRoute() {
+    const { isAuthenticated, loading } = useAuth();
 
-function LandingRoute() {
-    const { user, loading } = useAuth();
-    if (loading) return <LoadingScreen />;
-    if (user) return <Navigate to="/dashboard" replace />;
+    if (loading) {
+        return <FullPageSpinner />;
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
     return <Landing />;
 }
 
@@ -40,7 +41,7 @@ function LoginPage() {
     const location = useLocation();
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
 
-    if (loading) return <LoadingScreen />;
+    if (loading) return <FullPageSpinner />;
     if (user) return <Navigate to="/dashboard" replace />;
 
     const from = location.state?.from || "/dashboard";
@@ -67,7 +68,7 @@ function SignupPage() {
     const navigate = useNavigate();
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
 
-    if (loading) return <LoadingScreen />;
+    if (loading) return <FullPageSpinner />;
     if (user) return <Navigate to="/dashboard" replace />;
 
     return (
@@ -88,7 +89,7 @@ function VerifyEmailPage() {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
 
-    if (loading) return <LoadingScreen />;
+    if (loading) return <FullPageSpinner />;
 
     return (
         <Box className="verify-page-wrap auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
@@ -98,13 +99,17 @@ function VerifyEmailPage() {
     );
 }
 
-function ProtectedCatchAll() {
-    return <AuthenticatedApp />;
+function PrivateApp() {
+    return (
+        <ProtectedRoute>
+            <AuthenticatedApp />
+        </ProtectedRoute>
+    );
 }
 
 function CatchAllRoute() {
     const { user, loading } = useAuth();
-    if (loading) return <LoadingScreen />;
+    if (loading) return <FullPageSpinner />;
     if (user) return <Navigate to="/dashboard" replace />;
     return <Navigate to="/" replace />;
 }
@@ -125,18 +130,18 @@ export default function App() {
         <Routes>
             <Route path="/pdf-preview" element={<PdfPreview />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/" element={<LandingRoute />} />
+            <Route path="/" element={<RootRoute />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/dashboard" element={<ProtectedCatchAll />} />
-            <Route path="/patients" element={<ProtectedCatchAll />} />
-            <Route path="/settings" element={<ProtectedCatchAll />} />
-            <Route path="/planner" element={<ProtectedCatchAll />} />
-            <Route path="/plans" element={<ProtectedCatchAll />} />
-            <Route path="/progress" element={<ProtectedCatchAll />} />
-            <Route path="/food-database" element={<ProtectedCatchAll />} />
-            <Route path="/exchange-list" element={<ProtectedCatchAll />} />
-            <Route path="/history" element={<ProtectedCatchAll />} />
+            <Route path="/dashboard" element={<PrivateApp />} />
+            <Route path="/patients" element={<PrivateApp />} />
+            <Route path="/settings" element={<PrivateApp />} />
+            <Route path="/planner" element={<PrivateApp />} />
+            <Route path="/plans" element={<PrivateApp />} />
+            <Route path="/progress" element={<PrivateApp />} />
+            <Route path="/food-database" element={<PrivateApp />} />
+            <Route path="/exchange-list" element={<PrivateApp />} />
+            <Route path="/history" element={<PrivateApp />} />
             <Route path="*" element={<CatchAllRoute />} />
         </Routes>
     );

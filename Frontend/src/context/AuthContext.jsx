@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
         clearSession();
     };
 
-    const value = { user, login, logout, register, loading };
+    const value = { user, isAuthenticated: Boolean(user), login, logout, register, loading };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

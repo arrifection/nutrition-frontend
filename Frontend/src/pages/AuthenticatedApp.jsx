@@ -295,18 +295,6 @@ export default function AuthenticatedApp() {
         );
     };
 
-    if (loading) {
-        return (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
-            </Box>
-        );
-    }
-
-    if (!user) {
-        return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-    }
-
     const protectedPaths = Object.keys(PATH_TO_VIEW);
     const isProfileView = view === "profile" && selectedPatient;
     if (!protectedPaths.includes(location.pathname) && !isProfileView) {
