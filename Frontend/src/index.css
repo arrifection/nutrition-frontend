@@ -2968,11 +2968,37 @@
 
 /* Desktop-only: hide mobile-only elements */
 @media (min-width: 769px) {
+  .dd-step-view--mobile {
+    display: none !important;
+  }
+
   .dd-bottom-nav {
     display: none !important;
   }
 
   .patient-delete-mobile {
+    display: none !important;
+  }
+
+  .dd-dashboard-actions {
+    width: auto !important;
+  }
+
+  .dd-create-plan-btn {
+    flex: none !important;
+    width: auto !important;
+    min-height: 44px !important;
+  }
+
+  .dd-notif-btn-wrap .MuiIconButton-root {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dd-step-view--desktop {
     display: none !important;
   }
 }
