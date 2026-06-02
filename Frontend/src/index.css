@@ -751,6 +751,11 @@
   background: #94a3b8;
 }
 
+/* Mobile nav hidden by default; shown only in phone shell */
+.mobile-nav {
+  display: none;
+}
+
 /* Mobile utility */
 @media (max-width: 768px) {
   .glass-panel {
@@ -1454,8 +1459,76 @@
   }
 
   body {
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  /* ── Global mobile layout (sidebar, shell, typography) ── */
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-nav,
+  .dd-bottom-nav {
+    display: flex;
+  }
+
+  .main-content,
+  .dd-app-main {
+    margin-left: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .dd-app-main h1,
+  .dd-app-main h2,
+  .dd-app-main h3,
+  .dd-app-main .section-title,
+  .dd-mobile-page h1,
+  .dd-mobile-page h2,
+  .dd-mobile-page h3,
+  .dd-mobile-page .section-title,
+  .settings-page h1,
+  .settings-page h2,
+  .settings-page h3,
+  .dashboard-heading,
+  .settings-page-header h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Card grids — single column on phone */
+  .stats-grid,
+  .card-grid,
+  .dd-stats-grid,
+  .settings-cards-grid,
+  .landing-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .stats-grid .MuiGrid-item,
+  .card-grid .MuiGrid-item,
+  .dd-stats-grid .MuiGrid-item {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Tables — horizontal scroll */
+  .table-wrapper,
+  .dd-table-scroll,
+  .overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .table-wrapper table,
+  .dd-table-scroll table,
+  .overflow-x-auto table {
+    min-width: 600px;
   }
 
   /* ── Mobile app shell ── */
@@ -1483,7 +1556,7 @@
 
   .dd-mobile-page,
   .settings-page {
-    padding: var(--dd-page-pad) !important;
+    padding: 12px 16px !important;
     gap: var(--dd-section-gap) !important;
   }
 
@@ -1518,8 +1591,8 @@
 
   /* ── Dashboard ── */
   .dashboard-heading {
-    font-size: 1.375rem !important;
-    line-height: 1.25 !important;
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
   }
 
   .dd-dashboard-actions {
@@ -2889,7 +2962,7 @@
   }
 
   .section-title {
-    font-size: 1.125rem !important;
+    font-size: 1.25rem !important;
   }
 
   .data-value {
@@ -2905,6 +2978,7 @@
     overflow-x: hidden;
   }
 
+  .mobile-nav,
   .dd-bottom-nav {
     display: none !important;
   }
@@ -2972,6 +3046,7 @@
     display: none !important;
   }
 
+  .mobile-nav,
   .dd-bottom-nav {
     display: none !important;
   }

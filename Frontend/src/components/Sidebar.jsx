@@ -251,7 +251,7 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
         <>
             {/* Desktop Layout Helper */}
             {!isMobile && (
-                <Box component="nav" sx={{ width: collapsed ? 80 : 250, transition: 'width 0.2s', flexShrink: 0 }}>
+                <Box component="nav" className="sidebar" sx={{ width: collapsed ? 80 : 250, transition: 'width 0.2s', flexShrink: 0 }}>
                     <Box sx={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: collapsed ? 80 : 250, transition: 'width 0.2s', zIndex: 1200 }}>
                         {sidebarContent}
                     </Box>
@@ -294,7 +294,7 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                     {!isPhone && <Box sx={{ height: 64, flexShrink: 0 }} />}
 
                     {isPhone && (
-                        <nav className="dd-bottom-nav" aria-label="Main navigation">
+                        <nav className="mobile-nav dd-bottom-nav" aria-label="Main navigation">
                             {BOTTOM_NAV_ITEMS.map((item) => {
                                 const Icon = item.icon;
                                 const active = activeView === item.id || (item.id === 'create' && activeView === 'planner');

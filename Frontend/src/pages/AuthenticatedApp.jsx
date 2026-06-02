@@ -307,7 +307,7 @@ export default function AuthenticatedApp() {
 
             <Box
                 component="main"
-                className="dd-app-main"
+                className="main-content dd-app-main"
                 sx={{
                     flexGrow: 1,
                     overflowY: "auto",

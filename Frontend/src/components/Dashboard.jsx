@@ -199,7 +199,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
             </Stack>
 
             {/* ── Stat Cards ── */}
-            <Grid className="dd-stats-grid" container spacing={2.5}>
+            <Grid className="stats-grid dd-stats-grid" container spacing={2.5}>
                 {[
                     { label: "Total Patients", val: state.stats.totalPatients, icon: Users, color: '#3b82f6', bg: '#eff6ff' },
                     { label: "Active Plans", val: state.stats.activePlans, icon: FileText, color: '#16a34a', bg: '#f0fdf4' },

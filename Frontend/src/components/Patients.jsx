@@ -196,7 +196,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
                     </Typography>
                 </Box>
             ) : (
-                <Grid container spacing={2}>
+                <Grid className="card-grid" container spacing={2}>
                     {filteredPatients.map((patient) => (
                         <Grid item xs={12} key={patient.id}>
                             <Box

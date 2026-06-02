@@ -226,7 +226,7 @@ export default function Step5WeeklyPlan({
                     })}
                 </div>
 
-                <div className="dd-step5-table-wrap dd-table-scroll overflow-x-auto">
+                <div className="table-wrapper dd-step5-table-wrap dd-table-scroll overflow-x-auto">
                     <table className="w-full border-collapse border border-emerald-200">
                         <thead>
                             <tr className="bg-emerald-50">

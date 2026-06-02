@@ -117,7 +117,7 @@ export default function Settings() {
                 <p style={T.subheading}>Manage your account preferences and clinical workspace.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 settings-cards-grid">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 settings-cards-grid card-grid">
                 
                 {/* 1. Profile Information */}
                 <div className="dd-card settings-card p-6 flex flex-col h-full w-full">

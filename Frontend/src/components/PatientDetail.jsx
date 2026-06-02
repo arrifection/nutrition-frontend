@@ -203,7 +203,7 @@ function PlanDayTable({ planItem }) {
     }
 
     return (
-        <div className="dd-table-scroll overflow-x-auto">
+        <div className="table-wrapper dd-table-scroll overflow-x-auto">
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                     <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
@@ -394,7 +394,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
     );
 
     return (
-        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="fade-up dd-mobile-page" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }} className="patient-header-actions">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <button

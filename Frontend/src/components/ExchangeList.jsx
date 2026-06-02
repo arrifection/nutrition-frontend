@@ -326,7 +326,7 @@ export default function ExchangeList({ onError, onAddFood, patientLanguage = "en
                                                         </div>
 
                                                         {/* Table */}
-                                                        <div className="overflow-x-auto">
+                                                        <div className="table-wrapper overflow-x-auto">
                                                             <table className="w-full min-w-[600px]">
                                                                 <thead className="text-[10px] uppercase tracking-widest text-primary-400 border-b-2 border-primary-100">
                                                                     <tr>
