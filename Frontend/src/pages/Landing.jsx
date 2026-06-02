@@ -51,7 +51,7 @@ const PREVIEW_MEALS = [
 
 const scrollToFeatures = (e) => {
     e.preventDefault();
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelector("#features")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
 const STATS = [
@@ -111,9 +111,7 @@ const fadeUp = {
 export default function Landing() {
     return (
         <div className="landing-page">
-            <div className="landing-announcement" role="status">
-                Now in beta — free for early users
-            </div>
+            <div className="landing-announcement" role="status" aria-label="Beta announcement" />
 
             {/* ── Nav ── */}
             <header className="landing-nav">
@@ -126,7 +124,7 @@ export default function Landing() {
                             Login
                         </SecondaryCtaLink>
                         <PrimaryCtaLink className="landing-btn landing-btn-primary landing-btn-nav-cta">
-                            Get Started
+                            Start free
                         </PrimaryCtaLink>
                     </nav>
                 </div>
@@ -432,7 +430,7 @@ export default function Landing() {
             {/* ── Footer ── */}
             <footer className="landing-footer">
                 <div className="landing-container">
-                    <div className="landing-footer-main">
+                    <div className="landing-footer-grid">
                         <div className="landing-footer-brand">
                             <Link to={ROUTES.home} className="landing-logo landing-footer-logo" aria-label="DietDesk home">
                                 <DietDeskLogo compact idPrefix="footer" />
@@ -441,11 +439,17 @@ export default function Landing() {
                                 Clinical nutrition software for modern diet planning.
                             </p>
                         </div>
-                        <nav className="landing-footer-links" aria-label="Footer navigation">
-                            <Link to="/privacy">Privacy</Link>
-                            <Link to="/terms">Terms</Link>
-                            <SecondaryCtaLink>Login</SecondaryCtaLink>
-                            <PrimaryCtaLink>Sign Up</PrimaryCtaLink>
+                        <nav className="landing-footer-col" aria-label="Product links">
+                            <p className="landing-footer-col-title">Product</p>
+                            <button type="button" className="landing-footer-link-btn" onClick={scrollToFeatures}>
+                                Features
+                            </button>
+                            <span className="landing-footer-link-muted">Pricing (coming soon)</span>
+                        </nav>
+                        <nav className="landing-footer-col" aria-label="Legal links">
+                            <p className="landing-footer-col-title">Legal</p>
+                            <a href="/privacy" className="landing-footer-legal-link">Privacy Policy</a>
+                            <a href="/terms" className="landing-footer-legal-link">Terms of Service</a>
                         </nav>
                     </div>
                     <p className="landing-footer-copy">© {new Date().getFullYear()} DietDesk. All rights reserved.</p>

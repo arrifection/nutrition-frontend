@@ -119,7 +119,6 @@ export default function Step5WeeklyPlan({
                 <div className="step5-header-actions dd-step5-desktop-actions">
                     <PdfExportButton
                         exportPayload={exportPayload}
-                        onError={onError}
                         disabled={!patientData}
                     />
                     <button
@@ -309,10 +308,9 @@ export default function Step5WeeklyPlan({
                 </button>
                 <PdfExportButton
                     exportPayload={exportPayload}
-                    onError={onError}
                     disabled={!patientData}
                     wrapperClassName="dd-step5-mobile-action"
-                    className="btn-secondary"
+                    fullWidth
                 />
                 <button type="button" onClick={onBack} className="btn-secondary">
                     ← Back to Planner

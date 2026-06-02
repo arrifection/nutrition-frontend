@@ -1,3 +1,5 @@
+import { LinearProgress } from "@mui/material";
+
 export default function StepProgressMobile({ currentStep, onStepClick }) {
     const steps = [
         { number: 1, title: "Patient", short: "1" },
@@ -7,6 +9,8 @@ export default function StepProgressMobile({ currentStep, onStepClick }) {
         { number: 5, title: "Review", short: "5" },
     ];
 
+    const progress = (currentStep / steps.length) * 100;
+
     const getStepStatus = (stepNumber) => {
         if (stepNumber < currentStep) return "completed";
         if (stepNumber === currentStep) return "active";
@@ -14,9 +18,11 @@ export default function StepProgressMobile({ currentStep, onStepClick }) {
     };
 
     return (
-        <div className="step-progress-wrap" role="navigation" aria-label="Plan creation steps">
+        <div className="stepper-container step-progress-wrap" role="navigation" aria-label="Plan creation steps">
+            <p className="step-progress-mobile-count">Step {currentStep} of {steps.length}</p>
+            <LinearProgress variant="determinate" value={progress} className="step-progress-mobile-bar" />
             {steps.map((step, index) => (
-                <div key={step.number} className="step-progress-segment">
+                <div key={step.number} className="step-progress-segment step-item">
                     <button
                         type="button"
                         onClick={() => step.number <= currentStep && onStepClick(step.number)}

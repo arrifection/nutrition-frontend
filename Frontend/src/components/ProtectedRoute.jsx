@@ -1,17 +1,16 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import FullPageSpinner from "./ui/FullPageSpinner";
+import AuthLoadingScreen from "./ui/AuthLoadingScreen";
 
 export default function ProtectedRoute({ children }) {
-    const { isAuthenticated, loading } = useAuth();
-    const location = useLocation();
+    const { user, loading: authLoading } = useAuth();
 
-    if (loading) {
-        return <FullPageSpinner />;
+    if (authLoading) {
+        return <AuthLoadingScreen />;
     }
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    if (!user) {
+        return <Navigate to="/" replace />;
     }
 
     return children;

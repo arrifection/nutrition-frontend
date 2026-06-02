@@ -203,6 +203,10 @@ export default function AuthenticatedApp() {
             return (
                 <Dashboard
                     onCreatePlan={startNewPlan}
+                    onAddPatient={() => {
+                        setView("patients");
+                        navigate("/patients?action=add");
+                    }}
                     onSelectClient={(client) => {
                         setSelectedPatient(client);
                         setView("profile");
@@ -216,7 +220,7 @@ export default function AuthenticatedApp() {
             return (
                 <Patients
                     onBack={() => handleNavigate("dashboard")}
-                    onAddPatient={() => handleNavigate("create")}
+                    onAddPatient={startNewPlan}
                     onSelectPatient={(client) => {
                         setSelectedPatient(client);
                         setView("profile");
@@ -309,7 +313,7 @@ export default function AuthenticatedApp() {
 
             <Box
                 component="main"
-                className="main-content dd-app-main"
+                className="main-content dd-app-main page-content"
                 sx={{
                     flexGrow: 1,
                     overflowY: "auto",
@@ -321,7 +325,7 @@ export default function AuthenticatedApp() {
             >
                 {renderMainContent()}
 
-                <MobileBottomNav onNewPlan={startNewPlan} />
+                <MobileBottomNav />
 
                 <Toast
                     message={toast.message}

@@ -115,7 +115,6 @@ export default function Step5WeeklyPlan({
                 <div className="flex gap-2">
                     <PdfExportButton
                         exportPayload={exportPayload}
-                        onError={onError}
                         disabled={!patientData}
                     />
                     <button

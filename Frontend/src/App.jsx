@@ -13,16 +13,16 @@ import NotFound from "./pages/NotFound";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
 import ProtectedRoute from "./components/ProtectedRoute";
-import FullPageSpinner from "./components/ui/FullPageSpinner";
+import AuthLoadingScreen from "./components/ui/AuthLoadingScreen";
 
 function RootRoute() {
-    const { isAuthenticated, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
 
-    if (loading) {
-        return <FullPageSpinner />;
+    if (authLoading) {
+        return <AuthLoadingScreen />;
     }
 
-    if (isAuthenticated) {
+    if (user) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -38,12 +38,12 @@ function AuthHomeLink({ idPrefix }) {
 }
 
 function LoginPage() {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
 
-    if (loading) return <FullPageSpinner />;
+    if (authLoading) return <AuthLoadingScreen />;
     if (user) return <Navigate to="/dashboard" replace />;
 
     const from = location.state?.from || "/dashboard";
@@ -66,11 +66,11 @@ function LoginPage() {
 }
 
 function SignupPage() {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
 
-    if (loading) return <FullPageSpinner />;
+    if (authLoading) return <AuthLoadingScreen />;
     if (user) return <Navigate to="/dashboard" replace />;
 
     return (
@@ -88,10 +88,10 @@ function SignupPage() {
 }
 
 function VerifyEmailPage() {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
-    if (loading) return <FullPageSpinner />;
+    if (authLoading) return <AuthLoadingScreen />;
 
     return (
         <Box className="verify-page-wrap auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">

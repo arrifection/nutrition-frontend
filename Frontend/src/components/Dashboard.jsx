@@ -38,7 +38,7 @@ const T = {
     stat: { fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1 },
 };
 
-export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) {
+export default function Dashboard({ onCreatePlan, onAddPatient, onSelectClient, onNavigate }) {
     const { user } = useAuth();
     
     // Unified Dashboard State (Data-Driven Model)
@@ -100,7 +100,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
     }
 
     return (
-        <Box className="dd-mobile-page" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1400 }, mx: 'auto', display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 4 }, width: '100%' }}>
+        <Box className="dd-mobile-page dashboard-container page-container" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1400 }, mx: 'auto', display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 4 }, width: '100%' }}>
             
             {/* ── Verification Warning Banner ── */}
             {user?.email_verified === false && (
@@ -177,6 +177,24 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                         </span>
                     </Tooltip>
                     
+                    <Button
+                        className="dd-add-patient-btn btn-secondary"
+                        variant="outlined"
+                        onClick={onAddPatient}
+                        startIcon={<Users size={18} />}
+                        sx={{
+                            borderRadius: '10px',
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            px: 2.5,
+                            height: 44,
+                            borderColor: 'var(--border)',
+                            color: 'var(--text-primary)',
+                        }}
+                    >
+                        Add Patient
+                    </Button>
+
                     <Button
                         className="dd-create-plan-btn"
                         variant="contained"

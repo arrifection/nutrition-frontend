@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     Box, 
     Button, 
@@ -21,6 +22,8 @@ const T = {
 };
 
 export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -30,6 +33,14 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
     useEffect(() => {
         fetchPatients();
     }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get("action") === "add") {
+            onAddPatient?.();
+            navigate("/patients", { replace: true });
+        }
+    }, [location.search, onAddPatient, navigate]);
 
     const fetchPatients = async () => {
         setLoading(true);
@@ -78,7 +89,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
     }, [patients, search, sortBy]);
 
     return (
-        <Box className="fade-up dd-mobile-page" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1200 }, mx: 'auto', width: '100%' }}>
+        <Box className="fade-up dd-mobile-page patients-container page-container" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1200 }, mx: 'auto', width: '100%' }}>
             
             {/* Header */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }}>
@@ -129,6 +140,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
                         }
                     }}
                     InputProps={{
+                        style: { fontSize: '16px' },
                         startAdornment: (
                             <InputAdornment position="start">
                                 <Search size={18} color="var(--text-muted)" />
