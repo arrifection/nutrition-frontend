@@ -375,7 +375,7 @@ export default function Landing() {
             </section>
 
             {/* ── Final CTA ── */}
-            <section className="landing-final-wrap">
+            <section className="landing-final-wrap landing-section-alt">
                 <div className="landing-container">
                     <motion.div
                         className="landing-final-panel"
@@ -384,13 +384,6 @@ export default function Landing() {
                         viewport={{ once: true, margin: "-60px" }}
                         transition={{ duration: 0.55, ease: [0.2, 1, 0.4, 1] }}
                     >
-                        <div className="landing-final-decor" aria-hidden="true">
-                            <UtensilsCrossed className="landing-final-icon landing-final-icon-1" size={28} />
-                            <FileText className="landing-final-icon landing-final-icon-2" size={24} />
-                            <Download className="landing-final-icon landing-final-icon-3" size={22} />
-                            <Calculator className="landing-final-icon landing-final-icon-4" size={26} />
-                        </div>
-
                         <span className="landing-final-badge">Ready for your first client-ready plan?</span>
                         <h2 className="landing-final-title">Start building professional diet plans today</h2>
                         <p className="landing-final-sub">
@@ -398,11 +391,11 @@ export default function Landing() {
                         </p>
 
                         <div className="landing-final-actions">
-                            <Link to="/signup" className="landing-btn landing-final-btn-primary landing-btn-lg">
+                            <Link to="/signup" className="landing-btn landing-btn-primary landing-btn-lg">
                                 Get Started Free
                                 <ArrowRight size={18} />
                             </Link>
-                            <Link to="/login" className="landing-btn landing-final-btn-secondary landing-btn-lg">
+                            <Link to="/login" className="landing-btn landing-btn-outline landing-btn-lg">
                                 Login
                             </Link>
                         </div>
