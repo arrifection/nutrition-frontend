@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { savePlan } from "../../../services/api";
 import { generateDietPlanPDF, PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
 import { useAuth } from "../../../context/AuthContext";
@@ -241,7 +241,7 @@ export default function Step5WeeklyPlan({
                         {selectedDay} Details
                     </h3>
                     <div className="text-sm text-gray-500">
-                        {selectedDayTotals.count} items ·{" "}
+                        {selectedDayTotals.count} items •{" "}
                         {Math.round(selectedDayTotals.calories)} kcal
                     </div>
                 </div>
@@ -313,7 +313,7 @@ export default function Step5WeeklyPlan({
             {/* Navigation */}
             <div className="flex justify-between pt-6 border-t border-emerald-100">
                 <button onClick={onBack} className="btn-secondary">
-                    ΓåÉ Back to Planner
+                    ← Back to Planner
                 </button>
                 <button onClick={onStartOver} className="btn-secondary">
                     Start New Plan

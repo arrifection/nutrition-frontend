@@ -1,4 +1,4 @@
-﻿export default function Step2Calculations({ metrics, onProceed, onBack }) {
+export default function Step2Calculations({ metrics, onProceed, onBack }) {
     if (!metrics) {
         return (
             <div className="section">
@@ -39,7 +39,7 @@
                     <div className="data-label">BMI</div>
                     <div className="flex items-baseline gap-2">
                         <span className="data-value">{metrics.bmi}</span>
-                        <span className="text-sm text-gray-500">kg/m┬▓</span>
+                        <span className="text-sm text-gray-500">kg/m²</span>
                     </div>
                     <div className={`mt-2 text-sm font-medium ${bmiCategory.color}`}>
                         {bmiCategory.label}
@@ -68,10 +68,10 @@
             {/* Navigation */}
             <div className="flex justify-between pt-6 border-t border-emerald-100">
                 <button onClick={onBack} className="btn-secondary">
-                    ΓåÉ Back
+                    ← Back
                 </button>
                 <button onClick={onProceed} className="btn-primary">
-                    Proceed to Macro Setup ΓåÆ
+                    Proceed to Macro Setup →
                 </button>
             </div>
         </div>

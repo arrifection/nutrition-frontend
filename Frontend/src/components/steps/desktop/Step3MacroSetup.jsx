@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack }) {
     const [calories, setCalories] = useState(initialMacros?.calories || tdee || 2000);
@@ -177,7 +177,7 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
                             }`}
                     >
                         Total: {totalPercentage}%{" "}
-                        {isValid ? "Γ£ô" : "(must equal 100%)"}
+                        {isValid ? "✓" : "(must equal 100%)"}
                     </div>
                 </div>
 
@@ -229,14 +229,14 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
             {/* Navigation */}
             <div className="flex justify-between pt-8 border-t border-emerald-100 mt-8">
                 <button onClick={onBack} className="btn-secondary">
-                    ΓåÉ Back
+                    ← Back
                 </button>
                 <button
                     onClick={handleConfirm}
                     disabled={!isValid}
                     className="btn-primary"
                 >
-                    Confirm Macros ΓåÆ
+                    Confirm Macros →
                 </button>
             </div>
         </div>

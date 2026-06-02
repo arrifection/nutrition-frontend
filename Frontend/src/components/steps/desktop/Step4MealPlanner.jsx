@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getExchangeList } from "../../../services/api";
 import { Globe } from "lucide-react";
 
@@ -231,19 +231,19 @@ export default function Step4MealPlanner({
                             </select>
 
                             <div className="flex items-center justify-between mt-4">
-                                <label className="form-label">{lang === "ur" ? "╪¬┘ä╪º╪┤ ┌⌐╪▒█î┌║:" : "Search foods:"}</label>
+                                <label className="form-label">{lang === "ur" ? "تلاش کریں:" : "Search foods:"}</label>
                                 <button
                                     onClick={() => setLang(prev => prev === "en" ? "ur" : "en")}
                                     className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 transition-colors border border-gray-200"
                                     title="Switch Language"
                                 >
                                     <Globe size={13} />
-                                    {lang === "en" ? "╪º╪▒╪»┘ê" : "EN"}
+                                    {lang === "en" ? "اردو" : "EN"}
                                 </button>
                             </div>
                             <input
                                 type="text"
-                                placeholder={lang === "ur" ? "┘à╪½┘ä╪º┘ï ┌å╪º┘ê┘ä╪î ╪│█î╪¿..." : "e.g. Rice, Apple..."}
+                                placeholder={lang === "ur" ? "مثلاً چاول، سیب..." : "e.g. Rice, Apple..."}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="form-input"
@@ -263,7 +263,7 @@ export default function Step4MealPlanner({
                                         >
                                             <span className={`text-sm font-medium text-gray-700 ${lang === "ur" ? "font-urdu" : ""}`}>{getGroupDisplayName(group)}</span>
                                             <span className="text-xs text-gray-400">
-                                                {groupedFoods[group].length} {lang === "ur" ? "╪ó╪ª┘╣┘à╪▓" : "items"} {expandedGroup === group ? "ΓêÆ" : "+"}
+                                                {groupedFoods[group].length} {lang === "ur" ? "آئٹمز" : "items"} {expandedGroup === group ? "−" : "+"}
                                             </span>
                                         </button>
 
@@ -273,7 +273,7 @@ export default function Step4MealPlanner({
                                                     <div key={idx} className="px-4 py-2 flex items-center justify-between border-b border-gray-100 last:border-0 hover:bg-white">
                                                         <div className="flex-1 min-w-0">
                                                             <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
-                                                            <p className="text-xs text-gray-400">{food.serving_size || food.portion} · {food.macros?.calories || food.calories} kcal</p>
+                                                            <p className="text-xs text-gray-400">{food.serving_size || food.portion} • {food.macros?.calories || food.calories} kcal</p>
                                                         </div>
                                                         <button
                                                             onClick={() => addFood(food)}
@@ -330,7 +330,7 @@ export default function Step4MealPlanner({
                                                         }}
                                                         className="ml-2 text-gray-400 hover:text-red-500 text-sm"
                                                     >
-                                                        ├ù
+                                                        ×
                                                     </button>
                                                 </div>
                                             ))}
@@ -382,8 +382,8 @@ export default function Step4MealPlanner({
             </div>
 
             <div className="flex justify-between pt-8 border-t border-gray-100 mt-8">
-                <button onClick={onBack} className="btn-secondary">ΓåÉ Back</button>
-                <button onClick={onProceed} className="btn-primary">Review Weekly Plan ΓåÆ</button>
+                <button onClick={onBack} className="btn-secondary">← Back</button>
+                <button onClick={onProceed} className="btn-primary">Review Weekly Plan →</button>
             </div>
         </div>
     );

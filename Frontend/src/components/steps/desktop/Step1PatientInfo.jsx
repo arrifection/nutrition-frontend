@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPatient, updatePatient, getPatients } from "../../../services/api";
 
 export default function Step1PatientInfo({ onSave, onError, initialData }) {
@@ -98,7 +98,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("≡ƒƒó Submit button clicked");
+        console.log("🟢 Submit button clicked");
         setLoading(true);
 
 
@@ -128,7 +128,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
         };
 
 
-        console.log("≡ƒôñ Sending patient data:", data);
+        console.log("📤 Sending patient data:", data);
         let response;
         if (profile.id) {
             response = await updatePatient(profile.id, data);
@@ -136,7 +136,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
             response = await createPatient(data);
         }
 
-        console.log("≡ƒôÑ Backend response:", response);
+        console.log("📥 Backend response:", response);
 
         if (response.success) {
             // Refresh patient list
@@ -145,7 +145,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
 
             onSave(response.data);
         } else {
-            console.error("Γ¥î Save failed:", response.error);
+            console.error("❌ Save failed:", response.error);
             onError?.(response.error);
         }
 
