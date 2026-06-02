@@ -356,7 +356,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                 </div>
 
                 {/* Actions */}
-                <div className="step-actions flex justify-end gap-3 pt-6 border-t border-emerald-100">
+                <div className="form-actions step-actions flex justify-end gap-3 pt-6 border-t border-emerald-100">
                     {!isEditing && profile.id ? (
                         <button
                             type="button"

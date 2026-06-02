@@ -66,7 +66,7 @@ export default function Step2Calculations({ metrics, onProceed, onBack }) {
             </div>
 
             {/* Navigation */}
-            <div className="step-actions flex justify-between pt-6 border-t border-emerald-100">
+            <div className="form-actions step-actions flex justify-between pt-6 border-t border-emerald-100">
                 <button onClick={onBack} className="btn-secondary">
                     ← Back
                 </button>

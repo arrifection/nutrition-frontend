@@ -2779,39 +2779,99 @@
     flex-direction: column !important;
   }
 
-  /* ── Forms ── */
+  /* ── Forms (mobile-first spacing) ── */
+  .form-group,
+  .dd-form-group,
+  .dd-form-section,
+  .dd-field {
+    margin-bottom: 20px;
+  }
+
+  .form-row,
+  .dd-form-row-2,
+  .dd-form-grid,
+  .dd-patient-load-row {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .dd-form-row-2,
+  .dd-form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .dd-app-main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]),
+  .dd-app-main select,
+  .dd-app-main textarea,
+  .dd-planner-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]),
+  .dd-planner-page select,
+  .dd-planner-page textarea,
+  .dd-mobile-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]),
+  .dd-mobile-page select,
+  .dd-mobile-page textarea,
+  .settings-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]),
+  .settings-page select,
+  .settings-page textarea,
+  .auth-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]),
+  .auth-page select,
+  .auth-page textarea,
   .form-input,
   .form-select,
   .form-textarea,
   .input-premium {
-    min-height: 52px !important;
-    font-size: 16px !important;
-    border-radius: 14px !important;
     width: 100% !important;
-    box-sizing: border-box;
+    min-height: 48px !important;
+    font-size: 16px !important; /* prevents iOS Safari zoom on focus */
+    padding: 12px 14px !important;
+    box-sizing: border-box !important;
+    border-radius: 14px !important;
   }
 
-  .form-textarea {
+  .form-textarea,
+  textarea.form-textarea {
     min-height: 100px !important;
   }
 
-  .form-label {
-    font-size: 0.8125rem !important;
-    margin-bottom: 8px !important;
-  }
-
-  .btn-primary,
-  .btn-secondary,
-  .btn-success {
+  .dd-planner-page .dd-macro-cal-input,
+  .dd-planner-page .dd-macro-pct-input {
+    font-size: 16px !important;
     min-height: 48px !important;
-    border-radius: 14px !important;
-    font-size: 0.9375rem !important;
+    padding: 12px 14px !important;
   }
 
-  .dd-patient-load-row {
+  .dd-app-main .MuiInputBase-input,
+  .dd-mobile-page .MuiInputBase-input {
+    font-size: 16px !important;
+  }
+
+  label,
+  .form-label {
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+    display: block;
+  }
+
+  .form-label.mb-0 {
+    margin-bottom: 0 !important;
+  }
+
+  .form-actions,
+  .step-actions,
+  .settings-save-row {
     flex-direction: column !important;
-    align-items: stretch !important;
     gap: 10px !important;
+  }
+
+  .form-actions button,
+  .step-actions .btn-primary,
+  .step-actions .btn-secondary,
+  .step-actions .btn-success,
+  .settings-save-row .btn-primary,
+  .settings-save-row .btn-secondary {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 48px !important;
   }
 
   .dd-patient-new-btn {
@@ -2820,34 +2880,18 @@
     justify-content: center;
   }
 
-  .dd-form-grid,
-  .dd-form-row-2 {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-  }
-
-  .dd-form-section {
-    margin-bottom: 20px !important;
-    padding-bottom: 20px !important;
-  }
-
   .dd-patient-form {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
-  .step-actions {
-    flex-direction: column-reverse !important;
-    gap: 12px !important;
-    padding-top: 20px !important;
-    margin-top: 20px !important;
-  }
-
-  .step-actions .btn-primary,
-  .step-actions .btn-secondary {
-    width: 100% !important;
-    justify-content: center;
+  .btn-primary,
+  .btn-secondary,
+  .btn-success {
+    min-height: 48px !important;
+    border-radius: 14px !important;
+    font-size: 0.9375rem !important;
   }
 
   /* ── Settings ── */

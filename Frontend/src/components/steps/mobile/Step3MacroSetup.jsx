@@ -146,7 +146,7 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
                 </div>
             </div>
 
-            <div className="step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
+            <div className="form-actions step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
                 <button type="button" onClick={onBack} className="btn-secondary">
                     ← Back
                 </button>

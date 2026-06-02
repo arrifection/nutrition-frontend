@@ -297,7 +297,7 @@ export default function Step5WeeklyPlan({
                 </div>
             </div>
 
-            <div className="step-actions dd-step5-actions flex justify-between pt-6 border-t border-emerald-100">
+            <div className="form-actions step-actions dd-step5-actions flex justify-between pt-6 border-t border-emerald-100">
                 <button
                     type="button"
                     onClick={handleSave}

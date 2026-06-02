@@ -413,7 +413,7 @@ export default function Step4MealPlanner({
                 </div>
             </div>
 
-            <div className="step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
+            <div className="form-actions step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
                 <button type="button" onClick={onBack} className="btn-secondary">← Back</button>
                 <button type="button" onClick={onProceed} className="btn-primary">Review Weekly Plan →</button>
             </div>
