@@ -28,7 +28,7 @@
             <div className="mb-6">
                 <h2 className="section-title">Calculation Results</h2>
                 <p className="text-sm text-gray-500">
-                    Step 2 of 5 ΓÇö Review calculated metrics
+                    Step 2 of 5 — Review calculated metrics
                 </p>
             </div>
 

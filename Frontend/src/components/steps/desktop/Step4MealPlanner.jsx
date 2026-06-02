@@ -194,7 +194,7 @@ export default function Step4MealPlanner({
             <div className="mb-6">
                 <h2 className="section-title">Daily Meal Planner</h2>
                 <p className="text-sm text-gray-500">
-                    Step 4 of 5 ΓÇö Add foods to meals for {currentDay}
+                    Step 4 of 5 — Add foods to meals for {currentDay}
                 </p>
             </div>
 
@@ -273,7 +273,7 @@ export default function Step4MealPlanner({
                                                     <div key={idx} className="px-4 py-2 flex items-center justify-between border-b border-gray-100 last:border-0 hover:bg-white">
                                                         <div className="flex-1 min-w-0">
                                                             <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
-                                                            <p className="text-xs text-gray-400">{food.serving_size || food.portion} ΓÇó {food.macros?.calories || food.calories} kcal</p>
+                                                            <p className="text-xs text-gray-400">{food.serving_size || food.portion} · {food.macros?.calories || food.calories} kcal</p>
                                                         </div>
                                                         <button
                                                             onClick={() => addFood(food)}

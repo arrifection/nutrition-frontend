@@ -158,7 +158,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                 <div>
                     <h2 className="section-title">Patient Information</h2>
                     <p className="text-sm text-gray-500">
-                        Step 1 of 5 ΓÇö Enter patient details
+                        Step 1 of 5 — Enter patient details
                     </p>
                 </div>
             </div>
@@ -172,7 +172,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                         value={profile.id || ""}
                         className="form-select flex-1"
                     >
-                        <option value="">ΓÇö New Patient ΓÇö</option>
+                        <option value="">— New Patient —</option>
                         {patients.map((p) => (
                             <option key={p.id} value={p.id}>
                                 {p.name} ({p.age} years)

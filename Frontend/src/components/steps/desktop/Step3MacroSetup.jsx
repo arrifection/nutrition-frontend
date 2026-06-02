@@ -69,7 +69,7 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
             <div className="mb-6">
                 <h2 className="section-title">Macro Targets Setup</h2>
                 <p className="text-sm text-gray-500">
-                    Step 3 of 5 ΓÇö Set calorie and macronutrient targets
+                    Step 3 of 5 — Set calorie and macronutrient targets
                 </p>
             </div>
 

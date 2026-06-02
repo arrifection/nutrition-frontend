@@ -110,7 +110,7 @@ export default function Step5WeeklyPlan({
                 <div>
                     <h2 className="section-title">Weekly Plan Review</h2>
                     <p className="text-sm text-gray-500">
-                        Step 5 of 5 ΓÇö Review and export your plan
+                        Step 5 of 5 — Review and export your plan
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -215,16 +215,16 @@ export default function Step5WeeklyPlan({
                                                 : "text-gray-300"
                                                 }`}
                                         >
-                                            {hasItems ? Math.round(totals.calories) : "ΓÇö"}
+                                            {hasItems ? Math.round(totals.calories) : "—"}
                                         </td>
                                         <td className="py-3 px-4 text-sm text-center text-gray-600">
-                                            {hasItems ? `${Math.round(totals.carbs)}g` : "ΓÇö"}
+                                            {hasItems ? `${Math.round(totals.carbs)}g` : "—"}
                                         </td>
                                         <td className="py-3 px-4 text-sm text-center text-gray-600">
-                                            {hasItems ? `${Math.round(totals.protein)}g` : "ΓÇö"}
+                                            {hasItems ? `${Math.round(totals.protein)}g` : "—"}
                                         </td>
                                         <td className="py-3 px-4 text-sm text-center text-gray-600">
-                                            {hasItems ? `${Math.round(totals.fat)}g` : "ΓÇö"}
+                                            {hasItems ? `${Math.round(totals.fat)}g` : "—"}
                                         </td>
                                     </tr>
                                 );
@@ -241,7 +241,7 @@ export default function Step5WeeklyPlan({
                         {selectedDay} Details
                     </h3>
                     <div className="text-sm text-gray-500">
-                        {selectedDayTotals.count} items ΓÇó{" "}
+                        {selectedDayTotals.count} items ·{" "}
                         {Math.round(selectedDayTotals.calories)} kcal
                     </div>
                 </div>
