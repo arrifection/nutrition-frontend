@@ -9,6 +9,7 @@ import Signup from "./components/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
 import PdfPreview from "./pages/PdfPreview";
 import LegalPage from "./pages/LegalPage";
+import NotFound from "./pages/NotFound";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -109,10 +110,7 @@ function PrivateApp() {
 }
 
 function CatchAllRoute() {
-    const { user, loading } = useAuth();
-    if (loading) return <FullPageSpinner />;
-    if (user) return <Navigate to="/dashboard" replace />;
-    return <Navigate to="/" replace />;
+    return <NotFound />;
 }
 
 export default function App() {

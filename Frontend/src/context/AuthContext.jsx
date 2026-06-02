@@ -17,37 +17,53 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        let cancelled = false;
+
         const rehydrateSession = async () => {
+            const storedUser = localStorage.getItem(USER_KEY);
+            const storedToken = localStorage.getItem(TOKEN_KEY);
+
+            if (!storedUser || !storedToken) {
+                setLoading(false);
+                return;
+            }
+
             try {
-                const storedUser = localStorage.getItem(USER_KEY);
-                const storedToken = localStorage.getItem(TOKEN_KEY);
+                const parsedUser = JSON.parse(storedUser);
+                const meResult = await Promise.race([
+                    getMe(),
+                    new Promise((resolve) => {
+                        setTimeout(() => resolve({ success: false, error: "Session check timed out" }), 10000);
+                    }),
+                ]);
 
-                if (storedUser && storedToken) {
-                    const parsedUser = JSON.parse(storedUser);
-                    const meResult = await getMe();
+                if (cancelled) return;
 
-                    if (meResult.success) {
-                        const normalizedUser = {
-                            username: meResult.data.username || parsedUser.username,
-                            email: meResult.data.email || parsedUser.email,
-                            role: meResult.data.role || parsedUser.role || "client",
-                            email_verified: meResult.data.email_verified ?? false,
-                            verification_deadline: meResult.data.verification_deadline
-                        };
-                        localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
-                        setUser(normalizedUser);
-                    } else {
-                        clearSession();
-                    }
+                if (meResult.success) {
+                    const normalizedUser = {
+                        username: meResult.data.username || parsedUser.username,
+                        email: meResult.data.email || parsedUser.email,
+                        role: meResult.data.role || parsedUser.role || "client",
+                        email_verified: meResult.data.email_verified ?? false,
+                        verification_deadline: meResult.data.verification_deadline
+                    };
+                    localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+                    setUser(normalizedUser);
+                } else {
+                    clearSession();
                 }
             } catch {
-                clearSession();
+                if (!cancelled) clearSession();
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
 
         rehydrateSession();
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     useEffect(() => {

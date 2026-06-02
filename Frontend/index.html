@@ -3,28 +3,75 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/dd-icon.svg" />
+    <link rel="apple-touch-icon" href="/og-image.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Your personal diet and nutrition desk." />
+    <meta name="description" content="DietDesk — your personal diet and nutrition management platform for clinical diet planning, meal plans, and PDF exports." />
     <title>DietDesk</title>
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn, etc.) -->
-    <meta property="og:title" content="DietDesk" />
-    <meta property="og:description" content="Your personal diet and nutrition desk." />
+    <meta property="og:title" content="DietDesk — Clinical diet planning for nutrition professionals" />
+    <meta property="og:description" content="Calculate macros, build meal plans, and export PDF diet reports — built for dietitians." />
     <meta property="og:image" content="https://dietdesk.online/og-image.png" />
     <meta property="og:url" content="https://dietdesk.online" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DietDesk" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="DietDesk" />
-    <meta name="twitter:description" content="Your personal diet and nutrition desk." />
+    <meta name="twitter:title" content="DietDesk — Clinical diet planning for nutrition professionals" />
+    <meta name="twitter:description" content="Calculate macros, build meal plans, and export PDF diet reports — built for dietitians." />
     <meta name="twitter:image" content="https://dietdesk.online/og-image.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+      #app-loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+        gap: 16px;
+      }
+      #app-loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #16a34a;
+        border-radius: 50%;
+        animation: app-loader-spin 0.8s linear infinite;
+      }
+      #app-loader p {
+        margin: 0;
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+      }
+      @keyframes app-loader-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="app-loader" role="status" aria-live="polite" aria-label="Loading DietDesk">
+        <div id="app-loader-spinner" aria-hidden="true"></div>
+        <p>Loading DietDesk…</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
+    <noscript>
+      <div style="padding:24px;font-family:Inter,system-ui,sans-serif;text-align:center;">
+        <h1>DietDesk</h1>
+        <p>JavaScript is required to run this app. Please enable JavaScript and reload.</p>
+      </div>
+    </noscript>
   </body>
 </html>

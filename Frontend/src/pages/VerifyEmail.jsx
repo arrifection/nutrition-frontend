@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = getApiBaseUrl();
 
 const VerifyEmail = ({ onGoToLogin }) => {
     const [status, setStatus] = useState('loading'); // loading, success, error
