@@ -41,13 +41,6 @@ const NAV_ITEMS = [
     { id: 'settings',      label: 'Settings',       icon: Settings },
 ];
 
-const BOTTOM_NAV_ITEMS = [
-    { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-    { id: 'patients', label: 'Patients', icon: Users },
-    { id: 'create', label: 'Create', icon: PlusCircle },
-    { id: 'settings', label: 'Settings', icon: Settings },
-];
-
 export default function Sidebar({ activeView, onNavigate, onLogout, username }) {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -292,29 +285,6 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                     </Drawer>
                     {/* Tablet-only spacer; phone uses padding on main */}
                     {!isPhone && <Box sx={{ height: 64, flexShrink: 0 }} />}
-
-                    {isPhone && (
-                        <nav className="mobile-nav dd-bottom-nav" aria-label="Main navigation">
-                            {BOTTOM_NAV_ITEMS.map((item) => {
-                                const Icon = item.icon;
-                                const active = activeView === item.id || (item.id === 'create' && activeView === 'planner');
-                                return (
-                                    <button
-                                        key={item.id}
-                                        type="button"
-                                        className={`dd-bottom-nav-item${active ? ' active' : ''}`}
-                                        onClick={() => handleNavigate(item.id)}
-                                        aria-current={active ? 'page' : undefined}
-                                    >
-                                        <span className="dd-bottom-nav-icon">
-                                            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-                                        </span>
-                                        <span className="dd-bottom-nav-label">{item.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    )}
                 </>
             )}
         </>

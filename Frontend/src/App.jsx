@@ -137,6 +137,7 @@ export default function App() {
             <Route path="/patients" element={<PrivateApp />} />
             <Route path="/settings" element={<PrivateApp />} />
             <Route path="/planner" element={<PrivateApp />} />
+            <Route path="/create-plan" element={<PrivateApp />} />
             <Route path="/plans" element={<PrivateApp />} />
             <Route path="/progress" element={<PrivateApp />} />
             <Route path="/food-database" element={<PrivateApp />} />

@@ -9,6 +9,7 @@ import Step5WeeklyPlan from "../components/steps/Step5WeeklyPlan";
 import Dashboard from "../components/Dashboard";
 import PatientDetail from "../components/PatientDetail";
 import Sidebar from "../components/Sidebar";
+import MobileBottomNav from "../components/MobileBottomNav";
 import Toast from "../components/ui/Toast";
 import History from "../components/History";
 import Patients from "../components/Patients";
@@ -23,6 +24,7 @@ const PATH_TO_VIEW = {
     "/patients": "patients",
     "/settings": "settings",
     "/planner": "planner",
+    "/create-plan": "planner",
     "/plans": "plans",
     "/progress": "progress",
     "/food-database": "exchange-list",
@@ -106,7 +108,7 @@ export default function AuthenticatedApp() {
         setMacroTargets(null);
         setCurrentStep(1);
         setView("planner");
-        navigate("/planner");
+        navigate("/create-plan");
     };
 
     const handleNavigate = (newView) => {
@@ -318,6 +320,8 @@ export default function AuthenticatedApp() {
                 }}
             >
                 {renderMainContent()}
+
+                <MobileBottomNav onNewPlan={startNewPlan} />
 
                 <Toast
                     message={toast.message}
