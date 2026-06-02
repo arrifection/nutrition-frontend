@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ThemeModeProvider } from './context/ThemeContext'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import './index.css'
+import './mobile-responsive.css'
 
 const rootEl = document.getElementById('root')
 

@@ -155,7 +155,7 @@ export default function Dashboard({ onCreatePlan, onAddPatient, onSelectClient, 
                     </Typography>
                 </Box>
                 
-                <Stack className="dd-dashboard-actions" direction="row" spacing={1.5} alignItems="center">
+                <Stack className="dd-dashboard-actions" direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }} flexWrap="wrap" useFlexGap>
                     <Tooltip title="Notifications">
                         <span className="dd-notif-btn-wrap">
                             <IconButton 

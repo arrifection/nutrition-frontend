@@ -1,0 +1,511 @@
+/* ═══════════════════════════════════════════════════════════════
+   DIETDESK MOBILE RESPONSIVE PASS (≤768px only)
+   Loaded after index.css — overrides conflicting shell/stepper rules.
+   Desktop (≥769px) is unchanged.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  :root {
+    --dd-top-bar: 0px;
+    --dd-mobile-nav-pad: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  html,
+  body,
+  #root,
+  .main-content,
+  .dd-app-main,
+  .page-content {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .dd-app-main {
+    padding-top: 12px !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    padding-bottom: var(--dd-mobile-nav-pad) !important;
+    min-height: 100dvh;
+    height: auto !important;
+    min-width: 0 !important;
+  }
+
+  .page-container,
+  .dashboard-container,
+  .patients-container,
+  .settings-page,
+  .dd-mobile-page,
+  .dd-planner-page,
+  .dd-planner-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    padding-bottom: 0 !important;
+  }
+
+  .dd-mobile-page,
+  .dashboard-container,
+  .patients-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Typography scale */
+  .dashboard-heading,
+  .dd-mobile-page h1,
+  .settings-page h1,
+  .dd-planner-page .section-title {
+    font-size: clamp(1.375rem, 6vw, 1.75rem) !important;
+    line-height: 1.25 !important;
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+
+  .data-label,
+  .form-label,
+  .dd-form-group-label {
+    font-size: 0.8125rem !important;
+  }
+
+  .data-value {
+    font-size: clamp(1.125rem, 4.5vw, 1.375rem) !important;
+  }
+
+  /* ── Dashboard ── */
+  .dd-dashboard-actions {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .dd-dashboard-actions > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dd-notif-btn-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .dd-add-patient-btn,
+  .dd-create-plan-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .dd-dashboard-sections .MuiGrid-item {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* ── Settings ── */
+  .settings-cards-grid,
+  .card-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .settings-page .dd-card,
+  .settings-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .settings-page input,
+  .settings-page select,
+  .settings-page textarea,
+  .input-premium,
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ── Patient detail tabs ── */
+  .patient-detail-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    max-width: 100%;
+    scrollbar-width: none;
+  }
+
+  .patient-detail-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .patient-detail-tab {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .patient-detail-tab.is-active {
+    background: var(--brand-green-light);
+    border-color: #86efac;
+    color: var(--brand-green);
+  }
+
+  .patient-overview-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    min-width: 0 !important;
+  }
+
+  .patient-detail-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ── Create plan stepper (horizontal chips) ── */
+  .mobile-stepper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 4px 0 8px;
+  }
+
+  .mobile-stepper-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .mobile-stepper-count {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .mobile-stepper-bar {
+    width: 100%;
+    height: 6px !important;
+    border-radius: 999px;
+  }
+
+  .mobile-stepper-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    max-width: 100%;
+    scrollbar-width: none;
+  }
+
+  .mobile-stepper-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-stepper-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: inherit;
+    cursor: default;
+    min-height: 36px;
+  }
+
+  .mobile-stepper-chip:not(:disabled) {
+    cursor: pointer;
+  }
+
+  .mobile-stepper-chip-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .mobile-stepper-chip-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .mobile-stepper-chip--completed {
+    border-color: #86efac;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  .mobile-stepper-chip--completed .mobile-stepper-chip-num {
+    background: #16a34a;
+    color: #fff;
+  }
+
+  .mobile-stepper-chip--active {
+    border-color: #0f172a;
+    background: #0f172a;
+    color: #fff;
+  }
+
+  .mobile-stepper-chip--active .mobile-stepper-chip-num {
+    background: #fff;
+    color: #0f172a;
+  }
+
+  .mobile-stepper-chip--inactive {
+    opacity: 0.72;
+  }
+
+  .mobile-stepper-chip--inactive .mobile-stepper-chip-num {
+    background: #e2e8f0;
+    color: #64748b;
+  }
+
+  .dd-planner-stepper-bar {
+    padding: 10px 0 !important;
+    overflow: visible !important;
+  }
+
+  .dd-planner-content {
+    padding: 12px 0 !important;
+    padding-bottom: 16px !important;
+  }
+
+  /* Stack planner form rows on phone */
+  .dd-planner-page .dd-form-row-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dd-planner-page .dd-field,
+  .dd-planner-page .form-input,
+  .dd-planner-page .form-select,
+  .dd-planner-page .form-textarea,
+  .dd-planner-page input,
+  .dd-planner-page select,
+  .dd-planner-page textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Step 4 meal builder */
+  .dd-planner-page .dd-meals-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section .meal-header,
+  .dd-planner-page .meal-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    min-width: 0;
+  }
+
+  .dd-planner-page .meal-title {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .dd-planner-page .dd-step4-search-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .dd-planner-page .dd-step4-search-wrap,
+  .dd-planner-page .dd-step4-lang-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .dd-planner-page .dd-step4-remain-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .dd-planner-page .dd-step4-picker {
+    overflow: visible !important;
+  }
+
+  .dd-planner-page .dd-step4-food-list {
+    max-height: 40vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Step 5 review */
+  .dd-planner-page .dd-step5-stats {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .dd-planner-page .dd-step5-week-card-macros {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px 8px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .dd-planner-page .dd-step5-meals-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dd-planner-page .dd-step5-header-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .dd-planner-page .dd-step5-header-actions > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Macro / results grids */
+  .dd-planner-page .dd-results-grid,
+  .dd-planner-page .dd-macro-cards,
+  .dd-planner-page .dd-grams-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Sticky step actions */
+  .dd-planner-page .step-actions,
+  .form-actions {
+    position: sticky;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index: 90;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 12px 0 !important;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+  }
+
+  /* Patients list */
+  .dd-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .dd-filter-bar .MuiTextField-root {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  .patients-container .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Placeholder / food database */
+  .placeholder-page {
+    padding: 24px 0 !important;
+    margin-top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .placeholder-page-icon {
+    margin: 24px auto 16px !important;
+  }
+
+  /* MUI containment */
+  .MuiGrid-root,
+  .MuiStack-root,
+  .MuiBox-root {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .MuiGrid-container {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid,
+  .dd-planner-page .dd-step5-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dd-planner-page .dd-step5-week-card-macros {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 414px) {
+  .dd-dashboard-actions {
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-stepper-chip-label {
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .dd-app-main {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .mobile-stepper-chip {
+    padding: 6px 8px;
+  }
+}

@@ -317,10 +317,13 @@ export default function AuthenticatedApp() {
                 sx={{
                     flexGrow: 1,
                     overflowY: "auto",
-                    height: "100vh",
+                    overflowX: "hidden",
+                    height: { xs: "auto", lg: "100vh" },
+                    minHeight: { xs: "100dvh", lg: "100vh" },
                     position: "relative",
                     width: "100%",
                     minWidth: 0,
+                    maxWidth: "100%",
                 }}
             >
                 {renderMainContent()}

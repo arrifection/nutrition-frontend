@@ -394,7 +394,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
     );
 
     return (
-        <div className="fade-up dd-mobile-page" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="fade-up dd-mobile-page patient-detail-page" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }} className="patient-header-actions">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <button
@@ -442,23 +442,18 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border)', overflowX: 'auto', paddingBottom: '2px' }}>
+            <div className="patient-detail-tabs" role="tablist" aria-label="Patient sections">
                 {tabs.map(tab => {
                     const Icon = tab.icon;
                     const active = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={active}
                             onClick={() => setActiveTab(tab.id)}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                padding: '10px 16px', border: 'none', background: 'transparent',
-                                cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600,
-                                color: active ? 'var(--brand-green)' : 'var(--text-secondary)',
-                                borderBottom: active ? '2px solid var(--brand-green)' : '2px solid transparent',
-                                transition: 'all 0.15s ease',
-                                whiteSpace: 'nowrap'
-                            }}
+                            className={`patient-detail-tab${active ? " is-active" : ""}`}
                         >
                             <Icon size={16} strokeWidth={active ? 2.5 : 2} />
                             {tab.label}
@@ -469,7 +464,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
 
             <div style={{ minHeight: '400px' }}>
                 {activeTab === "overview" && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }} className="patient-overview-grid">
+                    <div className="patient-overview-grid" style={{ display: 'grid', gap: '24px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div className="dd-card" style={{ padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
