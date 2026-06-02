@@ -11,6 +11,7 @@ from plan_router import router as plan_router
 from clinical_router import router as clinical_router
 from auth_router import router as auth_router
 from history_router import router as history_router
+from pdf_export_router import router as pdf_export_router
 
 from fastapi import Request
 import time
@@ -78,6 +79,7 @@ app.include_router(plan_router)
 app.include_router(clinical_router)
 app.include_router(auth_router)
 app.include_router(history_router)
+app.include_router(pdf_export_router)
 
 
 @app.get("/")

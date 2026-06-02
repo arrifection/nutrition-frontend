@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { savePlan } from "../../../services/api";
-import { generateDietPlanPDF, PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
+import { PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
 import { useAuth } from "../../../context/AuthContext";
+import PdfExportButton from "../../ui/PdfExportButton";
 
 const DAYS = [
     "Monday",
@@ -94,15 +95,13 @@ export default function Step5WeeklyPlan({
         setSaving(false);
     };
 
-    const handleGeneratePDF = () => {
-        generateDietPlanPDF({
-            patientData,
-            macroTargets: targets,
-            weekPlan,
-            dietaryFocus,
-            selectedDay: null,
-            templateId: selectedPdfTemplate,
-        });
+    const exportPayload = {
+        patientData,
+        macroTargets: targets,
+        weekPlan,
+        dietaryFocus,
+        selectedDay: null,
+        templateId: selectedPdfTemplate,
     };
 
     const selectedDayMeals = weekPlan[selectedDay] || {};
@@ -118,9 +117,11 @@ export default function Step5WeeklyPlan({
                     </p>
                 </div>
                 <div className="step5-header-actions dd-step5-desktop-actions">
-                    <button type="button" onClick={handleGeneratePDF} className="btn-secondary">
-                        Download PDF
-                    </button>
+                    <PdfExportButton
+                        exportPayload={exportPayload}
+                        onError={onError}
+                        disabled={!patientData}
+                    />
                     <button
                         type="button"
                         onClick={handleSave}
@@ -306,9 +307,13 @@ export default function Step5WeeklyPlan({
                 >
                     {saving ? "Saving..." : "Save Plan"}
                 </button>
-                <button type="button" onClick={handleGeneratePDF} className="btn-secondary dd-step5-mobile-action">
-                    Download PDF
-                </button>
+                <PdfExportButton
+                    exportPayload={exportPayload}
+                    onError={onError}
+                    disabled={!patientData}
+                    wrapperClassName="dd-step5-mobile-action"
+                    className="btn-secondary"
+                />
                 <button type="button" onClick={onBack} className="btn-secondary">
                     ← Back to Planner
                 </button>

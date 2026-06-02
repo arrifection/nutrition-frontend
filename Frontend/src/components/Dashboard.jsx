@@ -199,30 +199,32 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
             </Stack>
 
             {/* ── Stat Cards ── */}
-            <Grid className="stats-grid dd-stats-grid" container spacing={2.5}>
+            <div className="stats-grid">
                 {[
                     { label: "Total Patients", val: state.stats.totalPatients, icon: Users, color: '#3b82f6', bg: '#eff6ff' },
                     { label: "Active Plans", val: state.stats.activePlans, icon: FileText, color: '#16a34a', bg: '#f0fdf4' },
                     { label: "Pending Follow-ups", val: state.stats.pendingTasks, icon: Clock, color: '#d97706', bg: '#fffbeb' },
                     { label: "Notifications", val: state.stats.unreadNotifications, icon: Bell, color: '#6366f1', bg: '#eef2ff' },
                 ].map((stat, i) => (
-                    <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Box className="dd-card dd-stat-card" sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{ 
-                                width: 44, height: 44, borderRadius: '10px', 
-                                background: stat.bg, display: 'flex', 
-                                alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                            }}>
-                                <stat.icon size={20} color={stat.color} strokeWidth={2.5} />
-                            </Box>
-                            <Box sx={{ overflow: 'hidden' }}>
-                                <Typography sx={{ ...T.label, fontSize: '0.65rem', mb: 0.2 }}>{stat.label}</Typography>
-                                <Typography sx={{ ...T.stat, fontSize: '1.5rem' }}>{stat.val || 0}</Typography>
-                            </Box>
+                    <Box key={i} className="stat-card">
+                        <Box
+                            className="stat-card-icon"
+                            sx={{
+                                background: stat.bg,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.5} />
                         </Box>
-                    </Grid>
+                        <Box className="stat-card-meta" sx={{ overflow: 'hidden' }}>
+                            <Typography sx={{ ...T.label, fontSize: '0.65rem', mb: 0.2 }}>{stat.label}</Typography>
+                            <Typography sx={{ ...T.stat, fontSize: '1.5rem' }}>{stat.val || 0}</Typography>
+                        </Box>
+                    </Box>
                 ))}
-            </Grid>
+            </div>
 
             {/* ── Main Layout ── */}
             <Grid className="dd-dashboard-sections" container spacing={4}>

@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { savePlan } from "../../../services/api";
-import { generateDietPlanPDF, PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
+import { PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
 import { useAuth } from "../../../context/AuthContext";
+import PdfExportButton from "../../ui/PdfExportButton";
 
 export default function Step5WeeklyPlan({
     weekPlan,
@@ -90,15 +91,13 @@ export default function Step5WeeklyPlan({
         setSaving(false);
     };
 
-    const handleGeneratePDF = () => {
-        generateDietPlanPDF({
-            patientData,
-            macroTargets: targets,
-            weekPlan,
-            dietaryFocus,
-            selectedDay: null, // null = all days
-            templateId: selectedPdfTemplate,
-        });
+    const exportPayload = {
+        patientData,
+        macroTargets: targets,
+        weekPlan,
+        dietaryFocus,
+        selectedDay: null,
+        templateId: selectedPdfTemplate,
     };
 
     const selectedDayMeals = weekPlan[selectedDay] || {};
@@ -114,9 +113,11 @@ export default function Step5WeeklyPlan({
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={handleGeneratePDF} className="btn-secondary">
-                        Download PDF
-                    </button>
+                    <PdfExportButton
+                        exportPayload={exportPayload}
+                        onError={onError}
+                        disabled={!patientData}
+                    />
                     <button
                         onClick={handleSave}
                         disabled={saving || !patientId}
@@ -142,7 +143,7 @@ export default function Step5WeeklyPlan({
                         ))}
                     </select>
                     <p className="text-sm text-gray-500">
-                        Choose one of the professional templates, then click Download PDF.
+                        Choose one of the professional templates, then click Export PDF.
                     </p>
                 </div>
             </div>

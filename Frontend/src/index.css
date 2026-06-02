@@ -69,6 +69,14 @@
     background-color: #dcfce7;
     color: #14532d;
   }
+
+  button {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+  }
 }
 
 @layer components {
@@ -95,19 +103,63 @@
   }
 
   .stat-card {
-    @apply dd-card p-5 transition-all duration-200 cursor-default;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  }
+
+  .dd-stat-card {
+    @apply stat-card;
+  }
+
+  .stat-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    align-items: stretch;
+    gap: 16px;
   }
 
   /* Buttons */
   .btn-primary {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 20px;
+    height: 40px;
+    padding: 0 20px;
     background: var(--brand-green);
     color: white;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 14px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
@@ -125,6 +177,12 @@
     transform: scale(0.98);
   }
 
+  .btn-sm {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
   .btn-success {
     @apply btn-primary;
     background: #15803d;
@@ -137,12 +195,14 @@
   .btn-secondary {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 9px 18px;
+    height: 40px;
+    padding: 0 18px;
     background: transparent;
     color: var(--text-secondary);
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 14px;
     border-radius: 8px;
     border: 1px solid var(--border);
     cursor: pointer;
@@ -180,6 +240,21 @@
 
   .btn-ghost {
     @apply btn-secondary;
+  }
+
+  .pdf-export-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .pdf-export-slow-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
   }
 
   /* Form Elements */
@@ -1641,21 +1716,27 @@
   .dd-stat-card {
     width: 100% !important;
     max-width: none !important;
-    border-radius: var(--dd-card-radius) !important;
+    border-radius: 12px !important;
     box-sizing: border-box;
+  }
+
+  .stat-card,
+  .dd-stat-card {
+    padding: 16px !important;
+    min-height: 100px;
+  }
+
+  .stat-card-icon,
+  .dd-stat-card .stat-card-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
   }
 
   .section {
     padding: var(--dd-page-pad) !important;
     margin: 0 !important;
     border-radius: var(--dd-card-radius) !important;
-  }
-
-  /* MUI grid — force full-width stat cards */
-  .dd-stats-grid .MuiGrid-item {
-    flex-basis: 100% !important;
-    max-width: 100% !important;
-    width: 100% !important;
   }
 
   .dd-dashboard-sections .MuiGrid-item {
@@ -1680,18 +1761,7 @@
   }
 
   .dd-create-plan-btn {
-    min-height: 48px !important;
-  }
-
-  .dd-stat-card {
-    padding: 16px !important;
-    min-height: 72px;
-  }
-
-  .dd-stat-card .MuiBox-root:first-of-type {
-    width: 48px !important;
-    height: 48px !important;
-    border-radius: 14px !important;
+    min-height: 40px !important;
   }
 
   .dd-verify-banner {
@@ -1703,7 +1773,8 @@
 
   .dd-verify-banner button {
     width: 100%;
-    min-height: 48px;
+    height: 40px;
+    min-height: 40px;
   }
 
   /* ── Bottom navigation (Instagram/Facebook tab bar style) ── */
@@ -2357,6 +2428,14 @@
 
   .dd-planner-page .dd-step5-mobile-action {
     display: flex !important;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dd-planner-page .dd-step5-mobile-action .btn-secondary {
+    width: 100%;
+    justify-content: center;
   }
 
   .dd-planner-page .dd-results-grid {
@@ -2945,12 +3024,14 @@
   .settings-save-row .btn-secondary {
     width: 100% !important;
     justify-content: center;
-    min-height: 48px !important;
+    height: 40px !important;
+    min-height: 40px !important;
   }
 
   .dd-patient-new-btn {
     width: 100% !important;
-    min-height: 48px !important;
+    height: 40px !important;
+    min-height: 40px !important;
     justify-content: center;
   }
 
@@ -2963,9 +3044,10 @@
   .btn-primary,
   .btn-secondary,
   .btn-success {
-    min-height: 48px !important;
+    height: 40px !important;
+    min-height: 40px !important;
     border-radius: 14px !important;
-    font-size: 0.9375rem !important;
+    font-size: 14px !important;
   }
 
   /* ── Settings ── */
@@ -3002,7 +3084,8 @@
   .settings-save-row .btn-secondary {
     width: 100% !important;
     justify-content: center;
-    min-height: 48px !important;
+    height: 40px !important;
+    min-height: 40px !important;
   }
 
   /* ── Tables & misc ── */
@@ -3038,7 +3121,8 @@
   .patient-header-actions .btn-primary {
     width: 100%;
     justify-content: center;
-    min-height: 48px;
+    height: 40px;
+    min-height: 40px;
   }
 
   .dd-filter-bar {
@@ -3150,7 +3234,8 @@
   }
 
   .auth-card .btn-primary {
-    min-height: 48px;
+    height: 40px;
+    min-height: 40px;
     width: 100%;
   }
 

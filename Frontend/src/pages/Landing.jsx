@@ -49,9 +49,9 @@ const PREVIEW_MEALS = [
     { meal: "Dinner", items: "Fish, steamed vegetables", kcal: "390" },
 ];
 
-const scrollToDemo = (e) => {
+const scrollToFeatures = (e) => {
     e.preventDefault();
-    document.getElementById("product-demo")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
 const STATS = [
@@ -111,6 +111,10 @@ const fadeUp = {
 export default function Landing() {
     return (
         <div className="landing-page">
+            <div className="landing-announcement" role="status">
+                Now in beta — free for early users
+            </div>
+
             {/* ── Nav ── */}
             <header className="landing-nav">
                 <div className="landing-container landing-nav-inner">
@@ -133,22 +137,13 @@ export default function Landing() {
                 <div className="landing-container">
                     <div className="landing-hero-grid">
                         <div className="landing-hero-copy">
-                            <motion.div
-                                className="landing-hero-badge"
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.45 }}
-                            >
-                                Built for dietitians, nutrition students & clinics
-                            </motion.div>
-
                             <motion.h1
                                 className="landing-hero-title"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.05 }}
                             >
-                                Create client-ready diet plans in minutes
+                                Clinical diet planning for nutrition professionals
                             </motion.h1>
 
                             <motion.p
@@ -157,7 +152,7 @@ export default function Landing() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.12 }}
                             >
-                                Manage patients, calculate needs, generate meal plans, and export polished PDF diet plans from one clinical workspace.
+                                Calculate macros, build meal plans, and export PDF diet reports — built for dietitians.
                             </motion.p>
 
                             <motion.div
@@ -167,15 +162,15 @@ export default function Landing() {
                                 transition={{ duration: 0.5, delay: 0.2 }}
                             >
                                 <PrimaryCtaLink className="landing-btn landing-btn-primary landing-btn-lg">
-                                    Get Started
+                                    Start free
                                     <ArrowRight size={18} />
                                 </PrimaryCtaLink>
                                 <button
                                     type="button"
-                                    onClick={scrollToDemo}
+                                    onClick={scrollToFeatures}
                                     className="landing-btn landing-btn-outline landing-btn-lg"
                                 >
-                                    View Demo
+                                    See how it works
                                 </button>
                             </motion.div>
 
@@ -446,12 +441,14 @@ export default function Landing() {
                                 Clinical nutrition software for modern diet planning.
                             </p>
                         </div>
-                        <p className="landing-footer-copy">© 2026 DietDesk</p>
                         <nav className="landing-footer-links" aria-label="Footer navigation">
+                            <Link to="/privacy">Privacy</Link>
+                            <Link to="/terms">Terms</Link>
                             <SecondaryCtaLink>Login</SecondaryCtaLink>
                             <PrimaryCtaLink>Sign Up</PrimaryCtaLink>
                         </nav>
                     </div>
+                    <p className="landing-footer-copy">© {new Date().getFullYear()} DietDesk. All rights reserved.</p>
                     <p className="landing-footer-disclaimer">
                         For educational and professional diet-planning support. Not a replacement for medical diagnosis.
                     </p>
