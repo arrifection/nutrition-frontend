@@ -111,16 +111,16 @@ export default function Settings() {
     };
 
     return (
-        <div className="fade-up px-6 py-8 max-w-5xl mx-auto">
-            <div className="mb-10">
+        <div className="fade-up settings-page w-full mx-auto px-6 py-8 max-w-5xl">
+            <div className="settings-page-header mb-10">
                 <h1 style={T.heading}>Settings</h1>
                 <p style={T.subheading}>Manage your account preferences and clinical workspace.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 settings-cards-grid">
                 
                 {/* 1. Profile Information */}
-                <div className="dd-card p-6 flex flex-col h-full">
+                <div className="dd-card settings-card p-6 flex flex-col h-full w-full">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg dark:bg-emerald-950 dark:text-emerald-400">
                             <User size={22} strokeWidth={2.5} />
@@ -171,7 +171,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
                         <button 
                             className="btn-primary flex items-center gap-2"
                             onClick={() => simulateSave('Profile')}
@@ -235,7 +235,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
                         <button 
                             className="btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                             onClick={() => simulateSave('Clinic details')}
@@ -303,7 +303,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
                         <button 
                             className="btn-primary flex items-center gap-2"
                             onClick={() => simulateSave('Preferences')}
@@ -369,7 +369,7 @@ export default function Settings() {
                         )}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                             Status: <span className={user?.email_verified ? 'text-emerald-500' : 'text-rose-500'}>
                                 {user?.email_verified ? 'Active' : 'Restricted'}
@@ -398,7 +398,7 @@ export default function Settings() {
                             </p>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
                             <button
                                 type="button"
                                 className="btn-secondary flex items-center gap-2"

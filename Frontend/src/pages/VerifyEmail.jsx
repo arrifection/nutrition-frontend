@@ -27,7 +27,7 @@ const VerifyEmail = ({ onGoToLogin }) => {
                 setMessage(response.data.message || 'Email verified successfully!');
                 
                 // Optional: Clean up the URL after verification
-                window.history.replaceState({}, document.title, "/");
+                window.history.replaceState({}, document.title, "/verify-email");
             } catch (error) {
                 console.error('Verification failed:', error);
                 setStatus('error');

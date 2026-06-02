@@ -1,10 +1,10 @@
 export default function StepProgress({ currentStep, onStepClick }) {
     const steps = [
-        { number: 1, title: "Patient Info" },
-        { number: 2, title: "Calculations" },
-        { number: 3, title: "Macro Setup" },
-        { number: 4, title: "Meal Planner" },
-        { number: 5, title: "Weekly Plan" },
+        { number: 1, title: "Patient", short: "1" },
+        { number: 2, title: "Calc", short: "2" },
+        { number: 3, title: "Macros", short: "3" },
+        { number: 4, title: "Meals", short: "4" },
+        { number: 5, title: "Review", short: "5" },
     ];
 
     const getStepStatus = (stepNumber) => {
@@ -14,43 +14,25 @@ export default function StepProgress({ currentStep, onStepClick }) {
     };
 
     return (
-        <div className="flex items-center justify-between min-w-[400px] md:min-w-0">
+        <div className="step-progress-wrap" role="navigation" aria-label="Plan creation steps">
             {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center flex-1 last:flex-none">
-                    {/* Step circle and label */}
+                <div key={step.number} className="step-progress-segment">
                     <button
+                        type="button"
                         onClick={() => step.number <= currentStep && onStepClick(step.number)}
                         disabled={step.number > currentStep}
-                        className={`flex flex-col items-center flex-shrink-0 ${step.number <= currentStep ? "cursor-pointer" : "cursor-default"
-                            }`}
+                        className={`step-progress-node step-progress-node--${getStepStatus(step.number)}`}
+                        aria-current={step.number === currentStep ? 'step' : undefined}
                     >
-                        <div
-                            className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-medium transition-colors ${getStepStatus(step.number) === "completed"
-                                ? "bg-emerald-600 text-white"
-                                : getStepStatus(step.number) === "active"
-                                    ? "bg-gray-800 text-white"
-                                    : "bg-gray-200 text-gray-500"
-                                }`}
-                        >
+                        <span className="step-progress-circle">
                             {getStepStatus(step.number) === "completed" ? "✓" : step.number}
-                        </div>
-                        <span
-                            className={`mt-1.5 text-[10px] md:text-xs font-medium hidden sm:block ${getStepStatus(step.number) === "active"
-                                ? "text-gray-800"
-                                : getStepStatus(step.number) === "completed"
-                                    ? "text-emerald-600"
-                                    : "text-gray-400"
-                                }`}
-                        >
-                            {step.title}
                         </span>
+                        <span className="step-progress-label">{step.title}</span>
                     </button>
-
-                    {/* Connector line */}
                     {index < steps.length - 1 && (
                         <div
-                            className={`h-px flex-1 mx-2 md:mx-4 ${step.number < currentStep ? "bg-emerald-600" : "bg-emerald-200"
-                                }`}
+                            className={`step-progress-line step-progress-line--${step.number < currentStep ? "done" : "pending"}`}
+                            aria-hidden="true"
                         />
                     )}
                 </div>

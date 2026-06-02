@@ -153,24 +153,23 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
     };
 
     return (
-        <div className="section">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="section-title">Patient Information</h2>
-                    <p className="text-sm text-gray-500">
-                        Step 1 of 5 — Enter patient details
-                    </p>
-                </div>
+        <div className="section dd-plan-step">
+            <div className="dd-step-header mb-6">
+                <h2 className="section-title">Patient Information</h2>
+                <p className="text-sm text-gray-500">
+                    Step 1 of 5 — Enter patient details
+                </p>
             </div>
 
             {/* Load existing patient */}
-            <div className="mb-8 pb-6 border-b border-emerald-100">
-                <label className="form-label">Load Existing Patient</label>
-                <div className="flex gap-3">
+            <div className="dd-form-group dd-form-section">
+                <h3 className="dd-form-group-label">Existing patient</h3>
+                <label className="form-label">Load from list</label>
+                <div className="dd-patient-load-row flex gap-3">
                     <select
                         onChange={(e) => handleSelectPatient(e.target.value)}
                         value={profile.id || ""}
-                        className="form-select flex-1"
+                        className="form-select flex-1 min-w-0"
                     >
                         <option value="">— New Patient —</option>
                         {patients.map((p) => (
@@ -182,17 +181,17 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                     <button
                         type="button"
                         onClick={() => handleSelectPatient("")}
-                        className="btn-secondary"
+                        className="btn-secondary dd-patient-new-btn shrink-0"
                     >
                         New
                     </button>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
+            <form onSubmit={handleSubmit} className="dd-patient-form">
+                <div className="dd-form-group">
+                    <h3 className="dd-form-group-label">Basic details</h3>
+                    <div className="dd-field">
                         <label className="form-label">Patient Name</label>
                         <input
                             type="text"
@@ -205,8 +204,8 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                             placeholder="Full name"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
+                    <div className="dd-form-row-2">
+                        <div className="dd-field">
                             <label className="form-label">Age</label>
                             <input
                                 type="number"
@@ -219,7 +218,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                                 placeholder="Years"
                             />
                         </div>
-                        <div>
+                        <div className="dd-field">
                             <label className="form-label">Gender</label>
                             <select
                                 name="gender"
@@ -235,10 +234,10 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                     </div>
                 </div>
 
-                {/* Measurements */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div>
-                        <div className="flex justify-between items-center mb-1.5">
+                <div className="dd-form-group">
+                    <h3 className="dd-form-group-label">Measurements</h3>
+                    <div className="dd-field dd-field-full">
+                        <div className="flex justify-between items-center mb-1.5 dd-height-toggle-row">
                             <label className="form-label mb-0">Height</label>
                             {isEditing && (
                                 <div className="flex gap-2 text-xs">
@@ -271,7 +270,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                                 placeholder="e.g. 165"
                             />
                         ) : (
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 dd-form-row-2">
                                 <input
                                     type="number"
                                     name="feet"
@@ -293,39 +292,40 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                             </div>
                         )}
                     </div>
-                    <div>
-                        <label className="form-label">Weight (kg)</label>
-                        <input
-                            type="number"
-                            name="weight"
-                            value={profile.weight}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            required
-                            className="form-input"
-                            placeholder="e.g. 65"
-                        />
-                    </div>
-                    <div>
-                        <label className="form-label">Goal</label>
-                        <select
-                            name="goal"
-                            value={profile.goal}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            className="form-select"
-                        >
-                            {goals.map((g) => (
-                                <option key={g.value} value={g.value}>
-                                    {g.label}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="dd-form-row-2">
+                        <div className="dd-field">
+                            <label className="form-label">Weight (kg)</label>
+                            <input
+                                type="number"
+                                name="weight"
+                                value={profile.weight}
+                                onChange={handleChange}
+                                disabled={!isEditing}
+                                required
+                                className="form-input"
+                                placeholder="e.g. 65"
+                            />
+                        </div>
+                        <div className="dd-field">
+                            <label className="form-label">Goal</label>
+                            <select
+                                name="goal"
+                                value={profile.goal}
+                                onChange={handleChange}
+                                disabled={!isEditing}
+                                className="form-select"
+                            >
+                                {goals.map((g) => (
+                                    <option key={g.value} value={g.value}>
+                                        {g.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                {/* Activity Level */}
-                <div className="mb-6">
+                <div className="dd-form-group">
                     <label className="form-label">Activity Level</label>
                     <select
                         name="activity_level"
@@ -342,8 +342,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                     </select>
                 </div>
 
-                {/* Medical Notes */}
-                <div className="mb-8">
+                <div className="dd-form-group">
                     <label className="form-label">Medical Notes (optional)</label>
                     <textarea
                         name="medical_notes"
@@ -357,7 +356,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-emerald-100">
+                <div className="step-actions flex justify-end gap-3 pt-6 border-t border-emerald-100">
                     {!isEditing && profile.id ? (
                         <button
                             type="button"

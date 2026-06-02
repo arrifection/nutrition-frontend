@@ -1,281 +1,143 @@
-import { useState, useCallback, useEffect } from "react";
-import StepProgress from "./components/StepProgress";
-import Step1PatientInfo from "./components/steps/Step1PatientInfo";
-import Step2Calculations from "./components/steps/Step2Calculations";
-import Step3MacroSetup from "./components/steps/Step3MacroSetup";
-import Step4MealPlanner from "./components/steps/Step4MealPlanner";
-import Step5WeeklyPlan from "./components/steps/Step5WeeklyPlan";
-import Dashboard from "./components/Dashboard";
-import PatientDetail from "./components/PatientDetail";
-import Sidebar from "./components/Sidebar";
-import Toast from "./components/ui/Toast";
+import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
+import { Box } from "@mui/material";
+import { useAuth } from "./context/AuthContext";
+import Landing from "./pages/Landing";
+import AuthenticatedApp from "./pages/AuthenticatedApp";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-import History from "./components/History";
-import Patients from "./components/Patients";
-import { useAuth } from "./context/AuthContext";
-import { Box, Stack, Typography } from "@mui/material";
-import Settings from "./components/Settings";
-import PlaceholderPage from "./components/ui/PlaceholderPage";
-import { FileText, Activity, UtensilsCrossed } from "lucide-react";
 import VerifyEmail from "./pages/VerifyEmail";
 import PdfPreview from "./pages/PdfPreview";
+import Toast from "./components/ui/Toast";
+import DietDeskLogo from "./components/DietDeskLogo";
 
-function App() {
-    const { user, logout, loading } = useAuth();
-    const isPdfPreviewRoute = window.location.pathname === '/pdf-preview';
-    // View state ('dashboard', 'planner', 'profile', 'history', 'login', 'signup', 'patients', 'plans', 'progress', 'settings')
-    const [view, setView] = useState('dashboard');
-    const [selectedPatient, setSelectedPatient] = useState(null);
-
-    // Current step (1-5)
-    const [currentStep, setCurrentStep] = useState(1);
-
-    // Patient data flows through steps
-    const [patientData, setPatientData] = useState(null);
-    const [patientId, setPatientId] = useState(null);
-    const [metrics, setMetrics] = useState(null); // BMI, BMR, TDEE
-    const [macroTargets, setMacroTargets] = useState(null);
-
-    // Week plan data
-    const [weekPlan, setWeekPlan] = useState({
-        Monday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Tuesday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Wednesday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Thursday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Friday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Saturday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-        Sunday: { breakfast: [], snack: [], lunch: [], dinner: [] },
-    });
-    const [currentDay, setCurrentDay] = useState("Monday");
-    
-    // Auto-detect verification link
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const isVerifyPath = window.location.pathname.includes('verify-email');
-        
-        if (params.get('token') || isVerifyPath) {
-            setView('verify-email');
-        }
-    }, []);
-
-    // Toast notifications
-    const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
-
-    const showToast = useCallback((message, type = "info") => {
-        setToast({ visible: true, message, type });
-        setTimeout(() => setToast((prev) => ({ ...prev, visible: false })), 4000);
-    }, []);
-
-    const handleError = (error) => {
-        let msg = "Something went wrong";
-        if (typeof error === "string") msg = error;
-        else if (typeof error === "object") msg = JSON.stringify(error);
-        showToast(msg, "error");
-    };
-
-    const handleSuccess = (msg) => showToast(msg, "success");
-
-    useEffect(() => {
-        if (!user) return;
-        const loginMessage = sessionStorage.getItem("dietdesk_login_success");
-        if (loginMessage) {
-            sessionStorage.removeItem("dietdesk_login_success");
-            showToast(loginMessage, "success");
-        }
-    }, [user, showToast]);
-
-    // Navigation logic that responds to sidebar
-    const handleNavigate = (newView) => {
-        if (newView === 'create') {
-            startNewPlan();
-        } else {
-            setView(newView);
-        }
-        setSelectedPatient(null);
-    };
-
-    const startNewPlan = () => {
-        setPatientData(null);
-        setPatientId(null);
-        setMetrics(null);
-        setMacroTargets(null);
-        setCurrentStep(1);
-        setView('planner');
-    };
-
-    const goToStep = (step) => {
-        if (step >= 1 && step <= 5) {
-            setCurrentStep(step);
-        }
-    };
-
-    const nextStep = () => goToStep(currentStep + 1);
-    const prevStep = () => goToStep(currentStep - 1);
-
-    const handlePatientSaved = (profile) => {
-        setPatientData(profile);
-        setPatientId(profile.id);
-        setMetrics({ bmi: profile.bmi, bmr: profile.bmr, tdee: profile.tdee });
-        showToast("Patient information saved", "success");
-        nextStep();
-    };
-
-    const handleProceedToMacros = () => nextStep();
-
-    const handleMacrosConfirmed = (macros) => {
-        setMacroTargets(macros);
-        showToast("Macro targets set", "success");
-        nextStep();
-    };
-
-    const renderStep = () => {
-        switch (currentStep) {
-            case 1: return <Step1PatientInfo onSave={handlePatientSaved} onError={handleError} initialData={patientData} />;
-            case 2: return <Step2Calculations metrics={metrics} onProceed={handleProceedToMacros} onBack={prevStep} />;
-            case 3: return <Step3MacroSetup tdee={metrics?.tdee} initialMacros={macroTargets} onConfirm={handleMacrosConfirmed} onBack={prevStep} />;
-            case 4: return <Step4MealPlanner macroTargets={macroTargets} weekPlan={weekPlan} setWeekPlan={setWeekPlan} currentDay={currentDay} setCurrentDay={setCurrentDay} onError={handleError} onProceed={nextStep} onBack={prevStep} />;
-            case 5: return <Step5WeeklyPlan weekPlan={weekPlan} macroTargets={macroTargets} patientId={patientId} patientData={patientData} onError={handleError} onSuccess={handleSuccess} onBack={prevStep} onStartOver={startNewPlan} />;
-            default: return null;
-        }
-    };
-
-    const renderMainContent = () => {
-        if (loading) {
-            return (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', h: '60vh' }}>
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                </Box>
-            );
-        }
-
-        if (view === 'history') return <History onBack={() => setView('dashboard')} />;
-
-        // Dashboard/Home
-        if (view === 'dashboard') {
-            return (
-                <Dashboard
-                    onCreatePlan={startNewPlan}
-                    onSelectClient={(client) => {
-                        setSelectedPatient(client);
-                        setView('profile');
-                    }}
-                    onNavigate={handleNavigate}
-                />
-            );
-        }
-
-        // Functional Pages
-        if (view === 'patients') {
-            return (
-                <Patients 
-                    onBack={() => setView('dashboard')} 
-                    onAddPatient={() => handleNavigate('create')}
-                    onSelectPatient={(client) => {
-                        setSelectedPatient(client);
-                        setView('profile');
-                    }} 
-                />
-            );
-        }
-
-        if (view === 'exchange-list') {
-            return <PlaceholderPage title="Food Database" description="Food exchange search and clinic-wide reference tools are being prepared for a future release. Food selection inside the diet plan creator remains available for MVP plan building." icon={UtensilsCrossed} />;
-        }
-
-        if (view === 'plans') {
-            return <PlaceholderPage title="Nutrition Protocols" description="Review all active and historically assigned nutrition plans across your practice." icon={FileText} />;
-        }
-
-        if (view === 'progress') {
-            return <PlaceholderPage title="Progress Tracking" description="Monitor patient adherence, biometric trends, and clinical outcomes over time." icon={Activity} />;
-        }
-
-        if (view === 'settings') {
-            return <Settings />;
-        }
-
-        if (view === 'profile' && selectedPatient) {
-            return (
-                <Box p={{ xs: 2, md: 4 }}>
-                    <PatientDetail
-                        patient={selectedPatient}
-                        onBack={() => setView('dashboard')}
-                        onEditPlan={(p) => {
-                            setPatientData(p);
-                            setPatientId(p.id);
-                            setMetrics({ bmi: p.bmi, bmr: p.bmr, tdee: p.tdee });
-                            setView('planner');
-                        }}
-                    />
-                </Box>
-            );
-        }
-
-        if (view === 'planner') {
-            return (
-                <Box sx={{ background: 'var(--surface)', minHeight: '100vh' }}>
-                    <Box sx={{ borderBottom: '1px solid var(--border)', background: 'var(--background)', p: 2, overflowX: 'auto' }}>
-                        <Box sx={{ maxWidth: '1000px', mx: 'auto' }}>
-                            <StepProgress currentStep={currentStep} onStepClick={goToStep} />
-                        </Box>
-                    </Box>
-                    <Box sx={{ maxWidth: '1000px', mx: 'auto', p: { xs: 2, md: 4 } }}>{renderStep()}</Box>
-                </Box>
-            );
-        }
-
-        return <Box p={4}><Typography color="textSecondary">Section under development...</Typography></Box>;
-    };
-
-    if (isPdfPreviewRoute) {
-        return <PdfPreview />;
-    }
-
-    if (view === 'verify-email') {
-        return (
-            <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-                <VerifyEmail onGoToLogin={() => setView(user ? 'dashboard' : 'login')} />
-            </Box>
-        );
-    }
-
-    if (!user && !loading) {
-        return (
-            <Box className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-                {view === 'signup' ? (
-                    <Signup onToggle={() => setView('login')} />
-                ) : (
-                    <Login onToggle={() => setView('signup')} />
-                )}
-                <Toast message={toast.message} type={toast.type} isVisible={toast.visible} onClose={() => setToast((prev) => ({ ...prev, visible: false }))} />
-            </Box>
-        );
-    }
-
+function LoadingScreen() {
     return (
-        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', background: 'var(--background)' }}>
-            {user && (
-                <Sidebar 
-                    activeView={view} 
-                    onNavigate={handleNavigate} 
-                    onLogout={logout} 
-                    username={user.username} 
-                />
-            )}
-            
-            <Box component="main" sx={{ flexGrow: 1, overflowY: 'auto', height: '100vh', position: 'relative' }}>
-                {renderMainContent()}
-                
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    isVisible={toast.visible}
-                    onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
-                />
-            </Box>
-        </Stack>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
+        </Box>
     );
 }
 
-export default App;
+function LandingRoute() {
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingScreen />;
+    if (user) return <Navigate to="/dashboard" replace />;
+    return <Landing />;
+}
+
+function AuthHomeLink({ idPrefix }) {
+    return (
+        <Link to="/" className="auth-home-link" aria-label="Back to DietDesk home">
+            <DietDeskLogo idPrefix={idPrefix} />
+        </Link>
+    );
+}
+
+function LoginPage() {
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
+
+    if (loading) return <LoadingScreen />;
+    if (user) return <Navigate to="/dashboard" replace />;
+
+    const from = location.state?.from || "/dashboard";
+
+    return (
+        <Box className="auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
+            <AuthHomeLink idPrefix="auth-login" />
+            <Login
+                onToggle={() => navigate("/signup")}
+                onSuccess={() => navigate(from, { replace: true })}
+            />
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                isVisible={toast.visible}
+                onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
+            />
+        </Box>
+    );
+}
+
+function SignupPage() {
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
+    const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
+
+    if (loading) return <LoadingScreen />;
+    if (user) return <Navigate to="/dashboard" replace />;
+
+    return (
+        <Box className="auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
+            <AuthHomeLink idPrefix="auth-signup" />
+            <Signup onToggle={() => navigate("/login")} />
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                isVisible={toast.visible}
+                onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
+            />
+        </Box>
+    );
+}
+
+function VerifyEmailPage() {
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
+
+    if (loading) return <LoadingScreen />;
+
+    return (
+        <Box className="verify-page-wrap auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
+            <AuthHomeLink idPrefix="auth-verify" />
+            <VerifyEmail onGoToLogin={() => navigate(user ? "/dashboard" : "/login")} />
+        </Box>
+    );
+}
+
+function ProtectedCatchAll() {
+    return <AuthenticatedApp />;
+}
+
+function CatchAllRoute() {
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingScreen />;
+    if (user) return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
+}
+
+export default function App() {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const isVerifyPath = location.pathname.includes("verify-email");
+        if (params.get("token") && !isVerifyPath) {
+            navigate(`/verify-email${location.search}`, { replace: true });
+        }
+    }, [location.search, location.pathname, navigate]);
+
+    return (
+        <Routes>
+            <Route path="/pdf-preview" element={<PdfPreview />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/" element={<LandingRoute />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/dashboard" element={<ProtectedCatchAll />} />
+            <Route path="/patients" element={<ProtectedCatchAll />} />
+            <Route path="/settings" element={<ProtectedCatchAll />} />
+            <Route path="/planner" element={<ProtectedCatchAll />} />
+            <Route path="/plans" element={<ProtectedCatchAll />} />
+            <Route path="/progress" element={<ProtectedCatchAll />} />
+            <Route path="/food-database" element={<ProtectedCatchAll />} />
+            <Route path="/exchange-list" element={<ProtectedCatchAll />} />
+            <Route path="/history" element={<ProtectedCatchAll />} />
+            <Route path="*" element={<CatchAllRoute />} />
+        </Routes>
+    );
+}

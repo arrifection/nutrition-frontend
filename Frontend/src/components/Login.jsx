@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-const Login = ({ onToggle }) => {
+const Login = ({ onToggle, onSuccess }) => {
     const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -15,39 +15,19 @@ const Login = ({ onToggle }) => {
         const result = await login(email, password);
         if (!result.success) {
             setError(result.error || 'Login failed. Please try again.');
+            setLoading(false);
+            return;
         }
+        onSuccess?.();
         setLoading(false);
     };
 
     return (
-        <div className="fade-up" style={{ padding: '20px', width: '100%', maxWidth: '440px' }}>
-            <div className="dd-card" style={{ padding: '40px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                    <div style={{
-                        width: 48, height: 48,
-                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                        borderRadius: '12px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '24px', fontWeight: 800, color: 'white',
-                        margin: '0 auto 16px',
-                        boxShadow: '0 4px 12px rgba(22,163,74,0.4)',
-                    }}>D</div>
+        <div className="fade-up auth-page" style={{ padding: '20px', width: '100%', maxWidth: '440px' }}>
+            <div className="dd-card auth-card" style={{ padding: '40px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
                     <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>Welcome back</h2>
                     <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '8px' }}>Login to your clinical dashboard</p>
-                </div>
-
-                <div style={{
-                    padding: '12px 14px',
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '10px',
-                    color: '#475569',
-                    fontSize: '0.8125rem',
-                    lineHeight: 1.45,
-                    marginBottom: '22px',
-                    textAlign: 'center'
-                }}>
-                    For the best experience, please use DietDesk on desktop. Phone preview is coming soon.
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

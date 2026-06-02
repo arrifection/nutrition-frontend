@@ -78,7 +78,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
     }, [patients, search, sortBy]);
 
     return (
-        <Box className="fade-up" sx={{ p: { xs: 2.5, md: 4, lg: 5 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box className="fade-up dd-mobile-page" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1200 }, mx: 'auto', width: '100%' }}>
             
             {/* Header */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }}>
@@ -113,7 +113,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
             </Stack>
 
             {/* Filter Bar */}
-            <Box className="dd-card" sx={{ p: 2, mb: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Box className="dd-card dd-filter-bar" sx={{ p: 2, mb: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
                 <TextField
                     fullWidth
                     placeholder="Search by name, clinical goal, or age..."
@@ -238,7 +238,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
                                         </Typography>
                                     </Stack>
                                 </Box>
-                                <Box sx={{ display: { xs: 'none', md: 'block' }, ml: 2 }}>
+                                <Box sx={{ display: { xs: 'none', md: 'block' }, ml: 2 }} className="patient-delete-desktop">
                                     <Tooltip title="Delete Patient">
                                         <IconButton 
                                             onClick={(e) => handleDelete(e, patient.id, patient.name)}
@@ -250,6 +250,17 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
                                             <Trash2 size={18} />
                                         </IconButton>
                                     </Tooltip>
+                                </Box>
+                                <Box className="patient-delete-mobile" sx={{ display: 'none' }}>
+                                    <IconButton 
+                                        onClick={(e) => handleDelete(e, patient.id, patient.name)}
+                                        sx={{ 
+                                            color: 'var(--text-muted)',
+                                            '&:hover': { color: '#ef4444', background: '#fee2e2' }
+                                        }}
+                                    >
+                                        <Trash2 size={18} />
+                                    </IconButton>
                                 </Box>
                                 <ChevronRight size={20} color="var(--text-muted)" />
                             </Box>

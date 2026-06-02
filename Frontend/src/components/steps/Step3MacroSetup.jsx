@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 
+const MACRO_META = [
+    { key: "carbs", label: "Carbs", color: "carbs" },
+    { key: "protein", label: "Protein", color: "protein" },
+    { key: "fat", label: "Fat", color: "fat" },
+];
+
 export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack }) {
     const [calories, setCalories] = useState(initialMacros?.calories || tdee || 2000);
     const [ratios, setRatios] = useState({
@@ -9,14 +15,12 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
     });
     const [grams, setGrams] = useState({ carbs: 0, protein: 0, fat: 0 });
 
-    // Sync with TDEE if provided and no initial macros
     useEffect(() => {
         if (tdee && !initialMacros) {
             setCalories(tdee);
         }
     }, [tdee, initialMacros]);
 
-    // Recalculate grams whenever calories or ratios change
     useEffect(() => {
         const cGrams = Math.round((calories * (ratios.carbs / 100)) / 4);
         const pGrams = Math.round((calories * (ratios.protein / 100)) / 4);
@@ -24,9 +28,7 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
         setGrams({ carbs: cGrams, protein: pGrams, fat: fGrams });
     }, [calories, ratios]);
 
-    // Fixed: properly handle empty input
     const handleRatioChange = (key, value) => {
-        // Allow empty string for clearing the field
         if (value === "") {
             setRatios((prev) => ({ ...prev, [key]: "" }));
             return;
@@ -37,7 +39,6 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
         }
     };
 
-    // Fixed: properly handle calories input
     const handleCaloriesChange = (value) => {
         if (value === "") {
             setCalories("");
@@ -49,9 +50,9 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
         }
     };
 
-    // Calculate total, treating empty as 0
     const getNumericValue = (val) => (val === "" ? 0 : val);
-    const totalPercentage = getNumericValue(ratios.carbs) + getNumericValue(ratios.protein) + getNumericValue(ratios.fat);
+    const totalPercentage =
+        getNumericValue(ratios.carbs) + getNumericValue(ratios.protein) + getNumericValue(ratios.fat);
     const isValid = totalPercentage === 100;
 
     const handleConfirm = () => {
@@ -65,173 +66,92 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
     };
 
     return (
-        <div className="section">
-            <div className="mb-6">
+        <div className="section dd-plan-step dd-step3">
+            <div className="dd-step-header">
                 <h2 className="section-title">Macro Targets Setup</h2>
                 <p className="text-sm text-gray-500">
                     Step 3 of 5 — Set calorie and macronutrient targets
                 </p>
             </div>
 
-            {/* Calorie Input */}
-            <div className="mb-8 pb-6 border-b border-emerald-100">
-                <label className="form-label">Daily Calorie Target</label>
-                <div className="flex items-center gap-4">
+            <div className="dd-macro-hero dd-form-group">
+                <p className="dd-form-group-label">Daily calorie target</p>
+                <div className="dd-macro-hero-input">
                     <input
                         type="text"
                         inputMode="numeric"
                         value={calories}
                         onChange={(e) => handleCaloriesChange(e.target.value)}
-                        className="form-input w-40 text-lg font-semibold"
+                        className="form-input dd-macro-cal-input"
+                        aria-label="Daily calories"
                     />
-                    <span className="text-gray-500">kcal/day</span>
-                    {tdee && (
-                        <button
-                            type="button"
-                            onClick={() => setCalories(tdee)}
-                            className="text-sm text-emerald-600 hover:text-emerald-700 underline"
-                        >
-                            Reset to TDEE ({tdee})
-                        </button>
-                    )}
+                    <span className="dd-macro-cal-unit">kcal / day</span>
                 </div>
-            </div>
-
-            {/* Macro Distribution */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left: Percentage Inputs */}
-                <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Distribution (%)
-                    </h3>
-                    <div className="space-y-4">
-                        {/* Carbs */}
-                        <div className="flex items-center gap-4">
-                            <label className="w-20 text-sm text-gray-600">Carbs</label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={ratios.carbs}
-                                onChange={(e) => handleRatioChange("carbs", e.target.value)}
-                                className="form-input w-20 text-center"
-                            />
-                            <span className="text-gray-400">%</span>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={getNumericValue(ratios.carbs)}
-                                onChange={(e) => handleRatioChange("carbs", e.target.value)}
-                                className="flex-1 accent-emerald-600"
-                            />
-                        </div>
-
-                        {/* Protein */}
-                        <div className="flex items-center gap-4">
-                            <label className="w-20 text-sm text-gray-600">Protein</label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={ratios.protein}
-                                onChange={(e) => handleRatioChange("protein", e.target.value)}
-                                className="form-input w-20 text-center"
-                            />
-                            <span className="text-gray-400">%</span>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={getNumericValue(ratios.protein)}
-                                onChange={(e) => handleRatioChange("protein", e.target.value)}
-                                className="flex-1 accent-emerald-600"
-                            />
-                        </div>
-
-                        {/* Fat */}
-                        <div className="flex items-center gap-4">
-                            <label className="w-20 text-sm text-gray-600">Fat</label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={ratios.fat}
-                                onChange={(e) => handleRatioChange("fat", e.target.value)}
-                                className="form-input w-20 text-center"
-                            />
-                            <span className="text-gray-400">%</span>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={getNumericValue(ratios.fat)}
-                                onChange={(e) => handleRatioChange("fat", e.target.value)}
-                                className="flex-1 accent-emerald-600"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Validation */}
-                    <div
-                        className={`mt-6 p-3 rounded-sm text-sm font-medium ${isValid
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-red-50 text-red-700 border border-red-200"
-                            }`}
+                {tdee ? (
+                    <button
+                        type="button"
+                        onClick={() => setCalories(tdee)}
+                        className="dd-macro-reset-btn"
                     >
-                        Total: {totalPercentage}%{" "}
-                        {isValid ? "✓" : "(must equal 100%)"}
-                    </div>
-                </div>
-
-                {/* Right: Grams Output (read-only) */}
-                <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Daily Grams (calculated)
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="data-box">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Carbohydrates</span>
-                                <span className="text-xl font-semibold text-gray-800">
-                                    {grams.carbs}g
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                                {Math.round(grams.carbs * 4)} kcal from carbs
-                            </div>
+                        Reset to TDEE ({tdee})
+                    </button>
+                ) : null}
+                <div className="dd-grams-grid dd-macro-hero-grams">
+                    {MACRO_META.map(({ key, label }) => (
+                        <div key={key} className={`dd-gram-tile dd-gram-tile--${key}`}>
+                            <span className="dd-gram-label">{label}</span>
+                            <strong className="dd-gram-value">{grams[key]}g</strong>
                         </div>
-
-                        <div className="data-box">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Protein</span>
-                                <span className="text-xl font-semibold text-gray-800">
-                                    {grams.protein}g
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                                {Math.round(grams.protein * 4)} kcal from protein
-                            </div>
-                        </div>
-
-                        <div className="data-box">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Fat</span>
-                                <span className="text-xl font-semibold text-gray-800">
-                                    {grams.fat}g
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                                {Math.round(grams.fat * 9)} kcal from fat
-                            </div>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Navigation */}
-            <div className="flex justify-between pt-8 border-t border-emerald-100 mt-8">
-                <button onClick={onBack} className="btn-secondary">
+            <div className="dd-form-group dd-macro-split-panel">
+                <div className="dd-macro-split-head">
+                    <p className="dd-form-group-label">Macro split</p>
+                    <span className={`dd-macro-total-badge ${isValid ? "is-valid" : "is-invalid"}`}>
+                        {totalPercentage}% {isValid ? "✓" : "→ 100%"}
+                    </span>
+                </div>
+
+                <div className="dd-macro-cards">
+                    {MACRO_META.map(({ key, label, color }) => (
+                        <div key={key} className={`dd-macro-card dd-macro-card--${color}`}>
+                            <div className="dd-macro-card-top">
+                                <span className="dd-macro-card-name">{label}</span>
+                                <div className="dd-macro-pct-wrap">
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ratios[key]}
+                                        onChange={(e) => handleRatioChange(key, e.target.value)}
+                                        className="form-input dd-macro-pct-input"
+                                        aria-label={`${label} percentage`}
+                                    />
+                                    <span>%</span>
+                                </div>
+                                <span className="dd-macro-card-grams">{grams[key]}g</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={getNumericValue(ratios[key])}
+                                onChange={(e) => handleRatioChange(key, e.target.value)}
+                                className="dd-macro-range"
+                                aria-label={`${label} slider`}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
+                <button type="button" onClick={onBack} className="btn-secondary">
                     ← Back
                 </button>
                 <button
+                    type="button"
                     onClick={handleConfirm}
                     disabled={!isValid}
                     className="btn-primary"

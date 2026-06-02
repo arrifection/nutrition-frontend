@@ -85,12 +85,20 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
     };
 
-    const register = async (username, email, password, role) => {
-        const result = await registerUser({ username, email: normalizeEmail(email), password, role });
+    const register = async (username, email, password) => {
+        const result = await registerUser({
+            username,
+            email: normalizeEmail(email),
+            password,
+            role: "dietitian",
+        });
         if (!result.success) {
             return { success: false, error: result.error || "Registration failed" };
         }
-        return { success: true };
+        return {
+            success: true,
+            emailSent: result.data?.email_sent !== false,
+        };
     };
 
     const logout = () => {

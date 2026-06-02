@@ -16,7 +16,7 @@ class UserRegister(BaseModel):
     username: str
     email: EmailStr
     password: str
-    role: str = "client" # Default to client, can be "dietitian"
+    role: str = "dietitian"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -82,7 +82,7 @@ async def register(user_data: UserRegister):
             "username": user_data.username,
             "email": user_data.email,
             "password": hashed_password,
-            "role": user_data.role,
+            "role": "dietitian",
             "createdAt": datetime.utcnow(),
             "email_verified": False,
             "verification_deadline": verification_deadline,
@@ -94,8 +94,13 @@ async def register(user_data: UserRegister):
             print(f"[DEBUG] Registered user: {user_data.email}")
             print(f"[DEBUG] Saved Token Hash: {new_user['verification_token_hash']}")
             print(f"SUCCESS: User {user_data.email} registered. Sending verification email...")
-            await send_verification_email(user_data.email, verification_token)
-            return {"message": "Account created. You can use Diet Desk now, but please verify your email within 2 days."}
+            email_sent = await send_verification_email(user_data.email, verification_token)
+            if not email_sent:
+                print(f"[WARN] Verification email was not sent to {user_data.email}")
+            return {
+                "message": "Account created. You can use Diet Desk now, but please verify your email within 2 days.",
+                "email_sent": email_sent,
+            }
         raise HTTPException(status_code=500, detail="Failed to register user record")
     except HTTPException as he:
         raise he
@@ -263,8 +268,13 @@ async def resend_verification(current_user: dict = Depends(get_current_user)):
             }
         )
         
-        await send_verification_email(current_user["email"], new_token)
-        return {"message": "Verification email resent. You have 2 more days to verify."}
+        email_sent = await send_verification_email(current_user["email"], new_token)
+        if not email_sent:
+            raise HTTPException(
+                status_code=503,
+                detail="Could not send verification email. Check RESEND_API_KEY and RESEND_FROM_EMAIL, then try again.",
+            )
+        return {"message": "Verification email resent. You have 2 more days to verify.", "email_sent": True}
     except Exception as e:
         print(f"ERROR in resend_verification: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to resend verification email")

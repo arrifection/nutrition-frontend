@@ -8,7 +8,7 @@ const T = {
 
 export default function PlaceholderPage({ title, description, icon: Icon = Layout }) {
     return (
-        <div className="fade-up" style={{ padding: '32px 28px', maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+        <div className="fade-up settings-page" style={{ padding: '32px 28px', maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
             <div style={{ 
                 margin: '80px auto 24px', 
                 width: '64px', height: '64px', 

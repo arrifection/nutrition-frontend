@@ -100,7 +100,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
     }
 
     return (
-        <Box sx={{ p: { xs: 2.5, md: 4, lg: 5 }, maxWidth: 1400, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box className="dd-mobile-page" sx={{ p: { xs: 2, md: 4, lg: 5 }, maxWidth: { xs: 'none', md: 1400 }, mx: 'auto', display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 4 }, width: '100%' }}>
             
             {/* ── Verification Warning Banner ── */}
             {user?.email_verified === false && (
@@ -113,7 +113,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                     alignItems: 'center',
                     gap: 2,
                     animation: 'fade-in 0.5s ease-out'
-                }}>
+                }} className="dd-verify-banner">
                     <Box sx={{ 
                         width: 40, height: 40, borderRadius: '10px', 
                         background: '#ffe4e6', display: 'flex', 
@@ -145,66 +145,72 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
                 </Box>
             )}
             {/* ── Page Header ── */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" spacing={2.5}>
-                <Box>
-                    <Typography sx={T.heading}>
+            <Box>
+                <Box sx={{ mb: 2 }}>
+                    <Typography sx={{ ...T.heading }} className="dashboard-heading">
                         Welcome back, {user?.username?.split(' ')[0] || 'Clinician'}
                     </Typography>
                     <Typography sx={T.subheading}>
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                     </Typography>
                 </Box>
-                
-                <Stack direction="row" spacing={1.5} alignItems="center">
+
+                <Stack className="dd-dashboard-actions" direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
                     <Tooltip title="Notifications">
-                        <IconButton 
-                            onClick={state.notifications.length > 0 ? handleNotifClick : undefined}
-                            disabled={state.notifications.length === 0}
-                            sx={{ 
-                                background: 'var(--surface)', 
-                                border: '1px solid var(--border)',
-                                borderRadius: '10px',
-                                width: 44, height: 44,
-                                boxShadow: 'var(--card-shadow)',
-                                '&:hover': { background: '#f8fafc' }
-                            }}
-                        >
-                            <Badge badgeContent={state.stats.unreadNotifications} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 800 } }}>
-                                <Bell size={20} strokeWidth={2} color="var(--text-secondary)" />
-                            </Badge>
-                        </IconButton>
+                        <span className="dd-notif-btn-wrap">
+                            <IconButton
+                                onClick={state.notifications.length > 0 ? handleNotifClick : undefined}
+                                disabled={state.notifications.length === 0}
+                                sx={{
+                                    background: 'var(--surface)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '14px',
+                                    width: 48,
+                                    height: 48,
+                                    flexShrink: 0,
+                                    boxShadow: 'var(--card-shadow)',
+                                    '&:hover': { background: '#f8fafc' },
+                                }}
+                            >
+                                <Badge badgeContent={state.stats.unreadNotifications} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 800 } }}>
+                                    <Bell size={20} strokeWidth={2} color="var(--text-secondary)" />
+                                </Badge>
+                            </IconButton>
+                        </span>
                     </Tooltip>
-                    
+
                     <Button
+                        className="dd-create-plan-btn"
                         variant="contained"
                         onClick={onCreatePlan}
                         startIcon={<Plus size={18} strokeWidth={3} />}
                         sx={{
+                            flex: 1,
                             background: 'var(--brand-green)',
                             '&:hover': { background: 'var(--brand-green-hover)' },
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             fontWeight: 700,
                             textTransform: 'none',
-                            px: 3,
-                            height: 44,
-                            boxShadow: '0 4px 12px rgba(22,163,74,0.3)'
+                            px: 2,
+                            minHeight: 48,
+                            boxShadow: '0 4px 12px rgba(22,163,74,0.3)',
                         }}
                     >
                         Create Plan
                     </Button>
                 </Stack>
-            </Stack>
+            </Box>
 
             {/* ── Stat Cards ── */}
-            <Grid container spacing={2.5}>
+            <Grid className="dd-stats-grid" container spacing={2}>
                 {[
                     { label: "Total Patients", val: state.stats.totalPatients, icon: Users, color: '#3b82f6', bg: '#eff6ff' },
                     { label: "Active Plans", val: state.stats.activePlans, icon: FileText, color: '#16a34a', bg: '#f0fdf4' },
                     { label: "Pending Follow-ups", val: state.stats.pendingTasks, icon: Clock, color: '#d97706', bg: '#fffbeb' },
                     { label: "Notifications", val: state.stats.unreadNotifications, icon: Bell, color: '#6366f1', bg: '#eef2ff' },
                 ].map((stat, i) => (
-                    <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Box className="dd-card" sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Grid item xs={12} sm={6} md={3} key={i} sx={{ width: '100%' }}>
+                        <Box className="dd-card dd-stat-card" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, width: '100%', borderRadius: '16px' }}>
                             <Box sx={{ 
                                 width: 44, height: 44, borderRadius: '10px', 
                                 background: stat.bg, display: 'flex', 
@@ -222,7 +228,7 @@ export default function Dashboard({ onCreatePlan, onSelectClient, onNavigate }) 
             </Grid>
 
             {/* ── Main Layout ── */}
-            <Grid container spacing={4}>
+            <Grid className="dd-dashboard-sections" container spacing={{ xs: 2.5, md: 4 }}>
                 
                 {/* 1. Recent Patients */}
                 <Grid item xs={12} lg={8}>

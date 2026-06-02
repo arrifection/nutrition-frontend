@@ -1,6 +1,26 @@
 import { useState, useEffect, useMemo } from "react";
 import { getExchangeList } from "../../services/api";
-import { Globe } from "lucide-react";
+import { Globe, Coffee, Cookie, UtensilsCrossed, Moon, Search } from "lucide-react";
+
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const MEAL_TYPES = [
+    { key: "breakfast", label: "Breakfast", icon: Coffee },
+    { key: "snack", label: "Snack", icon: Cookie },
+    { key: "lunch", label: "Lunch", icon: UtensilsCrossed },
+    { key: "dinner", label: "Dinner", icon: Moon },
+];
+
+const GROUP_COLORS = {
+    Starches: "#f59e0b",
+    Fruits: "#ec4899",
+    Milk: "#60a5fa",
+    Vegetables: "#22c55e",
+    Meat: "#ef4444",
+    Fats: "#a78bfa",
+    Sweets: "#f97316",
+    Other: "#94a3b8",
+};
 
 export default function Step4MealPlanner({
     macroTargets,
@@ -19,7 +39,6 @@ export default function Step4MealPlanner({
     const [expandedGroup, setExpandedGroup] = useState(null);
     const [lang, setLang] = useState("en");
 
-    // Default targets
     const targets = macroTargets || {
         carbs: 200,
         protein: 150,
@@ -34,14 +53,6 @@ export default function Step4MealPlanner({
         dinner: [],
     };
 
-    const mealTypes = [
-        { key: "breakfast", label: "Breakfast" },
-        { key: "snack", label: "Snack" },
-        { key: "lunch", label: "Lunch" },
-        { key: "dinner", label: "Dinner" },
-    ];
-
-    // Load exchange list
     useEffect(() => {
         const fetchFoods = async () => {
             setLoading(true);
@@ -56,7 +67,6 @@ export default function Step4MealPlanner({
         fetchFoods();
     }, []);
 
-    // Group foods by category
     const groupedFoods = useMemo(() => {
         if (!allFoods || allFoods.length === 0) return {};
 
@@ -69,15 +79,7 @@ export default function Step4MealPlanner({
                 (f.group?.en || "").toLowerCase().includes(search)
         );
 
-        const groupOrder = [
-            "Starches",
-            "Fruits",
-            "Milk",
-            "Vegetables",
-            "Meat",
-            "Fats",
-            "Sweets",
-        ];
+        const groupOrder = ["Starches", "Fruits", "Milk", "Vegetables", "Meat", "Fats", "Sweets"];
         const groups = {};
         groupOrder.forEach((g) => (groups[g] = []));
 
@@ -87,7 +89,6 @@ export default function Step4MealPlanner({
             groups[g].push(item);
         });
 
-        // Remove empty groups
         Object.keys(groups).forEach((key) => {
             if (groups[key].length === 0) delete groups[key];
         });
@@ -95,7 +96,6 @@ export default function Step4MealPlanner({
         return groups;
     }, [allFoods, searchTerm]);
 
-    // Helper to get display name based on language
     const getFoodDisplayName = (food) => {
         if (lang === "ur") {
             return food.food_name?.ur_patient || food.food_name?.ur_clinical || food.food_name?.en || food.name || "Unknown";
@@ -113,23 +113,15 @@ export default function Step4MealPlanner({
         return groupKey;
     };
 
-    // Calculations
     const getMealTotals = (mealKey) => {
         const list = meals[mealKey] || [];
         return list.reduce(
-            (acc, food) => {
-                const carbs = (food.macros?.carbs_g ?? food.carbohydrates) || 0;
-                const protein = (food.macros?.protein_g ?? food.protein) || 0;
-                const fat = (food.macros?.fat_g ?? food.fat) || 0;
-                const calories = (food.macros?.calories ?? food.calories) || 0;
-                
-                return {
-                    carbs: acc.carbs + carbs,
-                    protein: acc.protein + protein,
-                    fat: acc.fat + fat,
-                    calories: acc.calories + calories,
-                };
-            },
+            (acc, food) => ({
+                carbs: acc.carbs + ((food.macros?.carbs_g ?? food.carbohydrates) || 0),
+                protein: acc.protein + ((food.macros?.protein_g ?? food.protein) || 0),
+                fat: acc.fat + ((food.macros?.fat_g ?? food.fat) || 0),
+                calories: acc.calories + ((food.macros?.calories ?? food.calories) || 0),
+            }),
             { carbs: 0, protein: 0, fat: 0, calories: 0 }
         );
     };
@@ -159,7 +151,10 @@ export default function Step4MealPlanner({
         [targets, totalConsumed]
     );
 
-    // Actions
+    const caloriePct = Math.min(100, (totalConsumed.calories / targets.calories) * 100);
+    const overCalories = totalConsumed.calories > targets.calories;
+    const selectedMealLabel = MEAL_TYPES.find((m) => m.key === selectedMeal)?.label || "Meal";
+
     const addFood = (food) => {
         setWeekPlan((prev) => ({
             ...prev,
@@ -183,101 +178,226 @@ export default function Step4MealPlanner({
         }));
     };
 
-    const getRemainingColor = (value) => {
-        if (value < 0) return "text-red-300";
-        if (value < 20) return "text-amber-200";
-        return "text-white";
+    const getRemainingClass = (value) => {
+        if (value < 0) return "is-over";
+        if (value < 20) return "is-low";
+        return "is-ok";
     };
 
     return (
-        <div className="section">
-            <div className="mb-6">
+        <div className="section dd-plan-step dd-step4">
+            <div className="dd-step-header">
                 <h2 className="section-title">Daily Meal Planner</h2>
                 <p className="text-sm text-gray-500">
-                    Step 4 of 5 — Add foods to meals for {currentDay}
+                    Step 4 of 5 — Add foods for {currentDay}
                 </p>
             </div>
 
-            <div className="flex gap-1 mb-6 pb-4 border-b border-gray-100 overflow-x-auto">
-                {[
-                    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
-                ].map((day) => (
-                    <button
-                        key={day}
-                        onClick={() => setCurrentDay(day)}
-                        className={`px-3 py-2 text-sm font-medium rounded-sm whitespace-nowrap transition-colors ${currentDay === day
-                                ? "bg-gray-800 text-white"
-                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
-                    >
-                        {day.slice(0, 3)}
-                    </button>
-                ))}
+            <div className="dd-form-group dd-step4-days">
+                <p className="dd-form-group-label">Select day</p>
+                <div className="dd-day-tabs dd-step4-day-tabs">
+                    {DAYS.map((day) => (
+                        <button
+                            key={day}
+                            type="button"
+                            onClick={() => setCurrentDay(day)}
+                            className={`dd-step4-day-pill ${currentDay === day ? "is-active" : ""}`}
+                        >
+                            {day.slice(0, 3)}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1 order-2 lg:order-1">
-                    <div className="border border-gray-200 rounded-sm">
-                        <div className="p-4 border-b border-gray-100">
-                            <label className="form-label">Adding to:</label>
-                            <select
-                                value={selectedMeal}
-                                onChange={(e) => setSelectedMeal(e.target.value)}
-                                className="form-select"
-                            >
-                                {mealTypes.map((m) => (
-                                    <option key={m.key} value={m.key}>{m.label}</option>
-                                ))}
-                            </select>
-
-                            <div className="flex items-center justify-between mt-4">
-                                <label className="form-label">{lang === "ur" ? "تلاش کریں:" : "Search foods:"}</label>
-                                <button
-                                    onClick={() => setLang(prev => prev === "en" ? "ur" : "en")}
-                                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 transition-colors border border-gray-200"
-                                    title="Switch Language"
-                                >
-                                    <Globe size={13} />
-                                    {lang === "en" ? "اردو" : "EN"}
-                                </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 dd-meal-planner-grid">
+                <div className="lg:col-span-1 order-1 lg:order-3 meal-planner-summary">
+                    <div className="dd-step4-summary">
+                        <p className="dd-step4-summary-label">Daily progress</p>
+                        <div className="dd-step4-cal-block">
+                            <div className="dd-step4-cal-row">
+                                <span className="dd-step4-cal-value">{Math.round(totalConsumed.calories)}</span>
+                                <span className="dd-step4-cal-target">/ {targets.calories} kcal</span>
                             </div>
-                            <input
-                                type="text"
-                                placeholder={lang === "ur" ? "مثلاً چاول، سیب..." : "e.g. Rice, Apple..."}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="form-input"
-                                dir={lang === "ur" ? "rtl" : "ltr"}
-                            />
+                            <div className="dd-step4-cal-bar">
+                                <div
+                                    className={`dd-step4-cal-fill ${overCalories ? "is-over" : ""}`}
+                                    style={{ width: `${caloriePct}%` }}
+                                />
+                            </div>
+                        </div>
+                        <p className="dd-step4-summary-sub">Remaining macros</p>
+                        <div className="dd-step4-remain-grid">
+                            <div className={`dd-step4-remain-chip dd-step4-remain-chip--carbs ${getRemainingClass(remaining.carbs)}`}>
+                                <span>Carbs</span>
+                                <strong>{Math.round(remaining.carbs)}g</strong>
+                            </div>
+                            <div className={`dd-step4-remain-chip dd-step4-remain-chip--protein ${getRemainingClass(remaining.protein)}`}>
+                                <span>Protein</span>
+                                <strong>{Math.round(remaining.protein)}g</strong>
+                            </div>
+                            <div className={`dd-step4-remain-chip dd-step4-remain-chip--fat ${getRemainingClass(remaining.fat)}`}>
+                                <span>Fat</span>
+                                <strong>{Math.round(remaining.fat)}g</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-1 order-2 lg:order-2">
+                    <div className="dd-form-group dd-step4-meals-panel">
+                        <p className="dd-form-group-label">Meals — tap to add foods</p>
+                        <div className="dd-meals-grid">
+                            {MEAL_TYPES.map((meal) => {
+                                const Icon = meal.icon;
+                                const list = meals[meal.key] || [];
+                                const totals = getMealTotals(meal.key);
+                                const isSelected = selectedMeal === meal.key;
+
+                                return (
+                                    <div
+                                        key={meal.key}
+                                        className={`meal-section meal-section--${meal.key} ${isSelected ? "meal-section-selected" : ""}`}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => setSelectedMeal(meal.key)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === "Enter" || event.key === " ") {
+                                                event.preventDefault();
+                                                setSelectedMeal(meal.key);
+                                            }
+                                        }}
+                                    >
+                                        <div className="meal-header">
+                                            <span className="meal-title">
+                                                <Icon size={15} className="meal-icon" aria-hidden="true" />
+                                                {meal.label}
+                                            </span>
+                                            <span className={`meal-count ${isSelected ? "is-active" : ""}`}>
+                                                {isSelected ? "Adding here" : `${list.length} items`}
+                                            </span>
+                                        </div>
+                                        {list.length > 0 ? (
+                                            <div className="dd-step4-meal-items">
+                                                {list.map((food) => (
+                                                    <div key={food.instanceId} className="dd-step4-food-row">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`dd-step4-food-name ${lang === "ur" ? "font-urdu" : ""}`}>
+                                                                {getFoodDisplayName(food)}
+                                                            </p>
+                                                            <p className="dd-step4-food-kcal">{food.macros?.calories || food.calories} kcal</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(event) => {
+                                                                event.stopPropagation();
+                                                                removeFood(meal.key, food.instanceId);
+                                                            }}
+                                                            className="dd-step4-remove-btn"
+                                                            aria-label="Remove food"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <div className="dd-step4-meal-macros">
+                                                    <span className="macro-c">C {Math.round(totals.carbs)}g</span>
+                                                    <span className="macro-p">P {Math.round(totals.protein)}g</span>
+                                                    <span className="macro-f">F {Math.round(totals.fat)}g</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="dd-step4-meal-empty">Tap to add foods</p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-1 order-3 lg:order-1">
+                    <div className="dd-form-group dd-step4-picker">
+                        <div className="dd-step4-picker-head">
+                            <p className="dd-form-group-label">Food database</p>
+                            <span className="dd-step4-target-pill">→ {selectedMealLabel}</span>
                         </div>
 
-                        <div className="max-h-96 overflow-y-auto">
+                        <label className="form-label" htmlFor="step4-meal-select">Adding to</label>
+                        <select
+                            id="step4-meal-select"
+                            value={selectedMeal}
+                            onChange={(e) => setSelectedMeal(e.target.value)}
+                            className="form-select dd-step4-meal-select"
+                        >
+                            {MEAL_TYPES.map((m) => (
+                                <option key={m.key} value={m.key}>{m.label}</option>
+                            ))}
+                        </select>
+
+                        <div className="dd-step4-search-row">
+                            <div className="dd-step4-search-wrap">
+                                <Search size={16} className="dd-step4-search-icon" aria-hidden="true" />
+                                <input
+                                    type="text"
+                                    placeholder={lang === "ur" ? "مثلاً چاول، سیب..." : "Search rice, apple..."}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="form-input dd-step4-search-input"
+                                    dir={lang === "ur" ? "rtl" : "ltr"}
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setLang((prev) => (prev === "en" ? "ur" : "en"))}
+                                className="dd-step4-lang-btn"
+                                title="Switch language"
+                            >
+                                <Globe size={14} />
+                                {lang === "en" ? "اردو" : "EN"}
+                            </button>
+                        </div>
+
+                        <div className="dd-food-picker dd-step4-food-list">
                             {loading ? (
-                                <div className="p-8 text-center text-gray-400">Loading foods...</div>
+                                <div className="dd-step4-loading">Loading foods...</div>
+                            ) : Object.keys(groupedFoods).length === 0 ? (
+                                <div className="dd-step4-loading">No foods found</div>
                             ) : (
                                 Object.keys(groupedFoods).map((group) => (
-                                    <div key={group} className="border-b border-gray-100 last:border-0">
+                                    <div key={group} className="dd-step4-food-group">
                                         <button
+                                            type="button"
                                             onClick={() => setExpandedGroup(expandedGroup === group ? null : group)}
-                                            className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
+                                            className="dd-step4-group-btn"
                                         >
-                                            <span className={`text-sm font-medium text-gray-700 ${lang === "ur" ? "font-urdu" : ""}`}>{getGroupDisplayName(group)}</span>
-                                            <span className="text-xs text-gray-400">
-                                                {groupedFoods[group].length} {lang === "ur" ? "آئٹمز" : "items"} {expandedGroup === group ? "−" : "+"}
+                                            <span className="dd-step4-group-left">
+                                                <span
+                                                    className="dd-step4-group-dot"
+                                                    style={{ background: GROUP_COLORS[group] || GROUP_COLORS.Other }}
+                                                />
+                                                <span className={lang === "ur" ? "font-urdu" : ""}>{getGroupDisplayName(group)}</span>
+                                            </span>
+                                            <span className="dd-step4-group-meta">
+                                                {groupedFoods[group].length} · {expandedGroup === group ? "−" : "+"}
                                             </span>
                                         </button>
 
                                         {expandedGroup === group && (
-                                            <div className="bg-gray-50 border-t border-gray-100">
+                                            <div className="dd-step4-group-items">
                                                 {groupedFoods[group].map((food, idx) => (
-                                                    <div key={idx} className="px-4 py-2 flex items-center justify-between border-b border-gray-100 last:border-0 hover:bg-white">
+                                                    <div key={idx} className="dd-step4-picker-row">
                                                         <div className="flex-1 min-w-0">
-                                                            <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
-                                                            <p className="text-xs text-gray-400">{food.serving_size || food.portion} • {food.macros?.calories || food.calories} kcal</p>
+                                                            <p className={`dd-step4-picker-name ${lang === "ur" ? "font-urdu" : ""}`}>
+                                                                {getFoodDisplayName(food)}
+                                                            </p>
+                                                            <p className="dd-step4-picker-meta">
+                                                                {food.serving_size || food.portion} · {food.macros?.calories || food.calories} kcal
+                                                            </p>
                                                         </div>
                                                         <button
+                                                            type="button"
                                                             onClick={() => addFood(food)}
-                                                            className="ml-2 px-2 py-1 text-xs font-medium bg-gray-800 text-white rounded-sm hover:bg-gray-700"
+                                                            className="dd-step4-add-btn"
                                                         >
                                                             Add
                                                         </button>
@@ -291,99 +411,11 @@ export default function Step4MealPlanner({
                         </div>
                     </div>
                 </div>
-
-                <div className="lg:col-span-1 order-1 lg:order-2">
-                    <div className="space-y-4">
-                        {mealTypes.map((meal) => {
-                            const list = meals[meal.key] || [];
-                            const totals = getMealTotals(meal.key);
-                            return (
-                                <div
-                                    key={meal.key}
-                                    className={`meal-section cursor-pointer transition-all ${selectedMeal === meal.key ? "meal-section-selected" : ""}`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => setSelectedMeal(meal.key)}
-                                    onKeyDown={(event) => {
-                                        if (event.key === "Enter" || event.key === " ") {
-                                            event.preventDefault();
-                                            setSelectedMeal(meal.key);
-                                        }
-                                    }}
-                                >
-                                    <div className="meal-header">
-                                        <span className="meal-title">{meal.label}</span>
-                                        <span className="meal-count">{selectedMeal === meal.key ? "Adding here" : `${list.length} items`}</span>
-                                    </div>
-                                    {list.length > 0 ? (
-                                        <div className="space-y-2">
-                                            {list.map((food) => (
-                                                <div key={food.instanceId} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm text-gray-800 truncate ${lang === "ur" ? "font-urdu" : ""}`}>{getFoodDisplayName(food)}</p>
-                                                        <p className="text-xs text-gray-400">{food.macros?.calories || food.calories} kcal</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={(event) => {
-                                                            event.stopPropagation();
-                                                            removeFood(meal.key, food.instanceId);
-                                                        }}
-                                                        className="ml-2 text-gray-400 hover:text-red-500 text-sm"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            <div className="pt-2 mt-2 border-t border-gray-100 text-xs text-gray-500 flex gap-3">
-                                                <span>C: {Math.round(totals.carbs)}g</span>
-                                                <span>P: {Math.round(totals.protein)}g</span>
-                                                <span>F: {Math.round(totals.fat)}g</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-300 text-center py-4">No foods added</p>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="lg:col-span-1 order-3">
-                    <div className="remaining-box sticky top-4">
-                        <div className="remaining-title">Daily Summary</div>
-                        <div className="mb-4 pb-4 border-b border-white/10">
-                            <div className="remaining-label mb-1">Calories</div>
-                            <div className="flex justify-between items-baseline">
-                                <span className="text-2xl font-semibold text-white">{Math.round(totalConsumed.calories)}</span>
-                                <span className="text-sm font-medium text-slate-300">/ {targets.calories} kcal</span>
-                            </div>
-                            <div className="mt-2 h-2 bg-white/15 rounded-full overflow-hidden">
-                                <div className={`h-full transition-all ${totalConsumed.calories > targets.calories ? "bg-red-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(100, (totalConsumed.calories / targets.calories) * 100)}%` }} />
-                            </div>
-                        </div>
-                        <div className="remaining-title">Remaining</div>
-                        <div className="space-y-3">
-                            <div className="remaining-item">
-                                <span className="remaining-label">Carbs</span>
-                                <span className={`remaining-value ${getRemainingColor(remaining.carbs)}`}>{Math.round(remaining.carbs)}g</span>
-                            </div>
-                            <div className="remaining-item">
-                                <span className="remaining-label">Protein</span>
-                                <span className={`remaining-value ${getRemainingColor(remaining.protein)}`}>{Math.round(remaining.protein)}g</span>
-                            </div>
-                            <div className="remaining-item">
-                                <span className="remaining-label">Fat</span>
-                                <span className={`remaining-value ${getRemainingColor(remaining.fat)}`}>{Math.round(remaining.fat)}g</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <div className="flex justify-between pt-8 border-t border-gray-100 mt-8">
-                <button onClick={onBack} className="btn-secondary">← Back</button>
-                <button onClick={onProceed} className="btn-primary">Review Weekly Plan →</button>
+            <div className="step-actions flex justify-between pt-8 border-t border-emerald-100 mt-2">
+                <button type="button" onClick={onBack} className="btn-secondary">← Back</button>
+                <button type="button" onClick={onProceed} className="btn-primary">Review Weekly Plan →</button>
             </div>
         </div>
     );

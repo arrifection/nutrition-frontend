@@ -24,8 +24,8 @@ export default function Step2Calculations({ metrics, onProceed, onBack }) {
     const bmiCategory = getBMICategory(metrics.bmi);
 
     return (
-        <div className="section">
-            <div className="mb-6">
+        <div className="section dd-plan-step">
+            <div className="dd-step-header mb-6">
                 <h2 className="section-title">Calculation Results</h2>
                 <p className="text-sm text-gray-500">
                     Step 2 of 5 — Review calculated metrics
@@ -33,7 +33,7 @@ export default function Step2Calculations({ metrics, onProceed, onBack }) {
             </div>
 
             {/* Results Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 dd-form-grid dd-results-grid">
                 {/* BMI */}
                 <div className="data-box">
                     <div className="data-label">BMI</div>
@@ -66,7 +66,7 @@ export default function Step2Calculations({ metrics, onProceed, onBack }) {
             </div>
 
             {/* Navigation */}
-            <div className="flex justify-between pt-6 border-t border-emerald-100">
+            <div className="step-actions flex justify-between pt-6 border-t border-emerald-100">
                 <button onClick={onBack} className="btn-secondary">
                     ← Back
                 </button>

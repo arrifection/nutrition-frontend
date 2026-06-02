@@ -13,6 +13,7 @@ import {
     ChevronRight,
     UtensilsCrossed,
 } from 'lucide-react';
+import DietDeskLogo from './DietDeskLogo';
 import { 
     Tooltip, 
     IconButton, 
@@ -40,11 +41,19 @@ const NAV_ITEMS = [
     { id: 'settings',      label: 'Settings',       icon: Settings },
 ];
 
+const BOTTOM_NAV_ITEMS = [
+    { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+    { id: 'patients', label: 'Patients', icon: Users },
+    { id: 'create', label: 'Create', icon: PlusCircle },
+    { id: 'settings', label: 'Settings', icon: Settings },
+];
+
 export default function Sidebar({ activeView, onNavigate, onLogout, username }) {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+    const isPhone = useMediaQuery('(max-width:768px)');
 
     const initial = username ? username[0].toUpperCase() : 'D';
 
@@ -72,25 +81,21 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
             <Box sx={{ 
                 p: collapsed && !isMobile ? '24px 0' : '24px 24px', 
                 display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-                gap: '12px',
+                flexDirection: 'column',
+                alignItems: collapsed && !isMobile ? 'center' : 'flex-start',
+                gap: '6px',
                 minHeight: 80,
             }}>
-                <Box sx={{
-                    width: 36, height: 36,
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    borderRadius: '10px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px', fontWeight: 800, color: 'white',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(22,163,74,0.4)',
-                }}>D</Box>
+                <DietDeskLogo
+                    idPrefix="sidebar"
+                    compact={collapsed && !isMobile}
+                    showText={!collapsed || isMobile}
+                    light
+                />
                 {(!collapsed || isMobile) && (
-                    <Box sx={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>DietDesk</Typography>
-                        <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clinician Portal</Typography>
-                    </Box>
+                    <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', pl: '52px' }}>
+                        Clinician Portal
+                    </Typography>
                 )}
             </Box>
 
@@ -256,23 +261,21 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
             {/* Mobile Header + Drawer */}
             {isMobile && (
                 <>
-                    <Box sx={{ 
-                        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100, 
-                        height: 64, display: 'flex', alignItems: 'center', px: 2,
-                        background: 'var(--sidebar-bg)', borderBottom: '1px solid rgba(255,255,255,0.06)'
-                    }}>
-                        <IconButton onClick={handleDrawerToggle} sx={{ color: 'white' }}>
+                    <Box
+                        className="dd-mobile-topbar"
+                        sx={{
+                            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100,
+                            height: isPhone ? 72 : 64,
+                            display: 'flex', alignItems: 'center', px: 2,
+                            background: 'var(--sidebar-bg)',
+                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        }}
+                    >
+                        <IconButton onClick={handleDrawerToggle} sx={{ color: 'white', width: 48, height: 48 }}>
                             <Menu size={24} />
                         </IconButton>
-                        <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                             <Box sx={{
-                                width: 28, height: 28,
-                                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                                borderRadius: '6px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '14px', fontWeight: 800, color: 'white',
-                            }}>D</Box>
-                            <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.02em' }}>DietDesk</Typography>
+                        <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+                            <DietDeskLogo idPrefix="mobile-top" compact showText light />
                         </Box>
                     </Box>
                     <Drawer
@@ -287,8 +290,31 @@ export default function Sidebar({ activeView, onNavigate, onLogout, username }) 
                     >
                         {sidebarContent}
                     </Drawer>
-                    {/* Spacer for mobile fixed header */}
-                    <Box sx={{ height: 64 }} />
+                    {/* Tablet-only spacer; phone uses padding on main */}
+                    {!isPhone && <Box sx={{ height: 64, flexShrink: 0 }} />}
+
+                    {isPhone && (
+                        <nav className="dd-bottom-nav" aria-label="Main navigation">
+                            {BOTTOM_NAV_ITEMS.map((item) => {
+                                const Icon = item.icon;
+                                const active = activeView === item.id || (item.id === 'create' && activeView === 'planner');
+                                return (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        className={`dd-bottom-nav-item${active ? ' active' : ''}`}
+                                        onClick={() => handleNavigate(item.id)}
+                                        aria-current={active ? 'page' : undefined}
+                                    >
+                                        <span className="dd-bottom-nav-icon">
+                                            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+                                        </span>
+                                        <span className="dd-bottom-nav-label">{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    )}
                 </>
             )}
         </>

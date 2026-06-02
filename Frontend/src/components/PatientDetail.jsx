@@ -177,7 +177,7 @@ function PlanSummaryCard({ title, planItem, stats, active = false, onView, onDel
                     {active ? "Current" : "Previous"}
                 </span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '16px' }} className="plan-summary-metrics">
                 <MetricTile label="Days" value={`${stats.daysWithMeals}/7`} accent={active} />
                 <MetricTile label="Items" value={stats.totalItems} />
                 <MetricTile label="Avg kcal" value={stats.avgCalories ? `${stats.avgCalories}` : "-"} />
@@ -203,7 +203,7 @@ function PlanDayTable({ planItem }) {
     }
 
     return (
-        <div className="overflow-x-auto">
+        <div className="dd-table-scroll overflow-x-auto">
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                     <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
@@ -395,7 +395,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
 
     return (
         <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }} className="patient-header-actions">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <button
                         onClick={onBack}
@@ -419,7 +419,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
                 </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }} className="patient-metrics-grid">
                 <div className="dd-card" style={{ padding: '16px' }}>
                     <div style={T.label}>Plan Status</div>
                     <div style={{ marginTop: '4px' }}>
@@ -469,7 +469,7 @@ export default function PatientDetail({ patient, onBack, onEditPlan }) {
 
             <div style={{ minHeight: '400px' }}>
                 {activeTab === "overview" && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }} className="patient-overview-grid">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div className="dd-card" style={{ padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>

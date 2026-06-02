@@ -328,6 +328,62 @@
     line-height: 1.5;
   }
 
+  /* DietDesk brand mark (landing, auth, app) */
+  .dd-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dd-brand--compact {
+    gap: 8px;
+  }
+
+  .dd-brand-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 0;
+    filter: drop-shadow(0 4px 10px rgba(5, 150, 105, 0.22));
+  }
+
+  .dd-brand-glyph {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .dd-brand-name {
+    font-weight: 800;
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+  }
+
+  .dd-brand-name--light {
+    color: #ffffff;
+  }
+
+  .auth-home-link {
+    display: inline-flex;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 20px;
+    transition: opacity 0.15s ease;
+  }
+
+  .auth-home-link:hover {
+    opacity: 0.88;
+  }
+
+  .auth-home-link:hover .dd-brand-name {
+    color: #059669;
+  }
+
   .metric-tile {
     background: var(--background);
     border: 1px solid var(--border);
@@ -476,16 +532,47 @@
     box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.12), var(--card-shadow);
   }
 
+  .meal-section--breakfast { border-left: 4px solid #f59e0b; }
+  .meal-section--snack { border-left: 4px solid #14b8a6; }
+  .meal-section--lunch { border-left: 4px solid #3b82f6; }
+  .meal-section--dinner { border-left: 4px solid #6366f1; }
+
+  .meal-title {
+    @apply text-sm font-bold text-slate-800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .meal-icon {
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .meal-section--breakfast .meal-icon { color: #d97706; }
+  .meal-section--snack .meal-icon { color: #0d9488; }
+  .meal-section--lunch .meal-icon { color: #2563eb; }
+  .meal-section--dinner .meal-icon { color: #4f46e5; }
+
+  .meal-section--breakfast.meal-section-selected { background: #fffbeb; border-color: #fcd34d; }
+  .meal-section--snack.meal-section-selected { background: #f0fdfa; border-color: #5eead4; }
+  .meal-section--lunch.meal-section-selected { background: #eff6ff; border-color: #93c5fd; }
+  .meal-section--dinner.meal-section-selected { background: #eef2ff; border-color: #a5b4fc; }
+
   .meal-header {
     @apply flex justify-between items-center mb-4 border-b border-slate-50 pb-2;
   }
 
-  .meal-title {
-    @apply text-sm font-bold text-slate-800;
-  }
-
   .meal-count {
     @apply text-xs text-slate-400 font-medium;
+  }
+
+  .meal-count.is-active {
+    color: #15803d;
+    font-weight: 700;
+    background: #dcfce7;
+    padding: 3px 8px;
+    border-radius: 999px;
   }
 
   .remaining-box {
@@ -1342,6 +1429,1726 @@
     transform: scale(0.72);
     transform-origin: top center;
     margin-bottom: -82mm;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGGED-IN MOBILE SHELL (max-width: 768px only)
+   Desktop (≥769px) layout is unchanged.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  :root {
+    --dd-top-bar: 72px;
+    --dd-bottom-nav: 76px;
+    --dd-page-pad: 16px;
+    --dd-section-gap: 18px;
+    --dd-card-radius: 16px;
+  }
+
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ── Mobile app shell ── */
+  .dd-app-main {
+    height: auto !important;
+    min-height: 100dvh;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding-top: var(--dd-top-bar) !important;
+    padding-bottom: calc(var(--dd-bottom-nav) + env(safe-area-inset-bottom, 0px) + 8px) !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Full-width pages — kill narrow max-width on phone */
+  .dd-mobile-page,
+  .settings-page,
+  .dd-planner-page,
+  .dd-planner-content {
+    max-width: none !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .dd-mobile-page,
+  .settings-page {
+    padding: var(--dd-page-pad) !important;
+    gap: var(--dd-section-gap) !important;
+  }
+
+  /* Cards — full width, consistent radius */
+  .dd-mobile-page .dd-card,
+  .settings-page .dd-card,
+  .section,
+  .dd-stat-card {
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: var(--dd-card-radius) !important;
+    box-sizing: border-box;
+  }
+
+  .section {
+    padding: var(--dd-page-pad) !important;
+    margin: 0 !important;
+    border-radius: var(--dd-card-radius) !important;
+  }
+
+  /* MUI grid — force full-width stat cards */
+  .dd-stats-grid .MuiGrid-item {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .dd-dashboard-sections .MuiGrid-item {
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+
+  /* ── Dashboard ── */
+  .dashboard-heading {
+    font-size: 1.375rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .dd-dashboard-actions {
+    width: 100%;
+    gap: 12px !important;
+  }
+
+  .dd-notif-btn-wrap {
+    display: inline-flex;
+    line-height: 0;
+  }
+
+  .dd-create-plan-btn {
+    min-height: 48px !important;
+  }
+
+  .dd-stat-card {
+    padding: 16px !important;
+    min-height: 72px;
+  }
+
+  .dd-stat-card .MuiBox-root:first-of-type {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+  }
+
+  .dd-verify-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    border-radius: var(--dd-card-radius) !important;
+  }
+
+  .dd-verify-banner button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* ── Bottom navigation (Instagram/Facebook tab bar style) ── */
+  .dd-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    height: calc(var(--dd-bottom-nav) + env(safe-area-inset-bottom, 0px));
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.04), 0 -8px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .dd-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px 4px 10px;
+    min-height: 48px;
+    max-width: 25%;
+    transition: color 0.15s ease;
+    font-family: inherit;
+  }
+
+  .dd-bottom-nav-item.active {
+    color: var(--brand-green);
+  }
+
+  .dd-bottom-nav-item.active .dd-bottom-nav-icon {
+    background: rgba(22, 163, 74, 0.1);
+  }
+
+  .dd-bottom-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+  }
+
+  .dd-bottom-nav-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* ── Step progress (compact horizontal) ── */
+  .step-progress-wrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .step-progress-segment {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .step-progress-segment:last-child {
+    flex: 0 0 auto;
+  }
+
+  .step-progress-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: default;
+    flex-shrink: 0;
+  }
+
+  .step-progress-node:not(:disabled) {
+    cursor: pointer;
+  }
+
+  .step-progress-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .step-progress-node--completed .step-progress-circle {
+    background: #16a34a;
+    color: white;
+  }
+
+  .step-progress-node--active .step-progress-circle {
+    background: #0f172a;
+    color: white;
+  }
+
+  .step-progress-node--inactive .step-progress-circle {
+    background: #e2e8f0;
+    color: #64748b;
+  }
+
+  .step-progress-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    max-width: 52px;
+    text-align: center;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .step-progress-node--active .step-progress-label {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  .step-progress-node--completed .step-progress-label {
+    color: #16a34a;
+  }
+
+  .step-progress-line {
+    flex: 1;
+    height: 2px;
+    min-width: 4px;
+    margin: 0 2px;
+    margin-bottom: 18px;
+    border-radius: 1px;
+  }
+
+  .step-progress-line--done {
+    background: #16a34a;
+  }
+
+  .step-progress-line--pending {
+    background: #bbf7d0;
+  }
+
+  .dd-planner-stepper-bar {
+    padding: 12px var(--dd-page-pad) !important;
+    overflow: hidden !important;
+  }
+
+  .dd-planner-content {
+    padding: var(--dd-page-pad) !important;
+    padding-bottom: calc(var(--dd-bottom-nav) + 72px) !important;
+  }
+
+  /* ── Create Plan mobile layout (structured, not flat stack) ── */
+  .dd-planner-page .section,
+  .dd-planner-page .dd-plan-step {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+
+  .dd-planner-page .dd-plan-step {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dd-planner-page .dd-step-header {
+    margin-bottom: 0 !important;
+    padding: 0 2px 4px;
+  }
+
+  .dd-planner-page .dd-step-header .section-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .dd-planner-page .dd-step-header p {
+    font-size: 0.8125rem !important;
+    line-height: 1.4;
+  }
+
+  .dd-planner-page .dd-form-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--dd-card-radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .dd-planner-page .dd-form-group-label {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-field {
+    min-width: 0;
+  }
+
+  .dd-planner-page .dd-field-full {
+    width: 100%;
+  }
+
+  .dd-planner-page .dd-form-row-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dd-planner-page .dd-patient-load-row {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .dd-planner-page .dd-patient-new-btn {
+    width: auto !important;
+    min-width: 76px !important;
+    flex-shrink: 0;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .dd-planner-page .dd-patient-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dd-planner-page .dd-height-toggle-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── Step 3: Macro setup (mobile) ── */
+  .dd-planner-page .dd-step3 .dd-macro-hero {
+    gap: 14px;
+  }
+
+  .dd-planner-page .dd-macro-hero-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dd-planner-page .dd-macro-cal-input {
+    flex: 1;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    text-align: center;
+    min-height: 56px !important;
+  }
+
+  .dd-planner-page .dd-macro-cal-unit {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-macro-reset-btn {
+    align-self: flex-start;
+    border: none;
+    background: var(--brand-green-light);
+    color: #15803d;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .dd-planner-page .dd-macro-hero-grams {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 4px;
+  }
+
+  .dd-planner-page .dd-gram-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 8px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border);
+    background: var(--background);
+  }
+
+  .dd-planner-page .dd-gram-tile--carbs {
+    border-color: #fde68a;
+    background: #fffbeb;
+  }
+
+  .dd-planner-page .dd-gram-tile--protein {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+  }
+
+  .dd-planner-page .dd-gram-tile--fat {
+    border-color: #fecaca;
+    background: #fef2f2;
+  }
+
+  .dd-planner-page .dd-gram-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-gram-value {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .dd-planner-page .dd-macro-split-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .dd-planner-page .dd-macro-total-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-macro-total-badge.is-valid {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .dd-planner-page .dd-macro-total-badge.is-invalid {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .dd-planner-page .dd-macro-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dd-planner-page .dd-macro-card {
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--background);
+  }
+
+  .dd-planner-page .dd-macro-card--carbs {
+    border-left: 4px solid #f59e0b;
+  }
+
+  .dd-planner-page .dd-macro-card--protein {
+    border-left: 4px solid #3b82f6;
+  }
+
+  .dd-planner-page .dd-macro-card--fat {
+    border-left: 4px solid #ef4444;
+  }
+
+  .dd-planner-page .dd-macro-card-top {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .dd-planner-page .dd-macro-card-name {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-macro-pct-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dd-planner-page .dd-macro-pct-input {
+    width: 52px !important;
+    min-height: 40px !important;
+    padding: 6px !important;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .dd-planner-page .dd-macro-pct-wrap span {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .dd-planner-page .dd-macro-card-grams {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-macro-range {
+    width: 100%;
+    min-height: 28px;
+    accent-color: #16a34a;
+  }
+
+  /* ── Step 5: Weekly review (mobile) ── */
+  .dd-planner-page .dd-step5 .dd-step5-desktop-actions {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-step5-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .dd-planner-page .dd-step5-stat {
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+    text-align: center;
+  }
+
+  .dd-planner-page .dd-step5-stat .data-label {
+    font-size: 0.625rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .dd-planner-page .dd-step5-stat .data-value {
+    font-size: 1.25rem !important;
+  }
+
+  .dd-planner-page .dd-step5-stat-sub {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-step5-patient-name {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-step5-day-tabs {
+    margin-bottom: 12px;
+  }
+
+  .dd-planner-page .dd-step5-day-pill {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dd-planner-page .dd-step5-day-pill.is-active {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: white;
+  }
+
+  .dd-planner-page .dd-step5-day-pill.has-data:not(.is-active) {
+    border-color: #86efac;
+    background: #f0fdf4;
+    color: #166534;
+  }
+
+  .dd-planner-page .dd-step5-weekly-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dd-planner-page .dd-step5-table-wrap {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-step5-week-card {
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .dd-planner-page .dd-step5-week-card.is-selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.12);
+  }
+
+  .dd-planner-page .dd-step5-week-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .dd-planner-page .dd-step5-week-card-top strong {
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-step5-week-card-top span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .dd-planner-page .dd-step5-week-card-macros {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .dd-planner-page .dd-step5-week-card-macros span:first-child {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  .dd-planner-page .dd-step5-day-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .dd-planner-page .dd-step5-day-meta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-step5-meals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .dd-planner-page .dd-step5-meal-card {
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    min-height: 88px;
+  }
+
+  .dd-planner-page .dd-step5-meal-title {
+    margin: 0 0 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-step5-meal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dd-planner-page .dd-step5-meal-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .dd-planner-page .dd-step5-meal-list em {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .dd-planner-page .dd-step5-meal-empty {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .dd-planner-page .dd-step5-mobile-action {
+    display: flex !important;
+  }
+
+  .dd-planner-page .dd-results-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .dd-planner-page .dd-results-grid .data-box {
+    padding: 12px 8px !important;
+    border-radius: 14px !important;
+    text-align: center;
+  }
+
+  .dd-planner-page .dd-results-grid .data-label {
+    font-size: 0.625rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .dd-planner-page .dd-results-grid .data-value {
+    font-size: 1.125rem !important;
+    display: block;
+  }
+
+  .dd-planner-page .dd-results-grid .flex {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px;
+  }
+
+  .dd-planner-page .dd-results-grid .text-sm {
+    font-size: 0.625rem !important;
+  }
+
+  .dd-planner-page .dd-results-grid .mt-2 {
+    margin-top: 6px !important;
+    font-size: 0.6875rem !important;
+  }
+
+  .dd-planner-page .dd-day-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -2px 4px;
+    padding-bottom: 4px;
+  }
+
+  .dd-planner-page .dd-day-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dd-planner-page .dd-day-tabs button {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 40px;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    font-size: 0.8125rem !important;
+  }
+
+  .dd-planner-page .dd-meal-planner-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  /* ── Step 4: Meal planner (mobile) ── */
+  .dd-planner-page .dd-step4-day-tabs {
+    margin-bottom: 0;
+  }
+
+  .dd-planner-page .dd-step4-day-pill {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .dd-planner-page .dd-step4-day-pill.is-active {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #fff;
+  }
+
+  .dd-planner-page .dd-step4-summary {
+    background: linear-gradient(145deg, #059669 0%, #0f766e 100%);
+    border-radius: var(--dd-card-radius);
+    padding: 16px;
+    color: #fff;
+    box-shadow: 0 12px 28px rgba(5, 150, 105, 0.22);
+  }
+
+  .dd-planner-page .dd-step4-summary-label,
+  .dd-planner-page .dd-step4-summary-sub {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .dd-planner-page .dd-step4-summary-sub {
+    margin-top: 14px;
+    margin-bottom: 8px;
+  }
+
+  .dd-planner-page .dd-step4-cal-block {
+    margin-top: 10px;
+  }
+
+  .dd-planner-page .dd-step4-cal-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .dd-planner-page .dd-step4-cal-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .dd-planner-page .dd-step4-cal-target {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .dd-planner-page .dd-step4-cal-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+
+  .dd-planner-page .dd-step4-cal-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #86efac;
+    transition: width 0.25s ease;
+  }
+
+  .dd-planner-page .dd-step4-cal-fill.is-over {
+    background: #fca5a5;
+  }
+
+  .dd-planner-page .dd-step4-remain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dd-planner-page .dd-step4-remain-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .dd-planner-page .dd-step4-remain-chip span {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+  }
+
+  .dd-planner-page .dd-step4-remain-chip strong {
+    font-size: 0.9375rem;
+    font-weight: 800;
+  }
+
+  .dd-planner-page .dd-step4-remain-chip.is-over strong { color: #fecaca; }
+  .dd-planner-page .dd-step4-remain-chip.is-low strong { color: #fde68a; }
+
+  .dd-planner-page .dd-step4-meals-panel {
+    gap: 12px;
+  }
+
+  .dd-planner-page .dd-meals-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section {
+    padding: 12px !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-header {
+    margin-bottom: 0 !important;
+    padding-bottom: 8px !important;
+    border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section:not(.meal-section-selected) .dd-step4-meal-items,
+  .dd-planner-page .dd-meals-grid .meal-section:not(.meal-section-selected) .dd-step4-meal-empty {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section:not(.meal-section-selected) .meal-header {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section-selected {
+    grid-column: 1 / -1;
+  }
+
+  .dd-planner-page .dd-step4-meal-empty {
+    margin: 0;
+    padding: 12px 0 4px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+  }
+
+  .dd-planner-page .dd-step4-meal-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .dd-planner-page .dd-step4-food-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+  }
+
+  .dd-planner-page .dd-step4-food-name {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-step4-food-kcal {
+    margin: 2px 0 0;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-step4-remove-btn {
+    border: none;
+    background: #fee2e2;
+    color: #b91c1c;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .dd-planner-page .dd-step4-meal-macros {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .dd-planner-page .dd-step4-meal-macros .macro-c { color: #d97706; }
+  .dd-planner-page .dd-step4-meal-macros .macro-p { color: #2563eb; }
+  .dd-planner-page .dd-step4-meal-macros .macro-f { color: #dc2626; }
+
+  .dd-planner-page .dd-step4-picker {
+    gap: 12px;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  .dd-planner-page .dd-step4-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px 16px 0;
+  }
+
+  .dd-planner-page .dd-step4-target-pill {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #15803d;
+    background: #dcfce7;
+    padding: 5px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .dd-planner-page .dd-step4-picker .form-label,
+  .dd-planner-page .dd-step4-picker .dd-step4-meal-select,
+  .dd-planner-page .dd-step4-search-row {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .dd-planner-page .dd-step4-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .dd-planner-page .dd-step4-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dd-planner-page .dd-step4-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .dd-planner-page .dd-step4-search-input {
+    padding-left: 40px !important;
+  }
+
+  .dd-planner-page .dd-step4-lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 12px;
+    min-height: 52px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .dd-planner-page .dd-step4-food-list {
+    border: none !important;
+    border-top: 1px solid var(--border) !important;
+    border-radius: 0 0 var(--dd-card-radius) var(--dd-card-radius) !important;
+    max-height: 45vh !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 4px;
+  }
+
+  .dd-planner-page .dd-step4-loading {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-step4-group-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .dd-planner-page .dd-step4-group-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-step4-group-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .dd-planner-page .dd-step4-group-meta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-step4-group-items {
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dd-planner-page .dd-step4-picker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  .dd-planner-page .dd-step4-picker-row:last-child {
+    border-bottom: none;
+  }
+
+  .dd-planner-page .dd-step4-picker-name {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .dd-planner-page .dd-step4-picker-meta {
+    margin: 2px 0 0;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+
+  .dd-planner-page .dd-step4-add-btn {
+    border: none;
+    background: #16a34a;
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  }
+
+  .dd-planner-page .dd-step4-add-btn:active {
+    transform: scale(0.97);
+  }
+
+  .dd-planner-page .step-actions {
+    position: sticky;
+    bottom: calc(var(--dd-bottom-nav) + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+    margin: 8px -16px 0 !important;
+    padding: 12px 16px 14px !important;
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(8px);
+  }
+
+  .dd-planner-page .step-actions .btn-primary,
+  .dd-planner-page .step-actions .btn-secondary,
+  .dd-planner-page .step-actions .btn-success {
+    width: 100% !important;
+    justify-content: center;
+    margin: 0 !important;
+  }
+
+  .dd-planner-page .dd-step5-actions {
+    flex-direction: column !important;
+  }
+
+  /* ── Forms ── */
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .input-premium {
+    min-height: 52px !important;
+    font-size: 16px !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .form-textarea {
+    min-height: 100px !important;
+  }
+
+  .form-label {
+    font-size: 0.8125rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-success {
+    min-height: 48px !important;
+    border-radius: 14px !important;
+    font-size: 0.9375rem !important;
+  }
+
+  .dd-patient-load-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .dd-patient-new-btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    justify-content: center;
+  }
+
+  .dd-form-grid,
+  .dd-form-row-2 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .dd-form-section {
+    margin-bottom: 20px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .dd-patient-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .step-actions {
+    flex-direction: column-reverse !important;
+    gap: 12px !important;
+    padding-top: 20px !important;
+    margin-top: 20px !important;
+  }
+
+  .step-actions .btn-primary,
+  .step-actions .btn-secondary {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  /* ── Settings ── */
+  .settings-page {
+    padding-top: var(--dd-page-pad) !important;
+    padding-left: var(--dd-page-pad) !important;
+    padding-right: var(--dd-page-pad) !important;
+    padding-bottom: calc(var(--dd-page-pad) + 8px) !important;
+    max-width: none !important;
+  }
+
+  .settings-page-header {
+    margin-bottom: 20px !important;
+  }
+
+  .settings-page h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .settings-cards-grid {
+    gap: 16px !important;
+  }
+
+  .settings-page .dd-card {
+    padding: 16px !important;
+    border-radius: var(--dd-card-radius) !important;
+  }
+
+  .settings-save-row {
+    justify-content: stretch !important;
+  }
+
+  .settings-save-row .btn-primary,
+  .settings-save-row .btn-secondary {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 48px !important;
+  }
+
+  /* ── Tables & misc ── */
+  .dd-table-scroll,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    margin: 0 calc(-1 * var(--dd-page-pad));
+    padding: 0 var(--dd-page-pad);
+  }
+
+  .clinical-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .plan-summary-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .patient-metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .patient-overview-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .patient-header-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .patient-header-actions .btn-primary {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .dd-filter-bar {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  .dd-filter-bar .MuiTextField-root {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+
+  .patient-delete-desktop {
+    display: none !important;
+  }
+
+  .patient-delete-mobile {
+    display: flex !important;
+  }
+
+  .step5-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+  }
+
+  .step5-header-actions {
+    display: none !important;
+  }
+
+  .meal-planner-summary {
+    position: static !important;
+    margin-top: 16px;
+  }
+
+  .trend-chart {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .section-title {
+    font-size: 1.125rem !important;
+  }
+
+  .data-value {
+    font-size: 1.375rem;
+  }
+}
+
+/* Tablet drawer-only zone (769px–1199px): no bottom nav, no phone shell padding */
+@media (min-width: 769px) and (max-width: 1199px) {
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+  }
+
+  .dd-bottom-nav {
+    display: none !important;
+  }
+
+  .dd-app-main {
+    overflow-x: hidden;
+  }
+}
+
+/* Auth screens — mobile polish (unchanged desktop) */
+@media (max-width: 768px) {
+  .auth-page-wrap {
+    padding: 16px !important;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+    padding-top: max(24px, env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)) !important;
+    min-height: 100dvh;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .auth-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 0 !important;
+    box-sizing: border-box;
+  }
+
+  .auth-card {
+    padding: 24px 20px !important;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .auth-card h2 {
+    font-size: 1.375rem !important;
+  }
+
+  .auth-card .form-input,
+  .auth-card .input-premium,
+  .auth-card .form-select {
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  .auth-card .btn-primary {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .verify-page-wrap {
+    padding: 16px !important;
+  }
+}
+
+/* Desktop-only: hide mobile-only elements */
+@media (min-width: 769px) {
+  .dd-bottom-nav {
+    display: none !important;
+  }
+
+  .patient-delete-mobile {
+    display: none !important;
+  }
+}
+
+/* Desktop stepper — restore original sizing above 768px */
+@media (min-width: 769px) {
+  .step-progress-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .step-progress-segment {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  .step-progress-segment:last-child {
+    flex: 0 0 auto;
+  }
+
+  .step-progress-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8125rem;
+  }
+
+  .step-progress-label {
+    font-size: 0.75rem;
+    max-width: 72px;
+  }
+
+  .step-progress-line {
+    margin: 0 8px;
+    margin-bottom: 22px;
+  }
+}
+
+/* Create Plan — desktop layout preserved */
+@media (min-width: 769px) {
+  .dd-planner-page .dd-form-group {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 24px;
+  }
+
+  .dd-planner-page .dd-form-group-label {
+    display: none;
+  }
+
+  .dd-planner-page .dd-patient-form > .dd-form-group:nth-child(1) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dd-planner-page .dd-patient-form > .dd-form-group:nth-child(2) {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .dd-planner-page .dd-patient-form > .dd-form-group:nth-child(2) .dd-form-row-2 {
+    grid-column: 2 / 4;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-split-panel {
+    max-width: 520px;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 16px 24px;
+    align-items: center;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-hero .dd-form-group-label {
+    grid-column: 1 / -1;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-hero-input {
+    grid-column: 1;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-reset-btn {
+    grid-column: 1;
+  }
+
+  .dd-planner-page .dd-step3 .dd-macro-hero-grams {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    align-self: center;
+    min-width: 280px;
+  }
+
+  .dd-planner-page .dd-step5-stats {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .dd-planner-page .dd-step5-desktop-actions {
+    display: flex !important;
+  }
+
+  .dd-planner-page .dd-step5-weekly-cards {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-step5-table-wrap {
+    display: block !important;
+  }
+
+  .dd-planner-page .dd-step5-day-tabs {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-step5-meals-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .dd-planner-page .dd-step5-mobile-action {
+    display: none !important;
+  }
+
+  .dd-planner-page .dd-grams-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .dd-planner-page .dd-gram-tile .text-xs {
+    display: block;
+  }
+
+  .dd-planner-page .dd-gram-tile .flex {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+  }
+
+  .dd-planner-page .dd-meals-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section:not(.meal-section-selected) .space-y-2,
+  .dd-planner-page .dd-meals-grid .meal-section:not(.meal-section-selected) > p {
+    display: block !important;
+  }
+
+  .dd-planner-page .dd-meals-grid .meal-section-selected {
+    grid-column: auto;
+  }
+
+  .dd-planner-page .step-actions {
+    position: static;
+    margin: 0 !important;
+    padding-top: 24px !important;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    flex-direction: row !important;
+    justify-content: space-between;
+  }
+
+  .dd-planner-page .step-actions .btn-primary,
+  .dd-planner-page .step-actions .btn-secondary,
+  .dd-planner-page .step-actions .btn-success {
+    width: auto !important;
   }
 }
 
