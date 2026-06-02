@@ -171,7 +171,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row form-actions">
                         <button 
                             className="btn-primary flex items-center gap-2"
                             onClick={() => simulateSave('Profile')}
@@ -235,7 +235,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row form-actions">
                         <button 
                             className="btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                             onClick={() => simulateSave('Clinic details')}
@@ -303,7 +303,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row form-actions">
                         <button 
                             className="btn-primary flex items-center gap-2"
                             onClick={() => simulateSave('Preferences')}
@@ -369,7 +369,7 @@ export default function Settings() {
                         )}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
+                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row form-actions">
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                             Status: <span className={user?.email_verified ? 'text-emerald-500' : 'text-rose-500'}>
                                 {user?.email_verified ? 'Active' : 'Restricted'}
@@ -398,7 +398,7 @@ export default function Settings() {
                             </p>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row">
+                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end settings-save-row form-actions">
                             <button
                                 type="button"
                                 className="btn-secondary flex items-center gap-2"
