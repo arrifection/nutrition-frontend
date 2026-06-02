@@ -15,6 +15,28 @@ import {
 import DietDeskLogo from "../components/DietDeskLogo";
 import "../landing.css";
 
+const ROUTES = {
+    signup: "/signup",
+    login: "/login",
+    home: "/",
+};
+
+function PrimaryCtaLink({ children, className = "" }) {
+    return (
+        <Link to={ROUTES.signup} className={className}>
+            {children}
+        </Link>
+    );
+}
+
+function SecondaryCtaLink({ children, className = "" }) {
+    return (
+        <Link to={ROUTES.login} className={className}>
+            {children}
+        </Link>
+    );
+}
+
 const FINAL_TRUST_POINTS = [
     "No setup complexity",
     "Built for dietitians",
@@ -92,16 +114,16 @@ export default function Landing() {
             {/* ── Nav ── */}
             <header className="landing-nav">
                 <div className="landing-container landing-nav-inner">
-                    <Link to="/" className="landing-logo" aria-label="DietDesk home">
+                    <Link to={ROUTES.home} className="landing-logo" aria-label="DietDesk home">
                         <DietDeskLogo idPrefix="header" />
                     </Link>
                     <nav className="landing-nav-links" aria-label="Account actions">
-                        <Link to="/login" className="landing-nav-login">
+                        <SecondaryCtaLink className="landing-nav-login">
                             Login
-                        </Link>
-                        <Link to="/signup" className="landing-btn landing-btn-primary landing-btn-nav-cta">
+                        </SecondaryCtaLink>
+                        <PrimaryCtaLink className="landing-btn landing-btn-primary landing-btn-nav-cta">
                             Get Started
-                        </Link>
+                        </PrimaryCtaLink>
                     </nav>
                 </div>
             </header>
@@ -144,10 +166,10 @@ export default function Landing() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
                             >
-                                <Link to="/signup" className="landing-btn landing-btn-primary landing-btn-lg">
+                                <PrimaryCtaLink className="landing-btn landing-btn-primary landing-btn-lg">
                                     Get Started
                                     <ArrowRight size={18} />
-                                </Link>
+                                </PrimaryCtaLink>
                                 <button
                                     type="button"
                                     onClick={scrollToDemo}
@@ -391,13 +413,13 @@ export default function Landing() {
                         </p>
 
                         <div className="landing-final-actions">
-                            <Link to="/signup" className="landing-btn landing-btn-primary landing-btn-lg">
+                            <PrimaryCtaLink className="landing-btn landing-btn-primary landing-btn-lg">
                                 Get Started Free
                                 <ArrowRight size={18} />
-                            </Link>
-                            <Link to="/login" className="landing-btn landing-btn-outline landing-btn-lg">
+                            </PrimaryCtaLink>
+                            <SecondaryCtaLink className="landing-btn landing-btn-outline landing-btn-lg">
                                 Login
-                            </Link>
+                            </SecondaryCtaLink>
                         </div>
 
                         <ul className="landing-final-trust">
@@ -417,7 +439,7 @@ export default function Landing() {
                 <div className="landing-container">
                     <div className="landing-footer-main">
                         <div className="landing-footer-brand">
-                            <Link to="/" className="landing-logo landing-footer-logo" aria-label="DietDesk home">
+                            <Link to={ROUTES.home} className="landing-logo landing-footer-logo" aria-label="DietDesk home">
                                 <DietDeskLogo compact idPrefix="footer" />
                             </Link>
                             <p className="landing-footer-tagline">
@@ -426,8 +448,8 @@ export default function Landing() {
                         </div>
                         <p className="landing-footer-copy">© 2026 DietDesk</p>
                         <nav className="landing-footer-links" aria-label="Footer navigation">
-                            <Link to="/login">Login</Link>
-                            <Link to="/signup">Sign up</Link>
+                            <SecondaryCtaLink>Login</SecondaryCtaLink>
+                            <PrimaryCtaLink>Sign Up</PrimaryCtaLink>
                         </nav>
                     </div>
                     <p className="landing-footer-disclaimer">
