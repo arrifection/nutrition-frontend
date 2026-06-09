@@ -10,7 +10,7 @@ const USER_KEY = 'dietdesk_user';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 20000,
+    timeout: 60000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -50,10 +50,12 @@ const handleResp = async (fn) => {
     } catch (error) {
         console.error('API Error:', error);
         const message = error.code === 'ECONNABORTED'
-            ? 'Backend/database connection timed out. Please check MongoDB Atlas Network Access.'
-            : error.response?.data?.detail
-                || error.message
-                || 'API request failed';
+            ? 'Request timed out. The server may still be waking up — wait a moment and try Sign In; your account may already exist.'
+            : (error.message === 'Network Error'
+                ? 'Could not reach the server. Wait a moment and try Sign In — your account may have been created.'
+                : error.response?.data?.detail
+                    || error.message
+                    || 'API request failed');
         const url = error.config?.url ? ` (${error.config.url})` : '';
         
         return {

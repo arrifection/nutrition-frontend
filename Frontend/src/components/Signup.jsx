@@ -27,7 +27,12 @@ const Signup = ({ onToggle }) => {
                 );
             }
         } else {
-            setError(result.error || "Signup failed. Please try again.");
+            const err = (result.error || "Signup failed. Please try again.").replace(/\s*\([^)]*\)\s*$/, "");
+            if (err.toLowerCase().includes("already registered")) {
+                setError("This username or email is already registered. Try Sign In, or use Resend Verification Email on the login page.");
+            } else {
+                setError(err);
+            }
         }
         setLoading(false);
     };

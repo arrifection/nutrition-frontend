@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
@@ -100,8 +100,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user_helper(user)
 
+async def _send_registration_email(email: str, token: str) -> None:
+    email_result = await send_verification_email(email, token)
+    if not email_result.success:
+        logger.warning(
+            "Verification email was not sent to %s: %s",
+            email,
+            email_result.error_message,
+        )
+
+
 @router.post("/register", response_model=dict)
-async def register(user_data: UserRegister):
+async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
     try:
         # Normalize email
         user_data.email = user_data.email.lower()
@@ -136,17 +146,11 @@ async def register(user_data: UserRegister):
         if result.inserted_id:
             print(f"[DEBUG] Registered user: {user_data.email}")
             print(f"[DEBUG] Saved Token Hash: {new_user['verification_token_hash']}")
-            logger.info("SUCCESS: User %s registered. Sending verification email...", user_data.email)
-            email_result = await send_verification_email(user_data.email, verification_token)
-            if not email_result.success:
-                logger.warning(
-                    "Verification email was not sent to %s: %s",
-                    user_data.email,
-                    email_result.error_message,
-                )
+            logger.info("SUCCESS: User %s registered. Queueing verification email...", user_data.email)
+            background_tasks.add_task(_send_registration_email, user_data.email, verification_token)
             return {
                 "message": "Account created. You can use Diet Desk now, but please verify your email within 2 days.",
-                "email_sent": email_result.success,
+                "email_sent": True,
             }
         raise HTTPException(status_code=500, detail="Failed to register user record")
     except HTTPException as he:
