@@ -1,3 +1,6 @@
+import logging
+import traceback
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
@@ -7,6 +10,8 @@ from auth_utils import get_password_hash, verify_password, create_access_token, 
 from email_utils import send_verification_email
 from bson import ObjectId
 from pymongo.errors import AutoReconnect, ConfigurationError, NetworkTimeout, ServerSelectionTimeoutError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -19,6 +24,10 @@ class UserRegister(BaseModel):
     role: str = "dietitian"
 
 class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class RequestVerificationEmail(BaseModel):
     email: EmailStr
     password: str
 
@@ -39,6 +48,40 @@ def _raise_db_unavailable():
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail="Database is temporarily unreachable. Please try again in a moment.",
     )
+
+async def _issue_verification_email(email: str) -> dict:
+    """Generate a fresh token, extend the grace period, and send verification email."""
+    new_token = generate_verification_token()
+    new_deadline = datetime.utcnow() + timedelta(days=2)
+    token_hash = hash_token(new_token)
+
+    update_result = await users_collection.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "verification_token_hash": token_hash,
+                "verification_deadline": new_deadline,
+            }
+        },
+    )
+
+    if update_result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User record not found")
+
+    email_result = await send_verification_email(email, new_token)
+    if not email_result.success:
+        raise HTTPException(
+            status_code=503,
+            detail=email_result.error_message
+            or "Could not send verification email. Please try again shortly.",
+        )
+
+    return {
+        "message": "Verification email sent. You have 2 days to verify your account, then you can sign in.",
+        "email_sent": True,
+        "verification_deadline": new_deadline,
+    }
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -93,13 +136,17 @@ async def register(user_data: UserRegister):
         if result.inserted_id:
             print(f"[DEBUG] Registered user: {user_data.email}")
             print(f"[DEBUG] Saved Token Hash: {new_user['verification_token_hash']}")
-            print(f"SUCCESS: User {user_data.email} registered. Sending verification email...")
-            email_sent = await send_verification_email(user_data.email, verification_token)
-            if not email_sent:
-                print(f"[WARN] Verification email was not sent to {user_data.email}")
+            logger.info("SUCCESS: User %s registered. Sending verification email...", user_data.email)
+            email_result = await send_verification_email(user_data.email, verification_token)
+            if not email_result.success:
+                logger.warning(
+                    "Verification email was not sent to %s: %s",
+                    user_data.email,
+                    email_result.error_message,
+                )
             return {
                 "message": "Account created. You can use Diet Desk now, but please verify your email within 2 days.",
-                "email_sent": email_sent,
+                "email_sent": email_result.success,
             }
         raise HTTPException(status_code=500, detail="Failed to register user record")
     except HTTPException as he:
@@ -191,7 +238,12 @@ async def dev_send_verification(data: EmailTest):
             }
         )
         
-        await send_verification_email(user["email"], token)
+        email_result = await send_verification_email(user["email"], token)
+        if not email_result.success:
+            raise HTTPException(
+                status_code=503,
+                detail=email_result.error_message or "Failed to send verification email",
+            )
         return {"message": f"Dev Reset Success: Email sent to {user['email']}. User is now unverified with a 2-day grace period."}
     except Exception as e:
         print(f"DEV ERROR: {str(e)}")
@@ -248,33 +300,65 @@ async def verify_email(token: str):
         print(f"ERROR in verify_email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
+@router.post("/request-verification-email")
+async def request_verification_email(data: RequestVerificationEmail):
+    """
+    Public recovery for users who cannot sign in because verification expired
+    or they never received the email. Requires email + password.
+    """
+    data.email = data.email.lower()
+    logger.info("[REQUEST VERIFICATION] Recovery attempt for %s", data.email)
+
+    try:
+        user = await users_collection.find_one({"email": data.email})
+        if not user or not verify_password(data.password, user["password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+            )
+
+        if user.get("email_verified"):
+            return {
+                "message": "Your email is already verified. You can sign in now.",
+                "email_sent": False,
+            }
+
+        result = await _issue_verification_email(data.email)
+        logger.info("[REQUEST VERIFICATION] Email sent for %s", data.email)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[REQUEST VERIFICATION] Unhandled error: %s", e)
+        logger.error("[REQUEST VERIFICATION] Traceback:\n%s", traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Failed to send verification email")
+
+
 @router.post("/resend-verification")
 async def resend_verification(current_user: dict = Depends(get_current_user)):
+    logger.info(
+        "[RESEND VERIFICATION] Request from user_id=%s email=%s verified=%s",
+        current_user.get("id"),
+        current_user.get("email"),
+        current_user.get("email_verified"),
+    )
     try:
         if current_user.get("email_verified"):
+            logger.info("[RESEND VERIFICATION] Already verified for %s", current_user.get("email"))
             return {"message": "Email is already verified"}
-        
-        new_token = generate_verification_token()
-        # Extend deadline to 2 days from NOW for better UX
-        new_deadline = datetime.utcnow() + timedelta(days=2)
-        
-        await users_collection.update_one(
-            {"email": current_user["email"]},
-            {
-                "$set": {
-                    "verification_token_hash": hash_token(new_token),
-                    "verification_deadline": new_deadline
-                }
-            }
-        )
-        
-        email_sent = await send_verification_email(current_user["email"], new_token)
-        if not email_sent:
-            raise HTTPException(
-                status_code=503,
-                detail="Could not send verification email. Check RESEND_API_KEY and RESEND_FROM_EMAIL, then try again.",
-            )
-        return {"message": "Verification email resent. You have 2 more days to verify.", "email_sent": True}
+
+        if not current_user.get("email"):
+            logger.error("[RESEND VERIFICATION] Authenticated user has no email on record")
+            raise HTTPException(status_code=400, detail="User email not found")
+
+        result = await _issue_verification_email(current_user["email"])
+        return {
+            "message": "Verification email resent. You have 2 more days to verify.",
+            "email_sent": result["email_sent"],
+        }
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"ERROR in resend_verification: {str(e)}")
+        logger.error("[RESEND VERIFICATION] Unhandled error: %s", e)
+        logger.error("[RESEND VERIFICATION] Traceback:\n%s", traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to resend verification email")

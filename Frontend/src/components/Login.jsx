@@ -1,25 +1,65 @@
 import React, { useState } from "react";
+import { Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { requestVerificationEmail } from "../services/api";
+
+const isVerificationBlockedError = (message = "") => {
+    const lower = message.toLowerCase();
+    return lower.includes("verification period has ended") || lower.includes("verify your email");
+};
 
 const Login = ({ onToggle, onSuccess }) => {
     const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [showResendOption, setShowResendOption] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setSuccess("");
+        setShowResendOption(false);
         setLoading(true);
         const result = await login(email, password);
         if (!result.success) {
-            setError(result.error || 'Login failed. Please try again.');
+            const err = (result.error || "Login failed. Please try again.").replace(/\s*\([^)]*\)\s*$/, "");
+            setError(err);
+            setShowResendOption(isVerificationBlockedError(err));
             setLoading(false);
             return;
         }
         onSuccess?.();
         setLoading(false);
+    };
+
+    const handleResendVerification = async () => {
+        if (!email || !password) {
+            setError("Enter your email and password, then resend the verification email.");
+            return;
+        }
+
+        setError("");
+        setSuccess("");
+        setResendLoading(true);
+
+        const result = await requestVerificationEmail({
+            email: email.trim().toLowerCase(),
+            password,
+        });
+
+        setResendLoading(false);
+
+        if (!result.success) {
+            setError((result.error || "Could not send verification email.").replace(/\s*\([^)]*\)\s*$/, ""));
+            return;
+        }
+
+        setSuccess(result.data?.message || "Verification email sent. Check your inbox and verify within 2 days.");
+        setShowResendOption(false);
     };
 
     return (
@@ -55,17 +95,60 @@ const Login = ({ onToggle, onSuccess }) => {
                     </div>
 
                     {error && (
-                        <div style={{ 
-                            padding: '10px', background: '#fef2f2', border: '1px solid #fee2e2', 
-                            borderRadius: '8px', color: '#b91c1c', fontSize: '0.8125rem', textAlign: 'center' 
+                        <div style={{
+                            padding: '10px', background: '#fef2f2', border: '1px solid #fee2e2',
+                            borderRadius: '8px', color: '#b91c1c', fontSize: '0.8125rem', textAlign: 'center'
                         }}>
                             {error}
                         </div>
                     )}
 
+                    {success && (
+                        <div style={{
+                            padding: '10px', background: '#ecfdf5', border: '1px solid #bbf7d0',
+                            borderRadius: '8px', color: '#047857', fontSize: '0.8125rem', textAlign: 'center'
+                        }}>
+                            {success}
+                        </div>
+                    )}
+
+                    {showResendOption && (
+                        <div style={{
+                            padding: '14px',
+                            background: '#fff7ed',
+                            border: '1px solid #fed7aa',
+                            borderRadius: '10px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                        }}>
+                            <p style={{ fontSize: '0.8125rem', color: '#9a3412', textAlign: 'center', lineHeight: 1.5 }}>
+                                Your account exists but email is not verified. We can send a new verification link and give you 2 more days.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={handleResendVerification}
+                                disabled={resendLoading || loading}
+                                className="btn-primary"
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    background: '#ea580c',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                }}
+                            >
+                                <Mail size={16} />
+                                {resendLoading ? "Sending..." : "Resend Verification Email"}
+                            </button>
+                        </div>
+                    )}
+
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || resendLoading}
                         className="btn-primary"
                         style={{ width: '100%', padding: '12px', marginTop: '8px' }}
                     >

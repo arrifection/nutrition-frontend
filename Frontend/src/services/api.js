@@ -102,5 +102,6 @@ export const loginUser    = (data) => handleResp(() => api.post('/auth/login', d
 export const registerUser = (data) => handleResp(() => api.post('/auth/register', data));
 export const getMe        = ()     => handleResp(() => api.get('/auth/me'));
 export const resendVerification = () => handleResp(() => api.post('/auth/resend-verification'));
+export const requestVerificationEmail = (data) => handleResp(() => api.post('/auth/request-verification-email', data));
 
 export default api;
