@@ -1,12 +1,10 @@
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
+import { toFriendlyApiError } from '../utils/apiErrors';
 
 const API_BASE_URL = getApiBaseUrl();
 const TOKEN_KEY = 'dietdesk_token';
 const USER_KEY = 'dietdesk_user';
-
-
-
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -16,7 +14,6 @@ const api = axios.create({
     },
 });
 
-// Attach Bearer token from localStorage to every request automatically
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
@@ -42,83 +39,111 @@ api.interceptors.response.use(
     }
 );
 
-// Helper for unified response handling
-const handleResp = async (fn) => {
+const reportClientError = (entry) => {
+    const payload = {
+        level: 'error',
+        page: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        ...entry,
+    };
+
+    axios.post(`${API_BASE_URL}/client-log`, payload, { timeout: 8000 }).catch(() => {});
+};
+
+const handleResp = async (fn, context = 'request') => {
     try {
         const response = await fn();
         return { success: true, data: response.data };
     } catch (error) {
-        console.error('API Error:', error);
-        const message = error.code === 'ECONNABORTED'
-            ? 'Request timed out. The server may still be waking up — wait a moment and try Sign In; your account may already exist.'
-            : (error.message === 'Network Error'
-                ? 'Could not reach the server. Wait a moment and try Sign In — your account may have been created.'
-                : error.response?.data?.detail
-                    || error.message
-                    || 'API request failed');
-        const url = error.config?.url ? ` (${error.config.url})` : '';
-        
+        const friendly = toFriendlyApiError(error, context);
+
+        console.error(`[DietDesk API] ${context}`, {
+            userMessage: friendly.userMessage,
+            technicalMessage: friendly.technicalMessage,
+            status: friendly.status,
+            path: error.config?.url,
+        });
+
+        reportClientError({
+            action: context,
+            user_message: friendly.userMessage,
+            technical_message: friendly.technicalMessage,
+            path: error.config?.url,
+            status: friendly.status ?? null,
+        });
+
         return {
             success: false,
-            error: `${message}${url}`
+            error: friendly.userMessage,
+            retryable: friendly.retryable,
         };
     }
 };
 
-// Calculations (Stateless)
-export const calculateBMI = (data) => handleResp(() => api.post('/bmi', data));
-export const calculateBMR = (data) => handleResp(() => api.post('/bmr', data));
-export const calculateMacros = (data) => handleResp(() => api.post('/macros', data));
-export const getAdvice = (category) => handleResp(() => api.get('/advice', { params: { category } }));
-
-// Patients (DB)
-export const getPatients = () => handleResp(() => api.get('/api/v1/patients'));
-export const getPatient = (id) => handleResp(() => api.get(`/api/v1/patients/${id}`));
-export const createPatient = (data) => handleResp(() => api.post('/api/v1/patients', data));
-export const updatePatient = (id, data) => handleResp(() => api.put(`/api/v1/patients/${id}`, data));
-export const deletePatient = (id) => handleResp(() => api.delete(`/api/v1/patients/${id}`));
-
-// Plans (DB)
-export const getPlan = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}`));
-export const savePlan = (patientId, data) => handleResp(() => api.post(`/api/v1/plans/${patientId}`, data));
-export const getPlanHistory = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}/history`));
-export const deletePlanHistoryItem = (patientId, planId) => handleResp(() => api.delete(`/api/v1/plans/${patientId}/history/${planId}`));
-
-// Clinical Logs (DB)
-export const getLogs = (patientId) => handleResp(() => api.get(`/api/v1/logs/${patientId}`));
-export const createLog = (data) => handleResp(() => api.post('/api/v1/logs', data));
-export const updateLog = (id, data) => handleResp(() => api.put(`/api/v1/logs/${id}`, data));
-
-// Reminders (DB)
-export const getReminders = () => handleResp(() => api.get('/api/v1/reminders'));
-export const dismissReminder = (id) => handleResp(() => api.delete(`/api/v1/reminders/${id}`));
-
-// Food Exchange (DB)
-export const getExchangeList = (category = null) => {
-    const url = category ? `/api/v1/exchange-list/category/${category}` : '/api/v1/exchange-list';
-    return handleResp(() => api.get(url));
-};
-
-// Auth endpoints
-export const loginUser    = (data) => handleResp(() => api.post('/auth/login', data));
-const withRetries = async (fn, retries = 2, delayMs = 1500) => {
+const withRetries = async (fn, context, retries = 2, delayMs = 1500) => {
     let lastResult;
     for (let attempt = 0; attempt <= retries; attempt += 1) {
         lastResult = await fn();
-        if (lastResult.success) return lastResult;
-        const err = (lastResult.error || '').toLowerCase();
-        const retryable = err.includes('network error')
-            || err.includes('could not reach the server')
-            || err.includes('timed out');
-        if (!retryable || attempt === retries) return lastResult;
+        if (lastResult.success || !lastResult.retryable || attempt === retries) {
+            return lastResult;
+        }
         await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
     }
     return lastResult;
 };
 
-export const registerUser = (data) => withRetries(() => handleResp(() => api.post('/auth/register', data)));
-export const getMe        = ()     => handleResp(() => api.get('/auth/me'));
-export const resendVerification = () => handleResp(() => api.post('/auth/resend-verification'));
-export const requestVerificationEmail = (data) => handleResp(() => api.post('/auth/request-verification-email', data));
+// Calculations (Stateless)
+export const calculateBMI = (data) => handleResp(() => api.post('/bmi', data), 'calculate-bmi');
+export const calculateBMR = (data) => handleResp(() => api.post('/bmr', data), 'calculate-bmr');
+export const calculateMacros = (data) => handleResp(() => api.post('/macros', data), 'calculate-macros');
+export const getAdvice = (category) => handleResp(() => api.get('/advice', { params: { category } }), 'get-advice');
+
+// Patients (DB)
+export const getPatients = () => handleResp(() => api.get('/api/v1/patients'), 'list-patients');
+export const getPatient = (id) => handleResp(() => api.get(`/api/v1/patients/${id}`), 'get-patient');
+export const createPatient = (data) => handleResp(() => api.post('/api/v1/patients', data), 'create-patient');
+export const updatePatient = (id, data) => handleResp(() => api.put(`/api/v1/patients/${id}`, data), 'update-patient');
+export const deletePatient = (id) => handleResp(() => api.delete(`/api/v1/patients/${id}`), 'delete-patient');
+
+// Plans (DB)
+export const getPlan = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}`), 'get-plan');
+export const savePlan = (patientId, data) => handleResp(() => api.post(`/api/v1/plans/${patientId}`, data), 'save-plan');
+export const getPlanHistory = (patientId) => handleResp(() => api.get(`/api/v1/plans/${patientId}/history`), 'get-plan-history');
+export const deletePlanHistoryItem = (patientId, planId) => handleResp(() => api.delete(`/api/v1/plans/${patientId}/history/${planId}`), 'delete-plan-history');
+
+// Clinical Logs (DB)
+export const getLogs = (patientId) => handleResp(() => api.get(`/api/v1/logs/${patientId}`), 'get-logs');
+export const createLog = (data) => handleResp(() => api.post('/api/v1/logs', data), 'create-log');
+export const updateLog = (id, data) => handleResp(() => api.put(`/api/v1/logs/${id}`, data), 'update-log');
+
+// Reminders (DB)
+export const getReminders = () => handleResp(() => api.get('/api/v1/reminders'), 'get-reminders');
+export const dismissReminder = (id) => handleResp(() => api.delete(`/api/v1/reminders/${id}`), 'dismiss-reminder');
+
+// Food Exchange (DB)
+export const getExchangeList = (category = null) => {
+    const url = category ? `/api/v1/exchange-list/category/${category}` : '/api/v1/exchange-list';
+    return handleResp(() => api.get(url), 'get-exchange-list');
+};
+
+// Auth endpoints
+export const loginUser = (data) => withRetries(
+    () => handleResp(() => api.post('/auth/login', data), 'login'),
+    'login',
+);
+export const registerUser = (data) => withRetries(
+    () => handleResp(() => api.post('/auth/register', data), 'signup'),
+    'signup',
+);
+export const getMe = () => handleResp(() => api.get('/auth/me'), 'session-check');
+export const resendVerification = () => withRetries(
+    () => handleResp(() => api.post('/auth/resend-verification'), 'resend-verification'),
+    'resend-verification',
+);
+export const requestVerificationEmail = (data) => withRetries(
+    () => handleResp(() => api.post('/auth/request-verification-email', data), 'request-verification'),
+    'request-verification',
+);
+
+export const wakeBackend = () => handleResp(() => api.get('/'), 'wake-backend');
 
 export default api;

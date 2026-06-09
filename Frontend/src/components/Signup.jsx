@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { wakeBackend } from "../services/api";
 
 const Signup = ({ onToggle }) => {
     const { register } = useAuth();
@@ -9,6 +10,10 @@ const Signup = ({ onToggle }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        wakeBackend();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,12 +32,7 @@ const Signup = ({ onToggle }) => {
                 );
             }
         } else {
-            const err = (result.error || "Signup failed. Please try again.").replace(/\s*\([^)]*\)\s*$/, "");
-            if (err.toLowerCase().includes("already registered")) {
-                setError("This username or email is already registered. Try Sign In, or use Resend Verification Email on the login page.");
-            } else {
-                setError(err);
-            }
+            setError(result.error || "We couldn't create your account right now. Please try again.");
         }
         setLoading(false);
     };

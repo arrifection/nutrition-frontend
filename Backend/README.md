@@ -55,6 +55,21 @@ Set these in **Hugging Face Space → Settings → Variables and secrets**:
 | `DEBUG_EMAIL_ENABLED` | No | Set `true` to enable `POST /debug/test-email` |
 | `MONGODB_TLS_INSECURE` | No | Set `true` only as last-resort debugging |
 
+### Real-time error monitoring
+
+Frontend user-facing failures are logged to HF Container logs as:
+
+```
+[CLIENT] {'action': 'signup', 'user_message': '...', 'technical_message': '...', ...}
+```
+
+Server errors also appear as:
+
+```
+[REQUEST] POST /auth/register -> 500 (123.45ms)
+[AUTH SIGNUP] ...
+```
+
 ### Email verification troubleshooting
 
 1. Check startup logs for `[EMAIL CONFIG]` — masked API key and sender must be set.

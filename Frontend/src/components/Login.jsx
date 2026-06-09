@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { requestVerificationEmail } from "../services/api";
+import { requestVerificationEmail, wakeBackend } from "../services/api";
 
 const isVerificationBlockedError = (message = "") => {
     const lower = message.toLowerCase();
-    return lower.includes("verification period has ended") || lower.includes("verify your email");
+    return lower.includes("verification window has ended")
+        || lower.includes("verification period has ended")
+        || lower.includes("resend verification email");
 };
 
 const Login = ({ onToggle, onSuccess }) => {
@@ -18,6 +20,10 @@ const Login = ({ onToggle, onSuccess }) => {
     const [resendLoading, setResendLoading] = useState(false);
     const [showResendOption, setShowResendOption] = useState(false);
 
+    useEffect(() => {
+        wakeBackend();
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -26,7 +32,7 @@ const Login = ({ onToggle, onSuccess }) => {
         setLoading(true);
         const result = await login(email, password);
         if (!result.success) {
-            const err = (result.error || "Login failed. Please try again.").replace(/\s*\([^)]*\)\s*$/, "");
+            const err = result.error || "We couldn't sign you in right now. Please check your details and try again.";
             setError(err);
             setShowResendOption(isVerificationBlockedError(err));
             setLoading(false);
@@ -54,7 +60,7 @@ const Login = ({ onToggle, onSuccess }) => {
         setResendLoading(false);
 
         if (!result.success) {
-            setError((result.error || "Could not send verification email.").replace(/\s*\([^)]*\)\s*$/, ""));
+            setError(result.error || "We couldn't send the verification email right now. Please try again in a few minutes.");
             return;
         }
 

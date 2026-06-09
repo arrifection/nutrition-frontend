@@ -70,10 +70,14 @@ async def _issue_verification_email(email: str) -> dict:
 
     email_result = await send_verification_email(email, new_token)
     if not email_result.success:
+        logger.error(
+            "[AUTH EMAIL] Failed to send verification to %s: %s",
+            email,
+            email_result.error_message,
+        )
         raise HTTPException(
             status_code=503,
-            detail=email_result.error_message
-            or "Could not send verification email. Please try again shortly.",
+            detail="We couldn't send the verification email right now. Please try again in a few minutes.",
         )
 
     return {
@@ -121,9 +125,10 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
             "$or": [{"email": user_data.email}, {"username": user_data.username}]
         })
         if existing_user:
+            logger.info("[AUTH SIGNUP] Blocked duplicate signup for %s / %s", user_data.username, user_data.email)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username or email already registered"
+                detail="This username or email is already registered",
             )
         
         hashed_password = get_password_hash(user_data.password)
@@ -159,8 +164,9 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
         if _is_db_connection_error(e):
             print(f"DB ERROR in register: {type(e).__name__} - {e}")
             _raise_db_unavailable()
-        print(f"ERROR in register: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {type(e).__name__} - {str(e)}")
+        logger.error("[AUTH SIGNUP] Unexpected error for %s: %s", user_data.email, e)
+        logger.error("[AUTH SIGNUP] Traceback:\n%s", traceback.format_exc())
+        raise HTTPException(status_code=500, detail="We couldn't create your account right now. Please try again.")
 
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
@@ -190,9 +196,10 @@ async def login(user_data: UserLogin):
             deadline = user.get("verification_deadline")
             if deadline and datetime.utcnow() > deadline:
                 print(f"LOGIN BLOCK: {user_data.email} verification period expired")
+                logger.info("[AUTH LOGIN] Blocked expired verification for %s", user_data.email)
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Your 2-day verification period has ended. Please verify your email to continue."
+                    detail="Your verification window has ended. Use Resend Verification Email on the login page to get a new link.",
                 )
         
         print(f"LOGIN SUCCESS: {user_data.email}")
@@ -210,8 +217,8 @@ async def login(user_data: UserLogin):
         if _is_db_connection_error(e):
             print(f"DB ERROR in login: {type(e).__name__} - {e}")
             _raise_db_unavailable()
-        print(f"ERROR in login: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {type(e).__name__} - {str(e)}")
+        logger.error("[AUTH LOGIN] Unexpected error for %s: %s", user_data.email, e)
+        raise HTTPException(status_code=500, detail="We couldn't sign you in right now. Please try again.")
 
 # --- TEMPORARY DEV TESTING ENDPOINT ---
 class EmailTest(BaseModel):

@@ -13,6 +13,7 @@ from bmi import router as bmi_router
 from bmr import router as bmr_router
 from clinical_router import router as clinical_router
 from database import check_db, refresh_collections
+from client_log_router import router as client_log_router
 from debug_router import router as debug_router
 from email_utils import get_email_config_status, log_email_config_on_startup
 from exchange_list import router as exchange_router, seed_food_data
@@ -77,7 +78,13 @@ async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = (time.time() - start_time) * 1000
-    print(f"DEBUG: {request.method} {request.url.path} - {response.status_code} ({process_time:.2f}ms)")
+    log_line = f"{request.method} {request.url.path} -> {response.status_code} ({process_time:.2f}ms)"
+    if response.status_code >= 500:
+        logger.error("[REQUEST] %s", log_line)
+    elif response.status_code >= 400:
+        logger.warning("[REQUEST] %s", log_line)
+    else:
+        logger.info("[REQUEST] %s", log_line)
     return response
 
 default_origins = [
@@ -112,6 +119,7 @@ app.include_router(patient_router)
 app.include_router(plan_router)
 app.include_router(clinical_router)
 app.include_router(auth_router)
+app.include_router(client_log_router)
 app.include_router(debug_router)
 app.include_router(history_router)
 app.include_router(pdf_export_router)
