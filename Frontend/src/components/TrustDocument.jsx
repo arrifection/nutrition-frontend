@@ -1,4 +1,4 @@
-import { LAST_UPDATED, SUPPORT_EMAIL } from "../constants/trust";
+import { LAST_UPDATED, LEGAL_CONTACT_EMAIL } from "../constants/trust";
 
 export function TrustSection({ title, children }) {
     return (
@@ -9,18 +9,20 @@ export function TrustSection({ title, children }) {
     );
 }
 
-export default function TrustDocument({ title, subtitle, children }) {
+export default function TrustDocument({ title, subtitle, children, showContact = false }) {
     return (
         <article className="trust-document">
             <header className="trust-document-header">
-                <p className="trust-eyebrow">DietDesk</p>
                 <h1>{title}</h1>
-                {subtitle && <p className="trust-lead">{subtitle}</p>}
                 <p className="trust-meta">
-                    Last updated: <time dateTime="2026-06-09">{LAST_UPDATED}</time>
-                    {" · "}
-                    <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+                    Last Updated: <time dateTime="2026-06">{LAST_UPDATED}</time>
                 </p>
+                {subtitle && <p className="trust-lead">{subtitle}</p>}
+                {showContact && (
+                    <p className="trust-meta">
+                        <a href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>
+                    </p>
+                )}
             </header>
             <div className="trust-document-body">{children}</div>
         </article>

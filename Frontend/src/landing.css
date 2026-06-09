@@ -1458,15 +1458,52 @@
   margin-top: auto;
 }
 
-.public-footer-email {
+.public-footer-simple {
+  background: #0b1220;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.8125rem;
+  padding: 28px 0 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: auto;
+}
+
+.public-footer-simple-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.public-footer-copy {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.public-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 18px;
+}
+
+.public-footer-nav a {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
 }
 
-.public-footer-email:hover {
+.public-footer-nav a:hover {
   color: #4ade80;
+}
+
+.public-footer-tagline {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.48);
 }
 
 .trust-page-main {
@@ -1644,6 +1681,49 @@
 
 .contact-highlight p {
   margin: 0;
+}
+
+.contact-simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.contact-simple-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.contact-simple-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.contact-simple-email {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #059669;
+  text-decoration: none;
+}
+
+.contact-simple-email:hover {
+  text-decoration: underline;
+}
+
+.trust-thanks {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
 }
 
 @media (max-width: 768px) {
