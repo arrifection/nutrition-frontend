@@ -54,6 +54,11 @@ Set these in **Hugging Face Space → Settings → Variables and secrets**:
 | `CORS_ORIGIN_REGEX` | No | Regex for dynamic preview domains |
 | `DEBUG_EMAIL_ENABLED` | No | Set `true` to enable `POST /debug/test-email` |
 | `MONGODB_TLS_INSECURE` | No | Set `true` only as last-resort debugging |
+| `ENVIRONMENT` | Yes (prod) | Set `production` on HF Space |
+| `SENTRY_DSN` | No | Sentry backend DSN — enables error tracking in production |
+| `SENTRY_RELEASE` | No | Git commit SHA or version tag for release tracking |
+| `SENTRY_TRACES_SAMPLE_RATE` | No | Default `0.1` |
+| `ENABLE_SENTRY_TEST` | No | Set `true` briefly to hit `GET /internal/sentry-test` |
 
 ### Real-time error monitoring
 

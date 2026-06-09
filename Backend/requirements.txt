@@ -12,3 +12,4 @@ python-multipart
 python-jose[cryptography]
 httpx
 fpdf2
+sentry-sdk[fastapi]

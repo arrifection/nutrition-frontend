@@ -9,6 +9,20 @@ import './index.css'
 import './mobile-responsive.css'
 import './nutrition-assessment.css'
 import './enterprise-ui.css'
+import { initSentry, captureUnhandledError, isSentryEnabled, triggerSentryTestError } from './utils/sentry'
+
+initSentry()
+
+if (typeof window !== 'undefined' && isSentryEnabled()) {
+    window.__dietdeskSentryTest = triggerSentryTestError
+    window.addEventListener('error', (event) => {
+        captureUnhandledError(event.error || new Error(event.message), { source: 'window.error' })
+    })
+    window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason instanceof Error ? event.reason : new Error(String(event.reason))
+        captureUnhandledError(reason, { source: 'unhandledrejection' })
+    })
+}
 
 const rootEl = document.getElementById('root')
 

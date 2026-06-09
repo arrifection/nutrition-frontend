@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button, CircularProgress, LinearProgress, Snackbar, Alert } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { exportDietPlanPdf, getPdfDownloadName } from "../../services/pdfExport";
+import { capturePdfExportFailure } from "../../utils/sentry";
 
 export default function PdfExportButton({
     exportPayload,
@@ -48,7 +49,11 @@ export default function PdfExportButton({
             a.click();
             URL.revokeObjectURL(url);
             setSnackbar({ open: true, message: "PDF downloaded successfully!", severity: "success" });
-        } catch {
+        } catch (error) {
+            capturePdfExportFailure(error, {
+                templateId: exportPayload?.templateId,
+                patientId: exportPayload?.patientData?.id,
+            });
             setSnackbar({
                 open: true,
                 message: "Export failed. Please try again — the server may be waking up.",

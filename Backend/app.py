@@ -4,9 +4,16 @@ import os
 import time
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+from sentry_config import init_sentry, is_sentry_enabled
+
+init_sentry()
 
 from advice import router as advice_router
 from allergen_router import router as allergen_router
@@ -28,7 +35,6 @@ from plan_router import router as plan_router
 from rate_limit import check_rate_limit
 from security_middleware import add_security_headers, validate_secret_key
 
-load_dotenv()
 validate_secret_key()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -149,4 +155,24 @@ app.include_router(pdf_export_router)
 @app.get("/")
 def home():
     return {"message": "Backend is running successfully - v2.3 (Auth Fix)"}
+
+
+@app.get("/health")
+async def health_check():
+    db_ok = await check_db()
+    env = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development"))
+    return {
+        "status": "healthy" if db_ok else "degraded",
+        "database": "connected" if db_ok else "unreachable",
+        "environment": env,
+        "release": os.getenv("SENTRY_RELEASE", "unknown"),
+        "sentry": "enabled" if is_sentry_enabled() else "disabled",
+    }
+
+
+@app.get("/internal/sentry-test", tags=["Monitoring"])
+async def sentry_test():
+    if os.getenv("ENABLE_SENTRY_TEST", "false").lower() not in {"1", "true", "yes"}:
+        raise HTTPException(status_code=404, detail="Not found")
+    raise RuntimeError("DietDesk Sentry backend test error — safe to ignore after verification")
 

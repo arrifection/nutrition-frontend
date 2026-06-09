@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 import { toFriendlyApiError } from '../utils/apiErrors';
+import { captureApiFailure, captureAuthFailure } from '../utils/sentry';
 
 const API_BASE_URL = getApiBaseUrl();
 export const TOKEN_KEY = 'dietdesk_token';
@@ -133,6 +134,27 @@ const handleResp = async (fn, context = 'request') => {
             path: error.config?.url,
             status: friendly.status ?? null,
         });
+
+        const path = error.config?.url || '';
+        const isAuthRoute = path.includes('/auth/');
+        const isSessionExpiry = friendly.technicalMessage?.toLowerCase().includes('invalid or expired');
+
+        if (isAuthRoute && !isSessionExpiry) {
+            captureAuthFailure({
+                action: context,
+                status: friendly.status,
+                technicalMessage: friendly.technicalMessage,
+                userMessage: friendly.userMessage,
+            });
+        } else if ((friendly.status && friendly.status >= 500) || !error.response) {
+            captureApiFailure({
+                context,
+                status: friendly.status,
+                path,
+                technicalMessage: friendly.technicalMessage,
+                userMessage: friendly.userMessage,
+            });
+        }
 
         return {
             success: false,
