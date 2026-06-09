@@ -5,11 +5,12 @@ import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
+from runtime_env import is_production, resolve_environment
+
 
 def is_sentry_enabled() -> bool:
-    env = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
     dsn = os.getenv("SENTRY_DSN", "").strip()
-    return env in {"production", "prod"} and bool(dsn)
+    return is_production() and bool(dsn)
 
 
 def init_sentry() -> None:
@@ -19,7 +20,7 @@ def init_sentry() -> None:
     traces_sample_rate = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
     sentry_sdk.init(
         dsn=os.getenv("SENTRY_DSN"),
-        environment=os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "production")),
+        environment=resolve_environment(),
         release=os.getenv("SENTRY_RELEASE"),
         integrations=[
             FastApiIntegration(transaction_style="endpoint"),

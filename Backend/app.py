@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from runtime_env import resolve_environment
 from sentry_config import init_sentry, is_sentry_enabled
 
 init_sentry()
@@ -160,11 +161,10 @@ def home():
 @app.get("/health")
 async def health_check():
     db_ok = await check_db()
-    env = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development"))
     return {
         "status": "healthy" if db_ok else "degraded",
         "database": "connected" if db_ok else "unreachable",
-        "environment": env,
+        "environment": resolve_environment(),
         "release": os.getenv("SENTRY_RELEASE", "unknown"),
         "sentry": "enabled" if is_sentry_enabled() else "disabled",
     }
