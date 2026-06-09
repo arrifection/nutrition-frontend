@@ -13,7 +13,9 @@ import { initSentry, captureUnhandledError, isSentryEnabled, triggerSentryTestEr
 
 initSentry()
 
-if (typeof window !== 'undefined' && isSentryEnabled()) {
+function registerSentryClientHandlers() {
+    if (typeof window === 'undefined' || !isSentryEnabled()) return
+
     window.__dietdeskSentryTest = triggerSentryTestError
     window.addEventListener('error', (event) => {
         captureUnhandledError(event.error || new Error(event.message), { source: 'window.error' })
@@ -23,6 +25,8 @@ if (typeof window !== 'undefined' && isSentryEnabled()) {
         captureUnhandledError(reason, { source: 'unhandledrejection' })
     })
 }
+
+registerSentryClientHandlers()
 
 const rootEl = document.getElementById('root')
 

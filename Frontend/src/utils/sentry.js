@@ -1,5 +1,9 @@
 const PRODUCTION_HOSTS = new Set(["dietdesk.online", "www.dietdesk.online"]);
 
+const SENTRY_DSN = (import.meta.env.VITE_SENTRY_DSN || "").trim();
+const SENTRY_RELEASE = (import.meta.env.VITE_SENTRY_RELEASE || "").trim();
+const SENTRY_ENVIRONMENT = (import.meta.env.VITE_SENTRY_ENVIRONMENT || "production").trim();
+
 let sentryLoadPromise = null;
 
 function isProductionHost() {
@@ -9,7 +13,8 @@ function isProductionHost() {
 }
 
 export function isSentryEnabled() {
-    return Boolean(import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && isProductionHost());
+    if (!import.meta.env.PROD || !SENTRY_DSN) return false;
+    return isProductionHost();
 }
 
 function loadSentry() {
@@ -17,9 +22,9 @@ function loadSentry() {
     if (!sentryLoadPromise) {
         sentryLoadPromise = import("@sentry/react").then((Sentry) => {
             Sentry.init({
-                dsn: import.meta.env.VITE_SENTRY_DSN,
-                environment: import.meta.env.VITE_SENTRY_ENVIRONMENT || "production",
-                release: import.meta.env.VITE_SENTRY_RELEASE || undefined,
+                dsn: SENTRY_DSN,
+                environment: SENTRY_ENVIRONMENT,
+                release: SENTRY_RELEASE || undefined,
                 integrations: [Sentry.browserTracingIntegration()],
                 tracesSampleRate: Number(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE || "0.05"),
                 sendDefaultPii: false,
@@ -129,6 +134,7 @@ export async function triggerSentryTestError() {
     if (!isSentryEnabled()) {
         throw new Error("Sentry is disabled in this environment.");
     }
-    await loadSentry();
-    throw new Error("DietDesk Sentry frontend test error");
+    const Sentry = await loadSentry();
+    Sentry.captureException(new Error("DietDesk Sentry frontend test error"));
+    await Sentry.flush(2000);
 }
