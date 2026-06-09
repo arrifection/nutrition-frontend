@@ -17,6 +17,7 @@ import { useAuth } from "../context/AuthContext";
 import { Box, Stack, Typography } from "@mui/material";
 import Settings from "../components/Settings";
 import PlaceholderPage from "../components/ui/PlaceholderPage";
+import NutritionCalculators from "./NutritionCalculators";
 import { FileText, Activity, UtensilsCrossed } from "lucide-react";
 
 const PATH_TO_VIEW = {
@@ -30,6 +31,7 @@ const PATH_TO_VIEW = {
     "/food-database": "exchange-list",
     "/exchange-list": "exchange-list",
     "/history": "history",
+    "/calculators": "calculators",
 };
 
 const VIEW_TO_PATH = {
@@ -41,6 +43,7 @@ const VIEW_TO_PATH = {
     progress: "/progress",
     "exchange-list": "/food-database",
     history: "/history",
+    calculators: "/calculators",
     profile: "/patients",
 };
 
@@ -136,9 +139,27 @@ export default function AuthenticatedApp() {
     const handlePatientSaved = (profile) => {
         setPatientData(profile);
         setPatientId(profile.id);
-        setMetrics({ bmi: profile.bmi, bmr: profile.bmr, tdee: profile.tdee });
+        setMetrics({
+            bmi: profile.bmi,
+            bmr: profile.bmr,
+            tdee: profile.tdee,
+            assessment: profile.assessment || null,
+        });
         showToast("Patient information saved", "success");
         nextStep();
+    };
+
+    const handleAssessmentExport = ({ metrics: exportedMetrics }) => {
+        setMetrics(exportedMetrics);
+        setCurrentStep(patientId ? 2 : 1);
+        setView("planner");
+        navigate("/create-plan");
+        showToast(
+            patientId
+                ? "Assessment exported — review in step 2, then set macros"
+                : "Save a patient in step 1 to attach this assessment to a diet plan",
+            patientId ? "success" : "info"
+        );
     };
 
     const handleProceedToMacros = () => nextStep();
@@ -154,9 +175,24 @@ export default function AuthenticatedApp() {
             case 1:
                 return <Step1PatientInfo onSave={handlePatientSaved} onError={handleError} initialData={patientData} />;
             case 2:
-                return <Step2Calculations metrics={metrics} onProceed={handleProceedToMacros} onBack={prevStep} />;
+                return (
+                    <Step2Calculations
+                        metrics={metrics}
+                        patientData={patientData}
+                        onProceed={handleProceedToMacros}
+                        onBack={prevStep}
+                    />
+                );
             case 3:
-                return <Step3MacroSetup tdee={metrics?.tdee} initialMacros={macroTargets} onConfirm={handleMacrosConfirmed} onBack={prevStep} />;
+                return (
+                    <Step3MacroSetup
+                        tdee={metrics?.tdee}
+                        suggestedProtein={metrics?.assessment?.summary?.protein_g_per_day}
+                        initialMacros={macroTargets}
+                        onConfirm={handleMacrosConfirmed}
+                        onBack={prevStep}
+                    />
+                );
             case 4:
                 return (
                     <Step4MealPlanner
@@ -175,6 +211,7 @@ export default function AuthenticatedApp() {
                     <Step5WeeklyPlan
                         weekPlan={weekPlan}
                         macroTargets={macroTargets}
+                        assessment={metrics?.assessment}
                         patientId={patientId}
                         patientData={patientData}
                         onError={handleError}
@@ -263,6 +300,14 @@ export default function AuthenticatedApp() {
             return <Settings />;
         }
 
+        if (view === "calculators") {
+            return (
+                <Box className="dd-mobile-page" sx={{ p: { xs: 0, md: 3 }, background: "var(--background)", minHeight: "100%" }}>
+                    <NutritionCalculators onExportToPlan={handleAssessmentExport} />
+                </Box>
+            );
+        }
+
         if (view === "profile" && selectedPatient) {
             return (
                 <Box className="dd-mobile-page" p={{ xs: 2, md: 4 }}>
@@ -272,7 +317,12 @@ export default function AuthenticatedApp() {
                         onEditPlan={(p) => {
                             setPatientData(p);
                             setPatientId(p.id);
-                            setMetrics({ bmi: p.bmi, bmr: p.bmr, tdee: p.tdee });
+                            setMetrics({
+                                bmi: p.bmi,
+                                bmr: p.bmr,
+                                tdee: p.tdee,
+                                assessment: p.assessment || null,
+                            });
                             setView("planner");
                             navigate("/planner");
                         }}

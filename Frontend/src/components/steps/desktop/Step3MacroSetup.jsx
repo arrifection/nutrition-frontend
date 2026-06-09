@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack }) {
+export default function Step3MacroSetup({ tdee, suggestedProtein, initialMacros, onConfirm, onBack }) {
     const [calories, setCalories] = useState(initialMacros?.calories || tdee || 2000);
     const [ratios, setRatios] = useState({
         carbs: initialMacros ? Math.round((initialMacros.carbs * 4 / initialMacros.calories) * 100) : 40,
@@ -72,6 +72,13 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
                     Step 3 of 5 — Set calorie and macronutrient targets
                 </p>
             </div>
+
+            {suggestedProtein && (
+                <div className="mb-6 p-4 rounded-lg border border-emerald-200 bg-emerald-50 text-sm text-emerald-800">
+                    Clinical protein requirement from assessment: <strong>{suggestedProtein} g/day</strong>.
+                    Adjust macro ratios below to align with this target.
+                </div>
+            )}
 
             {/* Calorie Input */}
             <div className="mb-8 pb-6 border-b border-emerald-100">

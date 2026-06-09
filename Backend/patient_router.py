@@ -8,37 +8,22 @@ router = APIRouter(prefix="/api/v1", tags=["patients"])
 
 
 def calculate_metrics(profile_dict: dict) -> dict:
-    """Calculate BMI, BMR, and TDEE for a patient profile"""
-    # BMI Calculation
-    height_m = profile_dict["height"] / 100
-    profile_dict["bmi"] = round(profile_dict["weight"] / (height_m ** 2), 2)
-    
-    # BMR Calculation (Mifflin-St Jeor)
-    if profile_dict["gender"].lower() == "male":
-        profile_dict["bmr"] = round((10 * profile_dict["weight"]) + (6.25 * profile_dict["height"]) - (5 * profile_dict["age"]) + 5)
-    else:
-        profile_dict["bmr"] = round((10 * profile_dict["weight"]) + (6.25 * profile_dict["height"]) - (5 * profile_dict["age"]) - 161)
-        
-    # Activity Multiplier mapping
-    multipliers = {
-        "sedentary": 1.2,
-        "light": 1.375,
-        "moderate": 1.55,
-        "active": 1.725,
-        "very_active": 1.9
-    }
-    multiplier = multipliers.get(profile_dict["activity_level"].lower(), 1.2)
-    
-    # TDEE Calculation
-    tdee = profile_dict["bmr"] * multiplier
-    
-    # Goal Adjustment
-    if profile_dict["goal"].lower() == "weight loss":
-        tdee -= 300  # deficit
-    elif profile_dict["goal"].lower() == "weight gain":
-        tdee += 300  # surplus
-        
-    profile_dict["tdee"] = round(tdee)
+    """Calculate BMI, BMR, TDEE, and extended assessment summary for a patient profile."""
+    from nutrition_assessment import compute_full_assessment
+
+    assessment = compute_full_assessment(
+        weight_kg=profile_dict["weight"],
+        height_cm=profile_dict["height"],
+        age=profile_dict["age"],
+        gender=profile_dict["gender"],
+        activity_level=profile_dict.get("activity_level", "sedentary"),
+        goal=profile_dict.get("goal", "maintenance"),
+    )
+    summary = assessment["summary"]
+    profile_dict["bmi"] = summary["bmi"]
+    profile_dict["bmr"] = summary["bmr"]
+    profile_dict["tdee"] = summary["goal_calories"]
+    profile_dict["assessment"] = assessment
     return profile_dict
 
 

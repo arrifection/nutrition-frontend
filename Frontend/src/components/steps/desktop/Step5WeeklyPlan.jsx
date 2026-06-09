@@ -7,6 +7,7 @@ import PdfExportButton from "../../ui/PdfExportButton";
 export default function Step5WeeklyPlan({
     weekPlan,
     macroTargets,
+    assessment,
     patientId,
     patientData,
     onError,
@@ -77,7 +78,11 @@ export default function Step5WeeklyPlan({
         }
 
         setSaving(true);
-        const response = await savePlan(patientId, { days: weekPlan });
+        const response = await savePlan(patientId, {
+            days: weekPlan,
+            assessment: assessment || patientData?.assessment || null,
+            macro_targets: targets,
+        });
         if (response.success) {
             onSuccess?.("Weekly meal plan saved successfully!");
 
@@ -146,6 +151,22 @@ export default function Step5WeeklyPlan({
                     </p>
                 </div>
             </div>
+
+            {(assessment?.summary || patientData?.assessment?.summary) && (
+                <div className="mb-6 na-summary-grid">
+                    {[
+                        ["BMI", (assessment || patientData.assessment).summary.bmi],
+                        ["Goal kcal", (assessment || patientData.assessment).summary.goal_calories],
+                        ["Protein", `${(assessment || patientData.assessment).summary.protein_g_per_day} g`],
+                        ["Fluid", `${(assessment || patientData.assessment).summary.fluid_ml_per_day} mL`],
+                    ].map(([label, value]) => (
+                        <div key={label} className="na-summary-chip">
+                            <span className="na-summary-chip__label">{label}</span>
+                            <strong>{value}</strong>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Dietary Focus Input */}
             <div className="mb-6 pb-6 border-b border-emerald-100">

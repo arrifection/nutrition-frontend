@@ -12,6 +12,7 @@ import {
     ChevronLeft,
     ChevronRight,
     UtensilsCrossed,
+    Calculator,
 } from 'lucide-react';
 import DietDeskLogo from './DietDeskLogo';
 import { 
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
     { id: 'patients',      label: 'Patients',       icon: Users },
     { id: 'create',        label: 'Create Plan',    icon: PlusCircle },
     { id: 'plans',         label: 'Plans',          icon: FileText },
+    { id: 'calculators',     label: 'Calculators',    icon: Calculator },
     { id: 'exchange-list', label: 'Food Database',  icon: UtensilsCrossed },
     { id: 'progress',      label: 'Progress',       icon: Activity },
     { id: 'settings',      label: 'Settings',       icon: Settings },

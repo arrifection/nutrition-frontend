@@ -6,7 +6,7 @@ const MACRO_META = [
     { key: "fat", label: "Fat", color: "fat" },
 ];
 
-export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack }) {
+export default function Step3MacroSetup({ tdee, suggestedProtein, initialMacros, onConfirm, onBack }) {
     const [calories, setCalories] = useState(initialMacros?.calories || tdee || 2000);
     const [ratios, setRatios] = useState({
         carbs: initialMacros ? Math.round((initialMacros.carbs * 4 / initialMacros.calories) * 100) : 40,
@@ -73,6 +73,12 @@ export default function Step3MacroSetup({ tdee, initialMacros, onConfirm, onBack
                     Step 3 of 5 — Set calorie and macronutrient targets
                 </p>
             </div>
+
+            {suggestedProtein && (
+                <div className="mb-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 text-sm text-emerald-800">
+                    Clinical protein from assessment: <strong>{suggestedProtein} g/day</strong>
+                </div>
+            )}
 
             <div className="dd-macro-hero dd-form-group">
                 <p className="dd-form-group-label">Daily calorie target</p>

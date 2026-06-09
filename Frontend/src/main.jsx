@@ -7,6 +7,7 @@ import { ThemeModeProvider } from './context/ThemeContext'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import './index.css'
 import './mobile-responsive.css'
+import './nutrition-assessment.css'
 
 const rootEl = document.getElementById('root')
 

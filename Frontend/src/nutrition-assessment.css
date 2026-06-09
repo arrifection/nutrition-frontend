@@ -1,0 +1,429 @@
+/* Nutrition Assessment — breathable SaaS layout */
+
+.na-page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+.na-section-block {
+    margin-bottom: 2.5rem;
+}
+
+.na-section-block:last-child {
+    margin-bottom: 0;
+}
+
+.na-section-block--alt {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.na-page__header {
+    margin-bottom: 2.75rem;
+    padding-bottom: 0.25rem;
+}
+
+.na-page__header .section-title {
+    margin: 0 0 0.65rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.na-page__header .text-sm {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 42rem;
+}
+
+/* Input section */
+.na-form {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.na-form__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem 1.5rem;
+}
+
+.na-form__grid .form-label {
+    margin-bottom: 0.5rem;
+}
+
+.na-form__error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-top: 1.25rem;
+}
+
+.na-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.na-form__actions .btn-primary {
+    min-width: 12rem;
+}
+
+/* Results section */
+.na-results-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.na-results-section__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.na-results-section__toolbar .btn-secondary {
+    min-height: 2.5rem;
+    padding-inline: 1.25rem;
+}
+
+/* Panel */
+.na-panel {
+    margin-top: 0;
+}
+
+.na-panel--compact .na-summary-grid {
+    margin-bottom: 1.5rem;
+}
+
+.na-panel--compact .na-cards-grid {
+    gap: 1rem;
+}
+
+/* Overview strip — calmer, fewer visual competing elements */
+.na-summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.na-panel .na-summary-grid {
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.na-summary-chip {
+    flex: 1 1 7.5rem;
+    min-width: 7.5rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.na-summary-chip--accent {
+    border-color: var(--border);
+    background: var(--background);
+}
+
+.na-summary-chip--accent strong {
+    color: var(--brand-green);
+}
+
+.na-summary-chip__label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.na-summary-chip strong {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-primary);
+}
+
+/* Metric cards */
+.na-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+}
+
+.na-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.35rem 1.5rem;
+    line-height: 1.6;
+    transition: border-color 0.15s ease;
+}
+
+.na-card:hover {
+    border-color: #cbd5e1;
+}
+
+.na-card--highlight {
+    border-color: #bbf7d0;
+    background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--brand-green);
+}
+
+.na-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 0.85rem;
+}
+
+.na-card__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.na-card__category {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--brand-green);
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.na-card__value-wrap {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.na-card__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.na-card__unit {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.na-card__formula {
+    margin: 0.75rem 0 0;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.na-card__note,
+.na-card__subvalue {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.na-card__breakdown {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+}
+
+.na-card__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: none;
+    border: none;
+    padding: 0.25rem 0;
+    font-size: 0.8125rem;
+    color: var(--brand-green);
+    cursor: pointer;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.na-card__toggle:hover {
+    color: var(--brand-green-hover);
+}
+
+.na-card__toggle svg {
+    opacity: 0.65;
+    flex-shrink: 0;
+}
+
+.na-card__steps {
+    margin: 0.75rem 0 0;
+    padding-left: 1.25rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+.na-card__steps li + li {
+    margin-top: 0.35rem;
+}
+
+/* Wizard step — heading hierarchy + panel breathing room */
+.section .na-panel {
+    margin-top: 0.25rem;
+}
+
+.section > .mb-8 .section-title,
+.section .dd-step-header .section-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+}
+
+.section > .mb-8 .text-sm,
+.section .dd-step-header .text-sm {
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Nested cards sit on a softer surface inside results */
+.na-results-section .na-card {
+    background: var(--background);
+}
+
+/* Step 2 wizard integration */
+.na-step-actions {
+    margin-top: 2.5rem;
+    padding-top: 1.75rem;
+    gap: 1rem;
+    border-color: var(--border) !important;
+}
+
+.na-step-actions .btn-primary,
+.na-step-actions .btn-secondary {
+    min-height: 2.5rem;
+    padding-inline: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .na-page {
+        padding: 1.25rem 1rem 2.5rem;
+    }
+
+    .na-page__header {
+        margin-bottom: 2rem;
+    }
+
+    .na-page__header .section-title {
+        font-size: 1.5rem;
+    }
+
+    .na-section-block {
+        margin-bottom: 2rem;
+    }
+
+    .na-section-block--alt,
+    .na-results-section {
+        padding: 1.35rem 1.15rem;
+        border-radius: 14px;
+    }
+
+    .na-form__grid {
+        grid-template-columns: 1fr;
+        gap: 1.1rem;
+    }
+
+    .na-form__actions {
+        margin-top: 1.5rem;
+        padding-top: 1.35rem;
+    }
+
+    .na-form__actions .btn-primary {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .na-results-section__toolbar {
+        margin-bottom: 1.35rem;
+        padding-bottom: 1.25rem;
+    }
+
+    .na-results-section__toolbar .btn-secondary {
+        width: 100%;
+    }
+
+    .na-summary-grid {
+        gap: 0.65rem;
+    }
+
+    .na-panel .na-summary-grid {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.35rem;
+    }
+
+    .na-summary-chip {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: 0;
+        padding: 0.9rem 1rem;
+    }
+
+    .na-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .na-card {
+        padding: 1.2rem 1.15rem;
+    }
+
+    .na-card__header {
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .na-card__value-wrap {
+        text-align: left;
+    }
+
+    .na-step-actions {
+        flex-direction: column-reverse;
+        margin-top: 2rem;
+    }
+
+    .na-step-actions .btn-primary,
+    .na-step-actions .btn-secondary {
+        width: 100%;
+    }
+}

@@ -56,11 +56,16 @@ const handleResp = async (fn, context = 'request') => {
     } catch (error) {
         const friendly = toFriendlyApiError(error, context);
 
+        const requestUrl = error.config?.baseURL && error.config?.url
+            ? `${error.config.baseURL}${error.config.url}`
+            : error.config?.url;
         console.error(`[DietDesk API] ${context}`, {
             userMessage: friendly.userMessage,
             technicalMessage: friendly.technicalMessage,
             status: friendly.status,
-            path: error.config?.url,
+            route: error.config?.url,
+            requestUrl,
+            backendDetail: error.response?.data?.detail ?? null,
         });
 
         reportClientError({
@@ -94,6 +99,7 @@ const withRetries = async (fn, context, retries = 2, delayMs = 1500) => {
 // Calculations (Stateless)
 export const calculateBMI = (data) => handleResp(() => api.post('/bmi', data), 'calculate-bmi');
 export const calculateBMR = (data) => handleResp(() => api.post('/bmr', data), 'calculate-bmr');
+export const calculateAssessment = (data) => handleResp(() => api.post('/assessment/calculate', data), 'calculate-assessment');
 export const calculateMacros = (data) => handleResp(() => api.post('/macros', data), 'calculate-macros');
 export const getAdvice = (category) => handleResp(() => api.get('/advice', { params: { category } }), 'get-advice');
 

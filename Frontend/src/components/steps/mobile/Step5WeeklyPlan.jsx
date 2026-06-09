@@ -25,6 +25,7 @@ const MEAL_LABELS = {
 export default function Step5WeeklyPlan({
     weekPlan,
     macroTargets,
+    assessment,
     patientId,
     patientData,
     onError,
@@ -83,7 +84,11 @@ export default function Step5WeeklyPlan({
         }
 
         setSaving(true);
-        const response = await savePlan(patientId, { days: weekPlan });
+        const response = await savePlan(patientId, {
+            days: weekPlan,
+            assessment: assessment || patientData?.assessment || null,
+            macro_targets: targets,
+        });
         if (response.success) {
             onSuccess?.("Weekly meal plan saved successfully!");
             if (user) {

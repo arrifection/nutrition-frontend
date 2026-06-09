@@ -159,6 +159,7 @@ export default function App() {
             <Route path="/food-database" element={<PrivateApp />} />
             <Route path="/exchange-list" element={<PrivateApp />} />
             <Route path="/history" element={<PrivateApp />} />
+            <Route path="/calculators" element={<PrivateApp />} />
             <Route path="*" element={<CatchAllRoute />} />
         </Routes>
     );

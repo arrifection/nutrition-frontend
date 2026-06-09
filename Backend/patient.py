@@ -17,3 +17,4 @@ class PatientProfile(BaseModel):
     bmi: Optional[float] = None
     bmr: Optional[float] = None
     tdee: Optional[float] = None
+    assessment: Optional[dict] = None

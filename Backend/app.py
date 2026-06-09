@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from advice import router as advice_router
+from assessment_router import router as assessment_router
 from auth_router import router as auth_router
 from bmi import router as bmi_router
 from bmr import router as bmr_router
@@ -118,6 +119,7 @@ app.include_router(exchange_router)
 app.include_router(patient_router)
 app.include_router(plan_router)
 app.include_router(clinical_router)
+app.include_router(assessment_router)
 app.include_router(auth_router)
 app.include_router(client_log_router)
 app.include_router(debug_router)
