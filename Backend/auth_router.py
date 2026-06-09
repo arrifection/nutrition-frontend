@@ -120,15 +120,20 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
         # Normalize email
         user_data.email = user_data.email.lower()
         
-        # Check if user exists
-        existing_user = await users_collection.find_one({
-            "$or": [{"email": user_data.email}, {"username": user_data.username}]
-        })
-        if existing_user:
-            logger.info("[AUTH SIGNUP] Blocked duplicate signup for %s / %s", user_data.username, user_data.email)
+        existing_email = await users_collection.find_one({"email": user_data.email})
+        if existing_email:
+            logger.info("[AUTH SIGNUP] Blocked duplicate email for %s", user_data.email)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="This username or email is already registered",
+                detail="This email is already registered. Sign in instead, or use Resend Verification Email on the login page.",
+            )
+
+        existing_username = await users_collection.find_one({"username": user_data.username})
+        if existing_username:
+            logger.info("[AUTH SIGNUP] Blocked duplicate username for %s", user_data.username)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This username is already taken. Choose a different username and try again.",
             )
         
         hashed_password = get_password_hash(user_data.password)
@@ -261,15 +266,19 @@ async def dev_send_verification(data: EmailTest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/dev-delete-user", tags=["Development Only"])
-async def dev_delete_user(email: str):
+async def dev_delete_user(email: str = None, username: str = None):
     """
-    TEMPORARY: Deletes a user by email so you can sign up again.
+    TEMPORARY: Deletes a user by email or username so you can sign up again.
     """
+    if not email and not username:
+        raise HTTPException(status_code=400, detail="Provide email or username query parameter")
     try:
-        result = await users_collection.delete_many({"email": email.lower()})
+        query = {"email": email.lower()} if email else {"username": username}
+        result = await users_collection.delete_many(query)
         if result.deleted_count == 0:
-            return {"message": "User not found"}
-        return {"message": f"User {email} deleted successfully ({result.deleted_count} records removed). You can now register again."}
+            return {"message": "User not found", "query": query}
+        label = email or username
+        return {"message": f"User {label} deleted successfully ({result.deleted_count} records removed). You can now register again."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 # ---------------------------------------

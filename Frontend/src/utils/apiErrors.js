@@ -14,6 +14,8 @@ const FRIENDLY_BY_STATUS = {
 };
 
 const FRIENDLY_BY_PHRASE = [
+    { match: /username is already taken/i, text: "This username is already taken. Choose a different username and try again." },
+    { match: /email is already registered/i, text: "This email is already registered. Sign in instead, or use Resend Verification Email on the login page." },
     { match: /already registered/i, text: "This username or email is already in use. Try Sign In, or use Resend Verification Email on the login page." },
     { match: /incorrect email or password/i, text: "Email or password is incorrect. Please check and try again." },
     { match: /verification period has ended/i, text: "Your verification window has ended. Use Resend Verification Email on the login page to get a new link." },
