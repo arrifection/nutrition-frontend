@@ -3,7 +3,7 @@ import os
 
 from fastapi import Request
 
-from runtime_env import is_production
+from runtime_env import is_explicit_production
 
 INSECURE_SECRET_PLACEHOLDER = "your-super-secret-key-change-this-in-production"
 
@@ -30,7 +30,7 @@ SECURITY_HEADERS = {
 
 def validate_secret_key() -> None:
     secret = os.getenv("SECRET_KEY", "").strip()
-    if is_production() and (not secret or secret == INSECURE_SECRET_PLACEHOLDER):
+    if is_explicit_production() and (not secret or secret == INSECURE_SECRET_PLACEHOLDER):
         raise RuntimeError("SECRET_KEY must be set to a strong value in production.")
 
 

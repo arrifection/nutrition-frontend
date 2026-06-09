@@ -7,6 +7,7 @@
 | Key | Value |
 |-----|-------|
 | `ENVIRONMENT` | `production` |
+| `SECRET_KEY` | Strong JWT signing key (required before `ENVIRONMENT=production`) |
 | `SENTRY_DSN` | Backend DSN from Sentry project settings |
 | `SENTRY_RELEASE` | `2db79807` (or latest commit SHA) |
 | `ENABLE_SENTRY_TEST` | `false` |

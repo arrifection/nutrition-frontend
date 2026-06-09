@@ -25,3 +25,9 @@ def resolve_environment() -> str:
 
 def is_production() -> bool:
     return resolve_environment() in {"production", "prod"}
+
+
+def is_explicit_production() -> bool:
+    """True only when ENVIRONMENT/APP_ENV is explicitly set to production."""
+    explicit = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").strip().lower()
+    return explicit in {"production", "prod"}

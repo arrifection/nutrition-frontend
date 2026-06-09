@@ -23,6 +23,8 @@ def configure_hf(api):
         "SENTRY_RELEASE": RELEASE,
         "ENABLE_SENTRY_TEST": "false",
     }
+    if os.getenv("SECRET_KEY"):
+        secrets["SECRET_KEY"] = os.environ["SECRET_KEY"]
     variables = {
         "ENVIRONMENT": "production",
         "SENTRY_RELEASE": RELEASE,
