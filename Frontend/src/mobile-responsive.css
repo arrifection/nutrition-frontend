@@ -509,3 +509,171 @@
     padding: 6px 8px;
   }
 }
+
+/* ── 375px phone pass ── */
+@media (max-width: 375px) {
+  .auth-page .dd-card,
+  .auth-card {
+    padding: 24px 16px !important;
+  }
+
+  .auth-page h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .mobile-bottom-nav__item,
+  .patient-detail-tab {
+    min-height: 44px;
+  }
+
+  .mobile-bottom-nav__label {
+    font-size: 0.625rem;
+  }
+}
+
+/* ── Touch targets + forms (all mobile) ── */
+@media (max-width: 768px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-text,
+  button[type="submit"],
+  .MuiButton-root {
+    min-height: 44px !important;
+    font-size: 0.9375rem !important;
+  }
+
+  .password-requirements {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .password-requirements li {
+    margin: 4px 0;
+  }
+
+  .password-requirements li.met {
+    color: #15803d;
+  }
+
+  /* Landing / home */
+  .landing-page,
+  .landing-hero,
+  .landing-section {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  .landing-hero__actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .landing-hero__actions a,
+  .landing-hero__actions button {
+    width: 100% !important;
+    min-height: 44px;
+  }
+
+  .landing-features-grid,
+  .landing-steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Nutrition calculators / assessments */
+  .nutrition-calculators-page,
+  .nutrition-assessment-panel,
+  .na-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .na-results-grid,
+  .na-input-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .na-section input,
+  .na-section select,
+  .na-section textarea {
+    font-size: 16px !important;
+    width: 100% !important;
+  }
+
+  /* History tables */
+  .history-table-wrap,
+  .dd-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .history-table,
+  table {
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+
+  /* Patient profile */
+  .patient-detail-page .dd-card,
+  .patient-overview-grid .dd-card {
+    padding: 16px !important;
+  }
+
+  /* Plans placeholder */
+  .placeholder-page h1 {
+    font-size: clamp(1.25rem, 5vw, 1.5rem) !important;
+  }
+
+  /* Allergen modals */
+  .allergen-modal {
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
+    margin: 12px;
+  }
+}
+
+/* ── Tablet 769–1024px ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dd-app-main {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .settings-cards-grid,
+  .card-grid,
+  .patients-container .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .dd-planner-page .dd-meals-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .dd-planner-page .dd-step5-meals-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .na-input-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .landing-features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .patient-overview-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}

@@ -4,8 +4,9 @@ import os
 import time
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from advice import router as advice_router
 from assessment_router import router as assessment_router
@@ -23,8 +24,11 @@ from macros import router as macros_router
 from patient_router import router as patient_router
 from pdf_export_router import router as pdf_export_router
 from plan_router import router as plan_router
+from rate_limit import check_rate_limit
+from security_middleware import add_security_headers, validate_secret_key
 
 load_dotenv()
+validate_secret_key()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -73,6 +77,19 @@ async def startup_db_client():
         logger.warning(
             "Skipping startup seed: Database not reachable. The app will continue, but DB features will fail."
         )
+
+@app.middleware("http")
+async def security_and_rate_limit(request: Request, call_next):
+    try:
+        check_rate_limit(request)
+    except HTTPException as exc:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+            headers=getattr(exc, "headers", None) or {},
+        )
+    return await add_security_headers(request, call_next)
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

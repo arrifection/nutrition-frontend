@@ -96,16 +96,18 @@ plans_collection = _get_coll("diet_plans")
 logs_collection = _get_coll("reflection_logs")
 users_collection = _get_coll("users")
 history_collection = _get_coll("history")
+refresh_sessions_collection = _get_coll("refresh_sessions")
 
 def refresh_collections():
     """Ensure collections are bound to the active db instance"""
-    global patients_collection, plans_collection, logs_collection, users_collection, history_collection, db
+    global patients_collection, plans_collection, logs_collection, users_collection, history_collection, refresh_sessions_collection, db
     if db is not None:
         patients_collection = db.get_collection("patients")
         plans_collection = db.get_collection("diet_plans")
         logs_collection = db.get_collection("reflection_logs")
         users_collection = db.get_collection("users")
         history_collection = db.get_collection("history")
+        refresh_sessions_collection = db.get_collection("refresh_sessions")
 
 # Helper to format MongoDB _id to string id
 def patient_helper(patient) -> dict:

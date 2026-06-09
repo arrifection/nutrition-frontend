@@ -3,16 +3,55 @@ import { getApiBaseUrl } from '../utils/apiBaseUrl';
 import { toFriendlyApiError } from '../utils/apiErrors';
 
 const API_BASE_URL = getApiBaseUrl();
-const TOKEN_KEY = 'dietdesk_token';
-const USER_KEY = 'dietdesk_user';
+export const TOKEN_KEY = 'dietdesk_token';
+export const USER_KEY = 'dietdesk_user';
+export const REFRESH_KEY = 'dietdesk_refresh';
+export const TOKEN_EXPIRES_KEY = 'dietdesk_token_expires';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
     timeout: 60000,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+let refreshInFlight = null;
+
+export function clearAuthStorage() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_EXPIRES_KEY);
+    sessionStorage.removeItem(REFRESH_KEY);
+}
+
+export function storeAuthTokens({ access_token, refresh_token, expires_in }) {
+    if (access_token) {
+        localStorage.setItem(TOKEN_KEY, access_token);
+    }
+    if (refresh_token) {
+        sessionStorage.setItem(REFRESH_KEY, refresh_token);
+    }
+    if (expires_in) {
+        localStorage.setItem(TOKEN_EXPIRES_KEY, String(Date.now() + expires_in * 1000));
+    }
+}
+
+async function refreshAccessToken() {
+    if (!refreshInFlight) {
+        refreshInFlight = axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            { refresh_token: sessionStorage.getItem(REFRESH_KEY) },
+            { withCredentials: true, timeout: 30000 }
+        ).finally(() => {
+            refreshInFlight = null;
+        });
+    }
+    const res = await refreshInFlight;
+    storeAuthTokens(res.data);
+    return res.data.access_token;
+}
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -24,14 +63,24 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const original = error.config;
         const status = error.response?.status;
         const detail = (error.response?.data?.detail || '').toString().toLowerCase();
         const isExpiredToken = status === 401 && detail.includes('invalid or expired token');
 
-        if (isExpiredToken) {
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(USER_KEY);
+        if (isExpiredToken && original && !original._retried) {
+            original._retried = true;
+            try {
+                const newToken = await refreshAccessToken();
+                original.headers.Authorization = `Bearer ${newToken}`;
+                return api(original);
+            } catch {
+                clearAuthStorage();
+                window.dispatchEvent(new Event('dietdesk:auth-expired'));
+            }
+        } else if (isExpiredToken) {
+            clearAuthStorage();
             window.dispatchEvent(new Event('dietdesk:auth-expired'));
         }
 
@@ -50,6 +99,15 @@ const reportClientError = (entry) => {
 };
 
 const handleResp = async (fn, context = 'request') => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        return {
+            success: false,
+            error: "You're offline. Reconnect and try again.",
+            retryable: true,
+            offline: true,
+        };
+    }
+
     try {
         const response = await fn();
         return { success: true, data: response.data };
@@ -132,14 +190,10 @@ export const getExchangeList = (category = null) => {
 };
 
 // Auth endpoints
-export const loginUser = (data) => withRetries(
-    () => handleResp(() => api.post('/auth/login', data), 'login'),
-    'login',
-);
-export const registerUser = (data) => withRetries(
-    () => handleResp(() => api.post('/auth/register', data), 'signup'),
-    'signup',
-);
+export const loginUser = (data) => handleResp(() => api.post('/auth/login', data), 'login');
+export const registerUser = (data) => handleResp(() => api.post('/auth/register', data), 'signup');
+export const refreshSession = () => handleResp(() => api.post('/auth/refresh', { refresh_token: sessionStorage.getItem(REFRESH_KEY) }), 'refresh-session');
+export const logoutUser = () => handleResp(() => api.post('/auth/logout'), 'logout');
 export const getMe = () => handleResp(() => api.get('/auth/me'), 'session-check');
 export const resendVerification = () => withRetries(
     () => handleResp(() => api.post('/auth/resend-verification'), 'resend-verification'),

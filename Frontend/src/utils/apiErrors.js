@@ -21,6 +21,10 @@ const FRIENDLY_BY_PHRASE = [
     { match: /verification period has ended/i, text: "Your verification window has ended. Use Resend Verification Email on the login page to get a new link." },
     { match: /verify your email to continue/i, text: "Please verify your email to continue. Use Resend Verification Email on the login page." },
     { match: /invalid or expired token/i, text: "Your session expired. Please sign in again." },
+    { match: /invalid or expired refresh token/i, text: "Your session expired. Please sign in again." },
+    { match: /failed login attempts/i, text: "Too many failed login attempts. Please wait and try again." },
+    { match: /password must include/i, text: null },
+    { match: /password must be at least/i, text: null },
     { match: /database is temporarily unreachable/i, text: "We're having a brief connection issue. Please try again in a moment." },
     { match: /couldn't save this patient/i, text: "We couldn't save this patient right now. Please check height, weight, and age, then try again." },
     { match: /weight must be between/i, text: "Please enter a valid weight between 5 and 300 kg." },
@@ -50,6 +54,15 @@ export function toFriendlyApiError(error, context = "request") {
         };
     }
 
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+        return {
+            userMessage: "You're offline. Reconnect and try again.",
+            technicalMessage: "Browser offline",
+            status,
+            retryable: true,
+        };
+    }
+
     if (error?.message === "Network Error" || !error?.response) {
         return {
             userMessage: `We couldn't connect right now. ${CONNECTION_HINT}`,
@@ -63,7 +76,7 @@ export function toFriendlyApiError(error, context = "request") {
         for (const rule of FRIENDLY_BY_PHRASE) {
             if (rule.match.test(detail)) {
                 return {
-                    userMessage: rule.text,
+                    userMessage: rule.text ?? detail,
                     technicalMessage: detail,
                     status,
                     retryable: false,

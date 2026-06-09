@@ -1,7 +1,7 @@
 import { getApiBaseUrl } from "../utils/apiBaseUrl";
+import { TOKEN_KEY } from "./api";
 
 const API_BASE_URL = getApiBaseUrl();
-const TOKEN_KEY = "dietdesk_token";
 
 export function getPdfDownloadName() {
     return "diet-plan.pdf";
@@ -17,6 +17,7 @@ export async function exportDietPlanPdf(payload) {
     const res = await fetch(`${API_BASE_URL}/api/export-pdf`, {
         method: "POST",
         headers,
+        credentials: "include",
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(120000),
     });

@@ -1,13 +1,33 @@
 import logging
+import os
 import traceback
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime, timedelta
+
 from database import users_collection, user_helper
-from auth_utils import get_password_hash, verify_password, create_access_token, decode_access_token, generate_verification_token, hash_token
+from auth_utils import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    decode_access_token,
+    generate_verification_token,
+    hash_token,
+)
 from email_utils import send_verification_email
+from password_policy import validate_password_strength
+from login_throttle import check_login_allowed, record_failed_login, clear_failed_logins
+from rate_limit import check_rate_limit
+from refresh_token_service import (
+    REFRESH_COOKIE_NAME,
+    REFRESH_COOKIE_PATH,
+    issue_token_pair,
+    rotate_refresh_token,
+    revoke_refresh_token,
+)
 from bson import ObjectId
 from pymongo.errors import AutoReconnect, ConfigurationError, NetworkTimeout, ServerSelectionTimeoutError
 
@@ -15,7 +35,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+ENABLE_DEV_AUTH = os.getenv("ENABLE_DEV_AUTH", "false").lower() in {"1", "true", "yes"}
+IS_PRODUCTION = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower() in {"production", "prod"}
+
 
 class UserRegister(BaseModel):
     username: str
@@ -23,16 +47,39 @@ class UserRegister(BaseModel):
     password: str
     role: str = "dietitian"
 
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        validate_password_strength(v)
+        return v
+
+    @field_validator("username")
+    @classmethod
+    def username_trim(cls, v: str) -> str:
+        v = v.strip()
+        if len(v) < 2:
+            raise ValueError("Username must be at least 2 characters.")
+        return v
+
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
 
 class RequestVerificationEmail(BaseModel):
     email: EmailStr
     password: str
 
+
+class RefreshRequest(BaseModel):
+    refresh_token: str | None = None
+
+
 class Token(BaseModel):
     access_token: str
+    refresh_token: str | None = None
+    expires_in: int
     token_type: str
     username: str
     email: str
@@ -49,8 +96,24 @@ def _raise_db_unavailable():
         detail="Database is temporarily unreachable. Please try again in a moment.",
     )
 
+
+def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    response.set_cookie(
+        key=REFRESH_COOKIE_NAME,
+        value=refresh_token,
+        httponly=True,
+        secure=IS_PRODUCTION,
+        samesite="lax",
+        max_age=7 * 24 * 3600,
+        path=REFRESH_COOKIE_PATH,
+    )
+
+
+def _clear_refresh_cookie(response: Response) -> None:
+    response.delete_cookie(key=REFRESH_COOKIE_NAME, path=REFRESH_COOKIE_PATH)
+
+
 async def _issue_verification_email(email: str) -> dict:
-    """Generate a fresh token, extend the grace period, and send verification email."""
     new_token = generate_verification_token()
     new_deadline = datetime.utcnow() + timedelta(days=2)
     token_hash = hash_token(new_token)
@@ -70,11 +133,7 @@ async def _issue_verification_email(email: str) -> dict:
 
     email_result = await send_verification_email(email, new_token)
     if not email_result.success:
-        logger.error(
-            "[AUTH EMAIL] Failed to send verification to %s: %s",
-            email,
-            email_result.error_message,
-        )
+        logger.error("[AUTH EMAIL] Failed to send verification to %s: %s", email, email_result.error_message)
         raise HTTPException(
             status_code=503,
             detail="We couldn't send the verification email right now. Please try again in a few minutes.",
@@ -87,12 +146,14 @@ async def _issue_verification_email(email: str) -> dict:
     }
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str | None = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token:
+        raise credentials_exception
     payload = decode_access_token(token)
     if payload is None:
         raise credentials_exception
@@ -104,22 +165,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user_helper(user)
 
+
 async def _send_registration_email(email: str, token: str) -> None:
     email_result = await send_verification_email(email, token)
     if not email_result.success:
-        logger.warning(
-            "Verification email was not sent to %s: %s",
-            email,
-            email_result.error_message,
-        )
+        logger.warning("Verification email was not sent to %s: %s", email, email_result.error_message)
 
 
 @router.post("/register", response_model=dict)
-async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
+async def register(user_data: UserRegister, request: Request, background_tasks: BackgroundTasks):
+    check_rate_limit(request)
     try:
-        # Normalize email
         user_data.email = user_data.email.lower()
-        
+
         existing_email = await users_collection.find_one({"email": user_data.email})
         if existing_email:
             logger.info("[AUTH SIGNUP] Blocked duplicate email for %s", user_data.email)
@@ -135,12 +193,11 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This username is already taken. Choose a different username and try again.",
             )
-        
+
         hashed_password = get_password_hash(user_data.password)
-        
         verification_token = generate_verification_token()
         verification_deadline = datetime.utcnow() + timedelta(days=2)
-        
+
         new_user = {
             "username": user_data.username,
             "email": user_data.email,
@@ -149,236 +206,205 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks):
             "createdAt": datetime.utcnow(),
             "email_verified": False,
             "verification_deadline": verification_deadline,
-            "verification_token_hash": hash_token(verification_token)
+            "verification_token_hash": hash_token(verification_token),
+            "failed_login_attempts": 0,
         }
-        
+
         result = await users_collection.insert_one(new_user)
         if result.inserted_id:
-            print(f"[DEBUG] Registered user: {user_data.email}")
-            print(f"[DEBUG] Saved Token Hash: {new_user['verification_token_hash']}")
-            logger.info("SUCCESS: User %s registered. Queueing verification email...", user_data.email)
+            logger.info("[AUTH SIGNUP] User %s registered", user_data.email)
             background_tasks.add_task(_send_registration_email, user_data.email, verification_token)
             return {
                 "message": "Account created. You can use Diet Desk now, but please verify your email within 2 days.",
                 "email_sent": True,
             }
         raise HTTPException(status_code=500, detail="Failed to register user record")
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
     except Exception as e:
         if _is_db_connection_error(e):
-            print(f"DB ERROR in register: {type(e).__name__} - {e}")
             _raise_db_unavailable()
         logger.error("[AUTH SIGNUP] Unexpected error for %s: %s", user_data.email, e)
-        logger.error("[AUTH SIGNUP] Traceback:\n%s", traceback.format_exc())
         raise HTTPException(status_code=500, detail="We couldn't create your account right now. Please try again.")
 
+
 @router.post("/login", response_model=Token)
-async def login(user_data: UserLogin):
+async def login(user_data: UserLogin, request: Request, response: Response):
+    check_rate_limit(request)
     try:
-        # Normalize email
         user_data.email = user_data.email.lower()
-        
+        await check_login_allowed(user_data.email)
+
         user = await users_collection.find_one({"email": user_data.email})
-        if not user:
-            print(f"LOGIN FAIL: User not found - {user_data.email}")
+        if not user or not verify_password(user_data.password, user["password"]):
+            await record_failed_login(user_data.email)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-            
-        if not verify_password(user_data.password, user["password"]):
-            print(f"LOGIN FAIL: Password mismatch for {user_data.email}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        # Check email verification grace period
+
         if not user.get("email_verified", False):
             deadline = user.get("verification_deadline")
             if deadline and datetime.utcnow() > deadline:
-                print(f"LOGIN BLOCK: {user_data.email} verification period expired")
-                logger.info("[AUTH LOGIN] Blocked expired verification for %s", user_data.email)
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Your verification window has ended. Use Resend Verification Email on the login page to get a new link.",
                 )
-        
-        print(f"LOGIN SUCCESS: {user_data.email}")
-        access_token = create_access_token(data={"sub": user["email"]})
+
+        await clear_failed_logins(user_data.email)
+        tokens = await issue_token_pair(user)
+        _set_refresh_cookie(response, tokens["refresh_token"])
+
+        logger.info("[AUTH LOGIN] Success for %s", user_data.email)
         return {
-            "access_token": access_token, 
+            "access_token": tokens["access_token"],
+            "refresh_token": tokens["refresh_token"],
+            "expires_in": tokens["expires_in"],
             "token_type": "bearer",
             "username": user["username"],
             "email": user["email"],
-            "role": user.get("role", "client")
+            "role": user.get("role", "client"),
         }
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         if _is_db_connection_error(e):
-            print(f"DB ERROR in login: {type(e).__name__} - {e}")
             _raise_db_unavailable()
         logger.error("[AUTH LOGIN] Unexpected error for %s: %s", user_data.email, e)
         raise HTTPException(status_code=500, detail="We couldn't sign you in right now. Please try again.")
 
-# --- TEMPORARY DEV TESTING ENDPOINT ---
-class EmailTest(BaseModel):
-    email: EmailStr
 
-@router.post("/send-verification-to-existing-user", tags=["Development Only"])
-async def dev_send_verification(data: EmailTest):
-    """
-    TEMPORARY: Resets an existing user to unverified and sends an email.
-    USE ONLY FOR TESTING.
-    """
-    try:
+@router.post("/refresh", response_model=dict)
+async def refresh_session(request: Request, response: Response, body: RefreshRequest | None = None):
+    check_rate_limit(request)
+    refresh_plain = request.cookies.get(REFRESH_COOKIE_NAME)
+    if not refresh_plain and body and body.refresh_token:
+        refresh_plain = body.refresh_token
+    if not refresh_plain:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token required")
+
+    tokens = await rotate_refresh_token(refresh_plain)
+    _set_refresh_cookie(response, tokens["refresh_token"])
+    return tokens
+
+
+@router.post("/logout")
+async def logout(request: Request, response: Response):
+    refresh_plain = request.cookies.get(REFRESH_COOKIE_NAME)
+    await revoke_refresh_token(refresh_plain)
+    _clear_refresh_cookie(response)
+    return {"message": "Signed out successfully"}
+
+
+if ENABLE_DEV_AUTH:
+
+    class EmailTest(BaseModel):
+        email: EmailStr
+
+    @router.post("/send-verification-to-existing-user", tags=["Development Only"])
+    async def dev_send_verification(data: EmailTest):
         user = await users_collection.find_one({"email": data.email.lower()})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         token = generate_verification_token()
         deadline = datetime.utcnow() + timedelta(days=2)
-        
         await users_collection.update_one(
             {"_id": user["_id"]},
             {
                 "$set": {
                     "email_verified": False,
                     "verification_deadline": deadline,
-                    "verification_token_hash": hash_token(token)
+                    "verification_token_hash": hash_token(token),
                 }
-            }
+            },
         )
-        
         email_result = await send_verification_email(user["email"], token)
         if not email_result.success:
-            raise HTTPException(
-                status_code=503,
-                detail=email_result.error_message or "Failed to send verification email",
-            )
-        return {"message": f"Dev Reset Success: Email sent to {user['email']}. User is now unverified with a 2-day grace period."}
-    except Exception as e:
-        print(f"DEV ERROR: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=503, detail=email_result.error_message or "Failed to send verification email")
+        return {"message": f"Dev reset: email sent to {user['email']}"}
 
-@router.get("/dev-delete-user", tags=["Development Only"])
-async def dev_delete_user(email: str = None, username: str = None):
-    """
-    TEMPORARY: Deletes a user by email or username so you can sign up again.
-    """
-    if not email and not username:
-        raise HTTPException(status_code=400, detail="Provide email or username query parameter")
-    try:
+    @router.get("/dev-delete-user", tags=["Development Only"])
+    async def dev_delete_user(email: str | None = None, username: str | None = None):
+        if not email and not username:
+            raise HTTPException(status_code=400, detail="Provide email or username query parameter")
         query = {"email": email.lower()} if email else {"username": username}
         result = await users_collection.delete_many(query)
         if result.deleted_count == 0:
             return {"message": "User not found", "query": query}
-        label = email or username
-        return {"message": f"User {label} deleted successfully ({result.deleted_count} records removed). You can now register again."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-# ---------------------------------------
+        return {"message": f"Deleted {result.deleted_count} record(s)"}
+
 
 @router.get("/me")
 async def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
+
 @router.get("/verify-email")
 async def verify_email(token: str):
     try:
         token_hash = hash_token(token)
-        print(f"[DEBUG] Incoming Token: {token}")
-        print(f"[DEBUG] Generated Hash: {token_hash}")
-        
         user = await users_collection.find_one({
             "verification_token_hash": token_hash,
-            "email_verified": False
+            "email_verified": False,
         })
-        
+
         if not user:
-            print(f"[DEBUG] No unverified user found with hash: {token_hash}")
             raise HTTPException(status_code=400, detail="Invalid or expired verification token")
-        
-        print(f"[DEBUG] Found user: {user.get('email')}. Verifying...")
-        
+
         await users_collection.update_one(
             {"_id": user["_id"]},
             {
                 "$set": {"email_verified": True},
-                "$unset": {"verification_token_hash": "", "verification_token_expires": ""}
-            }
+                "$unset": {"verification_token_hash": "", "verification_token_expires": ""},
+            },
         )
-        
+
         return {"message": "Email verified successfully! You can now use all features."}
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"ERROR in verify_email: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+        logger.error("[VERIFY EMAIL] Error: %s", e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @router.post("/request-verification-email")
-async def request_verification_email(data: RequestVerificationEmail):
-    """
-    Public recovery for users who cannot sign in because verification expired
-    or they never received the email. Requires email + password.
-    """
+async def request_verification_email(data: RequestVerificationEmail, request: Request):
+    check_rate_limit(request)
     data.email = data.email.lower()
-    logger.info("[REQUEST VERIFICATION] Recovery attempt for %s", data.email)
 
     try:
         user = await users_collection.find_one({"email": data.email})
         if not user or not verify_password(data.password, user["password"]):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
-            )
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
 
         if user.get("email_verified"):
-            return {
-                "message": "Your email is already verified. You can sign in now.",
-                "email_sent": False,
-            }
+            return {"message": "Your email is already verified. You can sign in now.", "email_sent": False}
 
-        result = await _issue_verification_email(data.email)
-        logger.info("[REQUEST VERIFICATION] Email sent for %s", data.email)
-        return result
+        return await _issue_verification_email(data.email)
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("[REQUEST VERIFICATION] Unhandled error: %s", e)
-        logger.error("[REQUEST VERIFICATION] Traceback:\n%s", traceback.format_exc())
+        logger.error("[REQUEST VERIFICATION] Error: %s\n%s", e, traceback.format_exc())
         raise HTTPException(status_code=500, detail="Failed to send verification email")
 
 
 @router.post("/resend-verification")
 async def resend_verification(current_user: dict = Depends(get_current_user)):
-    logger.info(
-        "[RESEND VERIFICATION] Request from user_id=%s email=%s verified=%s",
-        current_user.get("id"),
-        current_user.get("email"),
-        current_user.get("email_verified"),
-    )
     try:
         if current_user.get("email_verified"):
-            logger.info("[RESEND VERIFICATION] Already verified for %s", current_user.get("email"))
             return {"message": "Email is already verified"}
 
         if not current_user.get("email"):
-            logger.error("[RESEND VERIFICATION] Authenticated user has no email on record")
             raise HTTPException(status_code=400, detail="User email not found")
 
         result = await _issue_verification_email(current_user["email"])
-        return {
-            "message": "Verification email resent. You have 2 more days to verify.",
-            "email_sent": result["email_sent"],
-        }
+        return {"message": "Verification email resent. You have 2 more days to verify.", "email_sent": result["email_sent"]}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("[RESEND VERIFICATION] Unhandled error: %s", e)
-        logger.error("[RESEND VERIFICATION] Traceback:\n%s", traceback.format_exc())
+        logger.error("[RESEND VERIFICATION] Error: %s", e)
         raise HTTPException(status_code=500, detail="Failed to resend verification email")

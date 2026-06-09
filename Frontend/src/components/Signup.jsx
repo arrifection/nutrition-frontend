@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { wakeBackend } from "../services/api";
+import { isPasswordStrong, passwordRequirements, passwordValidationMessage } from "../utils/passwordPolicy";
 
 const Signup = ({ onToggle }) => {
     const { register } = useAuth();
@@ -15,10 +16,20 @@ const Signup = ({ onToggle }) => {
         wakeBackend();
     }, []);
 
+    const requirements = useMemo(() => passwordRequirements(password), [password]);
+    const passwordReady = isPasswordStrong(password);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setSuccess("");
+
+        const passwordError = passwordValidationMessage(password);
+        if (passwordError) {
+            setError(passwordError);
+            return;
+        }
+
         setLoading(true);
         const result = await register(username, email, password);
         if (result.success) {
@@ -79,9 +90,20 @@ const Signup = ({ onToggle }) => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            minLength={10}
+                            autoComplete="new-password"
                             className="input-premium"
-                            placeholder="••••••••"
+                            placeholder="Min. 10 chars with mixed case, number, symbol"
                         />
+                        {password && (
+                            <ul className="password-requirements" aria-live="polite">
+                                {requirements.map((req) => (
+                                    <li key={req.key} className={req.met ? "met" : ""}>
+                                        {req.met ? "✓" : "○"} {req.label}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
 
                     {error && (
@@ -119,7 +141,7 @@ const Signup = ({ onToggle }) => {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !passwordReady}
                         className="btn-primary"
                         style={{ width: "100%", padding: "12px", marginTop: "8px" }}
                     >
