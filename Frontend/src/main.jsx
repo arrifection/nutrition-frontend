@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ui/ErrorBoundary'
 import './index.css'
 import './mobile-responsive.css'
 import './nutrition-assessment.css'
+import './enterprise-ui.css'
 
 const rootEl = document.getElementById('root')
 

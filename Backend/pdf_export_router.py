@@ -19,6 +19,7 @@ class ExportPdfRequest(BaseModel):
     dietaryFocus: str = ""
     selectedDay: Optional[str] = None
     templateId: str = "clinical-classic"
+    allergenSafetyNote: Optional[str] = None
 
 
 def _safe_text(value: Any) -> str:
@@ -62,6 +63,24 @@ def _build_pdf(body: ExportPdfRequest) -> bytes:
         value = patient.get(key)
         if value is not None and value != "":
             pdf.cell(0, 6, f"{label}: {_safe_text(value)}", ln=True)
+
+    for label, key in [
+        ("Allergies", "allergies"),
+        ("Dietary Restrictions", "dietary_restrictions"),
+        ("Medical Notes", "medical_notes"),
+    ]:
+        value = patient.get(key)
+        if value is not None and str(value).strip():
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.cell(0, 6, f"{label}:", ln=True)
+            pdf.set_font("Helvetica", "", 10)
+            pdf.multi_cell(0, 6, _safe_text(value))
+
+    if body.allergenSafetyNote and body.allergenSafetyNote.strip():
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.cell(0, 6, "Allergen Safety:", ln=True)
+        pdf.set_font("Helvetica", "", 10)
+        pdf.multi_cell(0, 6, _safe_text(body.allergenSafetyNote.strip()))
 
     pdf.ln(3)
     pdf.set_font("Helvetica", "B", 12)

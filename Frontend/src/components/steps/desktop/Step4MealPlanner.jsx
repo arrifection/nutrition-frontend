@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { getExchangeList } from "../../../services/api";
 import { Globe } from "lucide-react";
+import AllergenAddFoodModal from "../../AllergenAddFoodModal";
+import { getFoodAllergenConflicts } from "../../../utils/allergenScan";
 
 export default function Step4MealPlanner({
     macroTargets,
@@ -8,6 +10,7 @@ export default function Step4MealPlanner({
     setWeekPlan,
     currentDay,
     setCurrentDay,
+    patientData,
     onError,
     onProceed,
     onBack,
@@ -18,6 +21,9 @@ export default function Step4MealPlanner({
     const [selectedMeal, setSelectedMeal] = useState("breakfast");
     const [expandedGroup, setExpandedGroup] = useState(null);
     const [lang, setLang] = useState("en");
+    const [allergenModalOpen, setAllergenModalOpen] = useState(false);
+    const [pendingFood, setPendingFood] = useState(null);
+    const [pendingConflicts, setPendingConflicts] = useState([]);
 
     // Default targets
     const targets = macroTargets || {
@@ -159,8 +165,7 @@ export default function Step4MealPlanner({
         [targets, totalConsumed]
     );
 
-    // Actions
-    const addFood = (food) => {
+    const commitAddFood = (food) => {
         setWeekPlan((prev) => ({
             ...prev,
             [currentDay]: {
@@ -171,6 +176,28 @@ export default function Step4MealPlanner({
                 ],
             },
         }));
+    };
+
+    const requestAddFood = (food) => {
+        const conflicts = getFoodAllergenConflicts(patientData, food);
+        if (conflicts.length) {
+            setPendingFood(food);
+            setPendingConflicts(conflicts);
+            setAllergenModalOpen(true);
+            return;
+        }
+        commitAddFood(food);
+    };
+
+    const handleAllergenCancel = () => {
+        setAllergenModalOpen(false);
+        setPendingFood(null);
+        setPendingConflicts([]);
+    };
+
+    const handleAllergenConfirm = () => {
+        if (pendingFood) commitAddFood(pendingFood);
+        handleAllergenCancel();
     };
 
     const removeFood = (mealKey, foodId) => {
@@ -189,8 +216,20 @@ export default function Step4MealPlanner({
         return "text-white";
     };
 
+    const pendingFoodName = pendingFood
+        ? (pendingFood.food_name?.en || pendingFood.name || "Unknown food")
+        : "";
+
     return (
         <div className="section">
+            <AllergenAddFoodModal
+                open={allergenModalOpen}
+                foodName={pendingFoodName}
+                conflicts={pendingConflicts}
+                patientAllergies={patientData?.allergies}
+                onCancel={handleAllergenCancel}
+                onConfirm={handleAllergenConfirm}
+            />
             <div className="mb-6">
                 <h2 className="section-title">Daily Meal Planner</h2>
                 <p className="text-sm text-gray-500">
@@ -276,7 +315,7 @@ export default function Step4MealPlanner({
                                                             <p className="text-xs text-gray-400">{food.serving_size || food.portion} • {food.macros?.calories || food.calories} kcal</p>
                                                         </div>
                                                         <button
-                                                            onClick={() => addFood(food)}
+                                                            onClick={() => requestAddFood(food)}
                                                             className="ml-2 px-2 py-1 text-xs font-medium bg-gray-800 text-white rounded-sm hover:bg-gray-700"
                                                         >
                                                             Add

@@ -1,5 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
+
+
+class PatientAllergens(BaseModel):
+    peanut: bool = False
+    tree_nut: bool = False
+    milk: bool = False
+    egg: bool = False
+    soy: bool = False
+    wheat: bool = False
+    fish: bool = False
+    shellfish: bool = False
+    custom: List[str] = Field(default_factory=list)
+
 
 class PatientProfile(BaseModel):
     id: Optional[str] = None
@@ -9,6 +22,7 @@ class PatientProfile(BaseModel):
     height: float
     weight: float
     activity_level: str
+    allergens: Optional[PatientAllergens] = None
     allergies: Optional[str] = None
     dietary_restrictions: Optional[str] = None
     medical_notes: Optional[str] = None

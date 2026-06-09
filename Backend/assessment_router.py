@@ -7,8 +7,8 @@ router = APIRouter(prefix="/assessment", tags=["Nutrition Assessment"])
 
 
 class AssessmentInput(BaseModel):
-    weight_kg: float = Field(..., gt=0, description="Weight in kilograms")
-    height_cm: float = Field(..., gt=0, description="Height in centimeters")
+    weight_kg: float = Field(..., ge=5, le=300, description="Weight in kilograms")
+    height_cm: float = Field(..., ge=50, le=250, description="Height in centimeters")
     age: int = Field(..., ge=1, le=120)
     gender: str
     activity_level: str = "sedentary"

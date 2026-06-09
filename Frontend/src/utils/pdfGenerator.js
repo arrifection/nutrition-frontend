@@ -68,7 +68,8 @@ export function generateDietPlanPDF({
     weekPlan,
     dietaryFocus = "",
     selectedDay = null,
-    templateId = "clinical-classic"
+    templateId = "clinical-classic",
+    allergenSafetyNote = null,
 }) {
     try {
         console.log("Starting PDF generation...", { patientData, macroTargets, weekPlan, templateId });
@@ -164,16 +165,53 @@ export function generateDietPlanPDF({
             addField("Goal", patientData.goal);
             addField("Date of Plan", reportDate);
 
+            if (patientData.allergies) {
+                y += 2;
+                doc.setFont("helvetica", "bold");
+                doc.text("Allergies:", 14, y);
+                y += 5;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                const allergyLines = doc.splitTextToSize(patientData.allergies, pageWidth - 28);
+                doc.text(allergyLines, 14, y);
+                y += allergyLines.length * 4 + 4;
+            }
+
+            if (patientData.dietary_restrictions) {
+                doc.setFont("helvetica", "bold");
+                doc.text("Dietary Restrictions:", 14, y);
+                y += 5;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                const restrictionLines = doc.splitTextToSize(patientData.dietary_restrictions, pageWidth - 28);
+                doc.text(restrictionLines, 14, y);
+                y += restrictionLines.length * 4 + 4;
+            }
+
             if (patientData.medical_notes) {
                 y += 2;
                 doc.setFont("helvetica", "bold");
-                doc.text("Notes:", 14, y);
+                doc.text("Medical Notes:", 14, y);
                 y += 5;
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(9);
                 const notes = doc.splitTextToSize(patientData.medical_notes, pageWidth - 28);
                 doc.text(notes, 14, y);
                 y += notes.length * 4 + 4;
+            }
+
+            if (allergenSafetyNote) {
+                y += 2;
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(180, 83, 9);
+                doc.text("Allergen Safety:", 14, y);
+                y += 5;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(...template.text);
+                const safetyLines = doc.splitTextToSize(allergenSafetyNote, pageWidth - 28);
+                doc.text(safetyLines, 14, y);
+                y += safetyLines.length * 4 + 4;
             }
         }
 

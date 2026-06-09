@@ -3,6 +3,8 @@ import { savePlan } from "../../../services/api";
 import { PDF_TEMPLATE_OPTIONS } from "../../../utils/pdfGenerator";
 import { useAuth } from "../../../context/AuthContext";
 import PdfExportButton from "../../ui/PdfExportButton";
+import AllergenWarningModal from "../../AllergenWarningModal";
+import useAllergenExportGate from "../../../hooks/useAllergenExportGate";
 
 export default function Step5WeeklyPlan({
     weekPlan,
@@ -17,6 +19,16 @@ export default function Step5WeeklyPlan({
 }) {
     const { saveHistory, user } = useAuth();
     const [saving, setSaving] = useState(false);
+    const {
+        conflicts,
+        hasConflicts,
+        modalOpen,
+        runOrPrompt,
+        handleAcknowledge,
+        handleCancel,
+        beforeExport,
+        allergenSafetyNote,
+    } = useAllergenExportGate(patientData, weekPlan);
     const [selectedDay, setSelectedDay] = useState("Monday");
     const [dietaryFocus, setDietaryFocus] = useState("");
     const [selectedPdfTemplate, setSelectedPdfTemplate] = useState(PDF_TEMPLATE_OPTIONS[0].id);
@@ -71,7 +83,7 @@ export default function Step5WeeklyPlan({
         return { totalItems, daysWithMeals };
     }, [weekPlan]);
 
-    const handleSave = async () => {
+    const performSave = async () => {
         if (!patientId) {
             onError?.("No patient selected. Please go back and create a patient first.");
             return;
@@ -85,8 +97,6 @@ export default function Step5WeeklyPlan({
         });
         if (response.success) {
             onSuccess?.("Weekly meal plan saved successfully!");
-
-            // Save to history if logged in
             if (user) {
                 saveHistory("Diet Plan Saved", { patient: patientData?.name }, { days: Object.keys(weekPlan).length });
             }
@@ -96,6 +106,8 @@ export default function Step5WeeklyPlan({
         setSaving(false);
     };
 
+    const handleSave = () => runOrPrompt(performSave);
+
     const exportPayload = {
         patientData,
         macroTargets: targets,
@@ -103,6 +115,7 @@ export default function Step5WeeklyPlan({
         dietaryFocus,
         selectedDay: null,
         templateId: selectedPdfTemplate,
+        allergenSafetyNote,
     };
 
     const selectedDayMeals = weekPlan[selectedDay] || {};
@@ -110,6 +123,19 @@ export default function Step5WeeklyPlan({
 
     return (
         <div className="section">
+            <AllergenWarningModal
+                open={modalOpen}
+                conflicts={conflicts}
+                onCancel={handleCancel}
+                onAcknowledge={handleAcknowledge}
+            />
+
+            {hasConflicts && (
+                <div className="allergen-selector__notice" style={{ marginBottom: "1rem" }}>
+                    {conflicts.length} potential allergen conflict{conflicts.length === 1 ? "" : "s"} detected.
+                    Save and export require acknowledgement.
+                </div>
+            )}
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h2 className="section-title">Weekly Plan Review</h2>
@@ -121,6 +147,7 @@ export default function Step5WeeklyPlan({
                     <PdfExportButton
                         exportPayload={exportPayload}
                         disabled={!patientData}
+                        beforeExport={beforeExport}
                     />
                     <button
                         onClick={handleSave}

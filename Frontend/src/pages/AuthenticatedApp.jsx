@@ -18,6 +18,8 @@ import { Box, Stack, Typography } from "@mui/material";
 import Settings from "../components/Settings";
 import PlaceholderPage from "../components/ui/PlaceholderPage";
 import NutritionCalculators from "./NutritionCalculators";
+import OfflineBanner from "../components/ui/OfflineBanner";
+import useNetworkStatus from "../hooks/useNetworkStatus";
 import { FileText, Activity, UtensilsCrossed } from "lucide-react";
 
 const PATH_TO_VIEW = {
@@ -70,6 +72,7 @@ export default function AuthenticatedApp() {
     });
     const [currentDay, setCurrentDay] = useState("Monday");
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
+    const { offline } = useNetworkStatus();
 
     const showToast = useCallback((message, type = "info") => {
         setToast({ visible: true, message, type });
@@ -94,6 +97,16 @@ export default function AuthenticatedApp() {
             showToast(loginMessage, "success");
         }
     }, [user, showToast]);
+
+    useEffect(() => {
+        const onAuthExpired = () => {
+            showToast("Your session expired. Please sign in again.", "error");
+            logout();
+            navigate("/login", { replace: true });
+        };
+        window.addEventListener("dietdesk:auth-expired", onAuthExpired);
+        return () => window.removeEventListener("dietdesk:auth-expired", onAuthExpired);
+    }, [logout, navigate, showToast]);
 
     const handleError = (error) => {
         let msg = "Something went wrong";
@@ -201,6 +214,7 @@ export default function AuthenticatedApp() {
                         setWeekPlan={setWeekPlan}
                         currentDay={currentDay}
                         setCurrentDay={setCurrentDay}
+                        patientData={patientData}
                         onError={handleError}
                         onProceed={nextStep}
                         onBack={prevStep}
@@ -234,7 +248,14 @@ export default function AuthenticatedApp() {
             );
         }
 
-        if (view === "history") return <History onBack={() => handleNavigate("dashboard")} />;
+        if (view === "history") {
+            return (
+                <History
+                    onBack={() => handleNavigate("dashboard")}
+                    onCreatePlan={startNewPlan}
+                />
+            );
+        }
 
         if (view === "dashboard") {
             return (
@@ -270,8 +291,10 @@ export default function AuthenticatedApp() {
             return (
                 <PlaceholderPage
                     title="Food Database"
-                    description="Food exchange search and clinic-wide reference tools are being prepared for a future release. Food selection inside the diet plan creator remains available for MVP plan building."
+                    description="Food exchange search and clinic-wide reference tools are being prepared. You can still add foods while building a plan in Create Plan."
                     icon={UtensilsCrossed}
+                    actionLabel="Create a diet plan"
+                    onAction={startNewPlan}
                 />
             );
         }
@@ -280,8 +303,10 @@ export default function AuthenticatedApp() {
             return (
                 <PlaceholderPage
                     title="Nutrition Protocols"
-                    description="Review all active and historically assigned nutrition plans across your practice."
+                    description="Review all active and historically assigned nutrition plans across your practice. Saved plans from the wizard will appear here in a future update."
                     icon={FileText}
+                    actionLabel="Create a diet plan"
+                    onAction={startNewPlan}
                 />
             );
         }
@@ -290,8 +315,10 @@ export default function AuthenticatedApp() {
             return (
                 <PlaceholderPage
                     title="Progress Tracking"
-                    description="Monitor patient adherence, biometric trends, and clinical outcomes over time."
+                    description="Monitor patient adherence, biometric trends, and clinical outcomes over time. This module is on the roadmap."
                     icon={Activity}
+                    actionLabel="Go to patients"
+                    onAction={() => handleNavigate("patients")}
                 />
             );
         }
@@ -360,6 +387,8 @@ export default function AuthenticatedApp() {
     return (
         <Stack direction={{ xs: "column", lg: "row" }} sx={{ minHeight: "100vh", background: "var(--background)" }}>
             <Sidebar activeView={view} onNavigate={handleNavigate} onLogout={handleLogout} username={user.username} />
+
+            <OfflineBanner visible={offline} />
 
             <Box
                 component="main"

@@ -29,6 +29,7 @@ import {
 } from "@mui/material";
 import { getPatients } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import EmptyState from "./ui/EmptyState";
 
 const T = {
     label: { fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', display: 'block' },
@@ -267,14 +268,16 @@ export default function Dashboard({ onCreatePlan, onAddPatient, onSelectClient, 
                         
                         <Box sx={{ flex: 1 }}>
                             {state.recentPatients.length === 0 ? (
-                                <Box sx={{ p: 8, textAlign: 'center' }}>
-                                    <Box sx={{ color: 'var(--text-muted)', mb: 2, opacity: 0.3 }}>
-                                        <Users size={48} style={{ margin: '0 auto' }} />
-                                    </Box>
-                                    <Typography sx={{ fontWeight: 700, mb: 0.5, color: 'var(--text-primary)' }}>No patients yet</Typography>
-                                    <Typography sx={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                                        Patients you recently worked with will appear here.
-                                    </Typography>
+                                <Box sx={{ p: 4 }}>
+                                    <EmptyState
+                                        icon={Users}
+                                        title="No patients yet"
+                                        description="Patients you recently worked with will appear here. Add your first patient to start building plans."
+                                        actionLabel="Add patient"
+                                        onAction={() => onNavigate('patients')}
+                                        secondaryLabel="Create plan"
+                                        onSecondary={onCreatePlan}
+                                    />
                                 </Box>
                             ) : (
                                 <Box>

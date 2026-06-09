@@ -16,6 +16,8 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
         weight: "",
         activity_level: "sedentary",
         goal: "maintenance",
+        allergies: "",
+        dietary_restrictions: "",
         medical_notes: "",
     });
 
@@ -39,6 +41,8 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                 weight: initialData.weight || "",
                 activity_level: initialData.activity_level || "sedentary",
                 goal: initialData.goal || "maintenance",
+                allergies: initialData.allergies || "",
+                dietary_restrictions: initialData.dietary_restrictions || "",
                 medical_notes: initialData.medical_notes || "",
                 id: initialData.id,
             });
@@ -343,6 +347,32 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                 </div>
 
                 <div className="dd-form-group">
+                    <label className="form-label">Allergies</label>
+                    <textarea
+                        name="allergies"
+                        value={profile.allergies}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        rows={3}
+                        className="form-textarea"
+                        placeholder="e.g. milk, wheat, peanut, shellfish"
+                    />
+                </div>
+
+                <div className="dd-form-group">
+                    <label className="form-label">Dietary Restrictions</label>
+                    <textarea
+                        name="dietary_restrictions"
+                        value={profile.dietary_restrictions}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        rows={3}
+                        className="form-textarea"
+                        placeholder="e.g. vegetarian, gluten-free, low sodium"
+                    />
+                </div>
+
+                <div className="dd-form-group">
                     <label className="form-label">Medical Notes (optional)</label>
                     <textarea
                         name="medical_notes"
@@ -351,7 +381,7 @@ export default function Step1PatientInfo({ onSave, onError, initialData }) {
                         disabled={!isEditing}
                         rows={3}
                         className="form-textarea"
-                        placeholder="Allergies, conditions, dietary restrictions..."
+                        placeholder="Conditions, medications, clinical notes..."
                     />
                 </div>
 

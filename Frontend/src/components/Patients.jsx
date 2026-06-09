@@ -13,8 +13,11 @@ import {
     Grid,
     Tooltip
 } from '@mui/material';
-import { Search, ChevronRight, UserPlus, Filter, ArrowLeft, Trash2, RefreshCw } from 'lucide-react';
+import { Search, ChevronRight, UserPlus, Filter, ArrowLeft, Trash2, RefreshCw, Users } from 'lucide-react';
 import { getPatients, deletePatient } from '../services/api';
+import EmptyState from './ui/EmptyState';
+import ApiErrorState from './ui/ApiErrorState';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 
 const T = {
     heading: { fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' },
@@ -30,6 +33,7 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
     const [error, setError] = useState('');
     const [sortBy, setSortBy] = useState('name'); // 'name', 'age', 'id' (for newest)
     const [showSort, setShowSort] = useState(false);
+    const { offline } = useNetworkStatus();
     useEffect(() => {
         fetchPatients();
     }, []);
@@ -194,18 +198,28 @@ export default function Patients({ onBack, onSelectPatient, onAddPatient }) {
                     <CircularProgress size={32} thickness={5} color="primary" />
                 </Box>
             ) : error ? (
-                <Box className="dd-card" sx={{ p: 4, textAlign: 'center', borderColor: '#fecaca', background: '#fef2f2' }}>
-                    <Typography color="error" sx={{ fontWeight: 600 }}>{error}</Typography>
+                <Box className="dd-card">
+                    <ApiErrorState
+                        message={error}
+                        onRetry={fetchPatients}
+                        offline={offline}
+                    />
                 </Box>
             ) : filteredPatients.length === 0 ? (
-                <Box className="dd-card" sx={{ py: 12, textAlign: 'center' }}>
-                    <Box sx={{ color: 'var(--text-muted)', mb: 2, opacity: 0.5 }}>
-                        <Search size={48} sx={{ mx: 'auto' }} />
-                    </Box>
-                    <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 1 }}>No patients found</Typography>
-                    <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        {search ? "Try adjusting your search terms." : "You haven't added any patients yet."}
-                    </Typography>
+                <Box className="dd-card">
+                    <EmptyState
+                        icon={search.trim() ? Search : Users}
+                        title={search.trim() ? "No patients found" : "No patients yet"}
+                        description={
+                            search.trim()
+                                ? "Try adjusting your search terms or clear the filter to see all patients."
+                                : "Add your first patient to start building nutrition plans and tracking clinical data."
+                        }
+                        actionLabel={search.trim() ? undefined : "Add first patient"}
+                        onAction={search.trim() ? undefined : onAddPatient}
+                        secondaryLabel={search.trim() ? "Clear search" : undefined}
+                        onSecondary={search.trim() ? () => setSearch("") : undefined}
+                    />
                 </Box>
             ) : (
                 <Grid className="card-grid" container spacing={2}>

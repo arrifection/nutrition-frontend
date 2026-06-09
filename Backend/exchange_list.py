@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from database import db
 
 router = APIRouter(prefix="/api/v1", tags=["exchange-list"])
@@ -40,6 +40,8 @@ class FoodItem(BaseModel):
     translation_status: str = TranslationStatus.DRAFT
     is_active: bool = True
     notes: Optional[str] = None
+    allergens: List[str] = []
+    dietary_flags: List[str] = []
 
 def food_helper(food) -> dict:
     """Helper to convert MongoDB document to response dict.
@@ -90,6 +92,8 @@ def food_helper(food) -> dict:
         "translation_status": food.get("translation_status", "draft"),
         "is_active":          food.get("is_active", True),
         "notes":              food.get("notes", ""),
+        "allergens":          food.get("allergens") or [],
+        "dietary_flags":      food.get("dietary_flags") or [],
     }
 
 async def _do_seed():
@@ -111,9 +115,10 @@ async def seed_food_data():
     try:
         count = await food_collection.count_documents({})
         sample = await food_collection.find_one({})
-        # Re-seed if: count too low, OR old schema detected (no 'macros' or no 'id')
+        # Re-seed if: count too low, OR old schema (no macros/id), OR missing allergen tags
         is_old_schema = sample and ("macros" not in sample or "id" not in sample)
-        needs_reseed = count < _FULL_SEED_THRESHOLD or is_old_schema
+        missing_allergens = sample and "allergens" not in sample
+        needs_reseed = count < _FULL_SEED_THRESHOLD or is_old_schema or missing_allergens
 
         if count == 0 or needs_reseed:
             inserted = await _do_seed()

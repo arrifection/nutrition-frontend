@@ -4,17 +4,33 @@
 
 EXCHANGE_LIST_INITIAL = []
 
-def _item(id, name_en, portion, group_en, sub_en, category, carbs, pro, fat, cals, ur_clin=None, ur_pat=None, status="draft"):
+def _item(
+    id,
+    name_en,
+    portion,
+    group_en,
+    sub_en,
+    category,
+    carbs,
+    pro,
+    fat,
+    cals,
+    ur_clin=None,
+    ur_pat=None,
+    status="draft",
+    allergens=None,
+    dietary_flags=None,
+):
     """Helper to build a multilingual food-exchange document."""
     return {
         "id": id,
         "group": {
             "en": group_en,
-            "ur": None # Can be expanded if needed
+            "ur": None
         },
         "subcategory": {
             "en": sub_en,
-            "ur": None # Can be expanded if needed
+            "ur": None
         },
         "food_name": {
             "en": name_en,
@@ -30,7 +46,9 @@ def _item(id, name_en, portion, group_en, sub_en, category, carbs, pro, fat, cal
         },
         "translation_status": status,
         "is_active": True,
-        "notes": ""
+        "notes": "",
+        "allergens": list(allergens or []),
+        "dietary_flags": list(dietary_flags or []),
     }
 
 # ============================================================
@@ -486,3 +504,134 @@ _sat_fats = [
 ]
 for id, n, p in _sat_fats:
     EXCHANGE_LIST_INITIAL.append(_item(id, n, p, "Fats", "Saturated Fats", "fat", 0, 0, 5, 45))
+
+
+# ============================================================
+#  ALLERGEN & DIETARY FLAG TAGGING (keyword-based)
+# ============================================================
+
+_ALLERGEN_KEYWORDS: dict[str, list[str]] = {
+    "milk": [
+        "milk", "cheese", "yogurt", "yoghurt", "butter", "cream", "dairy",
+        "whey", "lactose", "paneer", "ghee", "curd", "lassi", "buttermilk",
+        "kefir", "cottage", "ricotta", "ice cream", "pudding", "sour cream",
+        "cream cheese", "evaporated", "goat's milk", "acidophilus",
+    ],
+    "egg": ["egg", "omelet", "omelette", "mayonnaise", "mayo", "albumen"],
+    "wheat": [
+        "wheat", "bread", "flour", "pasta", "noodle", "roti", "naan", "cereal",
+        "gluten", "semolina", "atta", "paratha", "cracker", "biscuit", "bagel",
+        "muffin", "waffle", "tortilla", "chapatti", "pita", "pancake",
+        "pretzel", "matzoh", "doughnut", "granola", "couscous", "bulgur",
+        "stuffing", "roll", "bun", "cornbread", "english muffin", "crispbread",
+        "graham", "sandwich-style", "whole-wheat", "shredded wheat", "oat bran",
+        "wheat bran", "wheat germ", "muesli", "tabbouleh",
+    ],
+    "fish": [
+        "fish", "salmon", "tuna", "cod", "sardine", "mackerel", "trout",
+        "anchovy", "herring", "tilapia", "rohu", "hilsa",
+    ],
+    "peanut": ["peanut", "groundnut", "satay", "mungfali"],
+    "tree_nut": [
+        "almond", "walnut", "cashew", "pecan", "pistachio", "hazelnut",
+        "macadamia", "brazil nut", "pine nut", "filbert", "nut butter",
+        "nut spread", "mixed nuts", "nut butters",
+    ],
+    "shellfish": [
+        "shrimp", "prawn", "crab", "lobster", "shellfish", "oyster", "clam",
+        "mussel", "squid", "calamari", "scallop", "crayfish", "oysters",
+    ],
+    "soy": ["soy", "soya", "tofu", "tempeh", "edamame", "miso", "soybean", "soy nuts"],
+    "sesame": ["sesame", "tahini"],
+}
+
+_GROUP_ALLERGENS: dict[str, list[str]] = {
+    "Milk": ["milk"],
+}
+
+_MEAT_GROUPS = {"Meat"}
+
+
+def _search_text(item: dict) -> str:
+    parts = [
+        item.get("id", ""),
+        item.get("food_name", {}).get("en", ""),
+        item.get("group", {}).get("en", ""),
+        item.get("subcategory", {}).get("en", ""),
+        item.get("notes", ""),
+    ]
+    return " ".join(str(p) for p in parts if p).lower()
+
+
+def _clean_allergen_false_positives(allergens: set[str], text: str) -> set[str]:
+    """Remove keyword false positives from compound food names."""
+    cleaned = set(allergens)
+    if "peanut butter" in text:
+        cleaned.discard("milk")
+        cleaned.discard("tree_nut")
+    if "coconut milk" in text and "milk" not in text.replace("coconut milk", ""):
+        cleaned.discard("milk")
+    return cleaned
+
+
+def _infer_allergens(item: dict) -> list[str]:
+    existing = set(item.get("allergens") or [])
+    text = _search_text(item)
+    group_en = item.get("group", {}).get("en", "")
+
+    for allergen in _GROUP_ALLERGENS.get(group_en, []):
+        existing.add(allergen)
+
+    for allergen, keywords in _ALLERGEN_KEYWORDS.items():
+        if any(kw in text for kw in keywords):
+            existing.add(allergen)
+
+    existing = _clean_allergen_false_positives(existing, text)
+    return sorted(existing)
+
+
+def _infer_dietary_flags(item: dict, allergens: list[str]) -> list[str]:
+    existing = set(item.get("dietary_flags") or [])
+    text = _search_text(item)
+    group_en = item.get("group", {}).get("en", "")
+    sub_en = item.get("subcategory", {}).get("en", "")
+
+    is_animal_meat = group_en in _MEAT_GROUPS and "Plant-Based" not in sub_en
+    has_milk_egg = "milk" in allergens or "egg" in allergens
+    has_wheat = "wheat" in allergens
+
+    if not is_animal_meat:
+        existing.add("vegetarian")
+        if not has_milk_egg:
+            existing.add("vegan")
+
+    if "lactose-free" in text or "lactose free" in text:
+        existing.add("lactose_free")
+
+    if not has_wheat and (
+        group_en in {"Fruits", "Vegetables"}
+        or any(kw in text for kw in ("rice", "corn", "quinoa", "potato", "yam", "cassava", "millet"))
+    ):
+        existing.add("gluten_free")
+
+    if "low sodium" in text or "low-sodium" in text:
+        existing.add("low_sodium")
+
+    if "halal" in text:
+        existing.add("halal")
+
+    if "sugar-free" in text or "no sugar added" in text or "unsweetened" in text:
+        existing.add("diabetic_friendly")
+
+    if is_animal_meat:
+        existing.discard("vegetarian")
+        existing.discard("vegan")
+
+    return sorted(existing)
+
+
+for _idx, _food in enumerate(EXCHANGE_LIST_INITIAL):
+    _tags = _infer_allergens(_food)
+    _flags = _infer_dietary_flags(_food, _tags)
+    EXCHANGE_LIST_INITIAL[_idx]["allergens"] = _tags
+    EXCHANGE_LIST_INITIAL[_idx]["dietary_flags"] = _flags

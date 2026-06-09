@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { Calculator } from "lucide-react";
 import NutritionAssessmentPanel from "../../NutritionAssessmentPanel";
+import EmptyState from "../../ui/EmptyState";
 import { assessmentFromPatient } from "../../../utils/nutritionAssessment";
 
 export default function Step2Calculations({ metrics, patientData, onProceed, onBack }) {
@@ -11,14 +13,13 @@ export default function Step2Calculations({ metrics, patientData, onProceed, onB
     if (!metrics && !assessment) {
         return (
             <div className="section">
-                <p className="text-gray-500 text-center py-8">
-                    No calculations available. Please complete patient information first.
-                </p>
-                <div className="flex justify-center">
-                    <button onClick={onBack} className="btn-secondary">
-                        Go Back
-                    </button>
-                </div>
+                <EmptyState
+                    icon={Calculator}
+                    title="No assessment data yet"
+                    description="Complete patient information in Step 1 to generate clinical calculations and formula breakdowns."
+                    actionLabel="Go back to patient info"
+                    onAction={onBack}
+                />
             </div>
         );
     }

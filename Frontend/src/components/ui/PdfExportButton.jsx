@@ -5,6 +5,7 @@ import { exportDietPlanPdf, getPdfDownloadName } from "../../services/pdfExport"
 
 export default function PdfExportButton({
     exportPayload,
+    beforeExport,
     className = "",
     wrapperClassName = "",
     disabled = false,
@@ -24,6 +25,11 @@ export default function PdfExportButton({
 
     const handleExport = async () => {
         if (exporting || disabled) return;
+
+        if (beforeExport) {
+            const allowed = await beforeExport();
+            if (!allowed) return;
+        }
 
         setExporting(true);
         setSlowHint(false);

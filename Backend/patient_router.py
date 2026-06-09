@@ -7,8 +7,32 @@ from database import patients_collection, patient_helper
 from auth_router import get_current_user, _is_db_connection_error, _raise_db_unavailable
 from bson import ObjectId
 from nutrition_assessment import AssessmentValidationError, compute_full_assessment
+from allergen_utils import ALLERGEN_LABELS, STANDARD_ALLERGENS
 
 logger = logging.getLogger(__name__)
+
+
+def _sync_allergy_fields(profile_dict: dict) -> dict:
+    """Only backfill allergies text from legacy structured flags when text is empty."""
+    if profile_dict.get("allergies"):
+        return profile_dict
+
+    allergens = profile_dict.get("allergens")
+    if not allergens:
+        return profile_dict
+
+    labels: list[str] = []
+    for key in STANDARD_ALLERGENS:
+        if allergens.get(key):
+            labels.append(ALLERGEN_LABELS[key])
+
+    for custom in allergens.get("custom") or []:
+        if isinstance(custom, str) and custom.strip():
+            labels.append(custom.strip())
+
+    if labels:
+        profile_dict["allergies"] = ", ".join(labels)
+    return profile_dict
 
 router = APIRouter(prefix="/api/v1", tags=["patients"])
 
@@ -56,8 +80,9 @@ def calculate_metrics(profile_dict: dict) -> dict:
 async def create_patient(profile: PatientProfile, current_user: dict = Depends(get_current_user)):
     """Create a new patient in the database"""
     try:
-        print(f"📥 Received new patient request: {profile.name} from user: {current_user['email']}")
+        logger.info("[PATIENT CREATE] New patient request: %s from user: %s", profile.name, current_user["email"])
         profile_dict = profile.model_dump(exclude={"id", "owner_id"})
+        profile_dict = _sync_allergy_fields(profile_dict)
         profile_dict = calculate_metrics(profile_dict)
         profile_dict["owner_id"] = current_user["id"]
 
@@ -111,6 +136,7 @@ async def update_patient(patient_id: str, updated_profile: PatientProfile, curre
             raise HTTPException(status_code=404, detail="Patient not found")
 
         profile_dict = updated_profile.model_dump(exclude={"id", "owner_id"})
+        profile_dict = _sync_allergy_fields(profile_dict)
         profile_dict = calculate_metrics(profile_dict)
 
         await patients_collection.update_one(

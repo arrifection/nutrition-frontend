@@ -1,0 +1,321 @@
+/* Allergen selector */
+.allergen-selector {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--background);
+}
+
+.allergen-selector__hint {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.allergen-selector__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.allergen-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.allergen-chip--active {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.allergen-chip input {
+    accent-color: #dc2626;
+}
+
+.allergen-selector__custom {
+    margin-top: 1.25rem;
+}
+
+.allergen-selector__custom-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.allergen-selector__custom-row .form-input {
+    flex: 1;
+}
+
+.allergen-selector__custom-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.allergen-custom-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    font-size: 0.75rem;
+}
+
+.allergen-custom-tag button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    display: flex;
+}
+
+.allergen-selector__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+/* Allergen warning modal */
+.allergen-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.allergen-modal {
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.allergen-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.allergen-modal__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.allergen-modal__title-wrap h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.allergen-modal__icon {
+    color: #dc2626;
+    flex-shrink: 0;
+}
+
+.allergen-modal__close {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.25rem;
+}
+
+.allergen-modal__intro {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.allergen-modal__list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-height: 220px;
+    overflow: auto;
+}
+
+.allergen-modal__list li {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    gap: 0.15rem;
+}
+
+.allergen-modal__list li:last-child {
+    border-bottom: none;
+}
+
+.allergen-modal__list strong {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.allergen-modal__list span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.allergen-modal__list em {
+    font-size: 0.8125rem;
+    color: #b91c1c;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.allergen-modal__ack {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+}
+
+.allergen-modal__ack input {
+    margin-top: 0.2rem;
+    accent-color: var(--brand-green);
+}
+
+.allergen-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+/* Empty states */
+.dd-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+
+.dd-empty-state__icon {
+    color: var(--brand-green);
+    opacity: 0.35;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.dd-empty-state__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.dd-empty-state__description {
+    margin: 0 auto 1.25rem;
+    max-width: 28rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.dd-empty-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+/* API error fallback */
+.dd-api-error-state {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: #fef2f2;
+}
+
+.dd-api-error-state__icon {
+    color: #dc2626;
+    opacity: 0.7;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: center;
+}
+
+.dd-api-error-state h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    color: #991b1b;
+}
+
+.dd-api-error-state p {
+    margin: 0 0 1rem;
+    color: #b91c1c;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Offline banner */
+.dd-offline-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: #451a03;
+    color: #fef3c7;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .allergen-selector__custom-row {
+        flex-direction: column;
+    }
+
+    .allergen-modal__actions {
+        flex-direction: column-reverse;
+    }
+
+    .allergen-modal__actions .btn-primary,
+    .allergen-modal__actions .btn-secondary {
+        width: 100%;
+    }
+}
