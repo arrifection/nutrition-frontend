@@ -18,10 +18,10 @@ def _validate_inputs(
         raise AssessmentValidationError("Gender must be 'male' or 'female'")
     if age < 1 or age > 120:
         raise AssessmentValidationError("Age must be between 1 and 120 years")
-    if weight_kg < 20 or weight_kg > 300:
-        raise AssessmentValidationError("Weight must be between 20 and 300 kg")
-    if height_cm < 100 or height_cm > 250:
-        raise AssessmentValidationError("Height must be between 100 and 250 cm")
+    if weight_kg < 5 or weight_kg > 300:
+        raise AssessmentValidationError("Weight must be between 5 and 300 kg")
+    if height_cm < 50 or height_cm > 250:
+        raise AssessmentValidationError("Height must be between 50 and 250 cm")
     return g
 
 

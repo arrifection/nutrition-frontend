@@ -22,6 +22,9 @@ const FRIENDLY_BY_PHRASE = [
     { match: /verify your email to continue/i, text: "Please verify your email to continue. Use Resend Verification Email on the login page." },
     { match: /invalid or expired token/i, text: "Your session expired. Please sign in again." },
     { match: /database is temporarily unreachable/i, text: "We're having a brief connection issue. Please try again in a moment." },
+    { match: /couldn't save this patient/i, text: "We couldn't save this patient right now. Please check height, weight, and age, then try again." },
+    { match: /weight must be between/i, text: "Please enter a valid weight between 5 and 300 kg." },
+    { match: /height must be between/i, text: "Please enter a valid height between 50 and 250 cm." },
     { match: /could not send verification email/i, text: "We couldn't send the verification email right now. Please try again in a few minutes." },
 ];
 

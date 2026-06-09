@@ -12,8 +12,8 @@ export function validateAssessmentInputs({ weight_kg, height_cm, age, gender }) 
         return "Gender must be male or female";
     }
     if (age < 1 || age > 120) return "Age must be between 1 and 120 years";
-    if (weight_kg < 20 || weight_kg > 300) return "Weight must be between 20 and 300 kg";
-    if (height_cm < 100 || height_cm > 250) return "Height must be between 100 and 250 cm";
+    if (weight_kg < 5 || weight_kg > 300) return "Weight must be between 5 and 300 kg";
+    if (height_cm < 50 || height_cm > 250) return "Height must be between 50 and 250 cm";
     if (Number.isNaN(weight_kg) || Number.isNaN(height_cm) || Number.isNaN(age)) {
         return "Please enter valid numbers for age, height, and weight";
     }
