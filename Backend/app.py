@@ -166,7 +166,7 @@ app.include_router(pdf_export_router)
 
 @app.get("/")
 def home():
-    return {"message": "Backend is running successfully - v2.3 (Auth Fix)"}
+    return {"message": "Backend is running successfully", "release": os.getenv("SENTRY_RELEASE", "unknown")}
 
 
 @app.get("/health")
