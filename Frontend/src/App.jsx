@@ -8,7 +8,11 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
 import PdfPreview from "./pages/PdfPreview";
-import LegalPage from "./pages/LegalPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import ContactUs from "./pages/ContactUs";
+import SecurityPage from "./pages/SecurityPage";
+import PublicFooter from "./components/PublicFooter";
 import NotFound from "./pages/NotFound";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
@@ -49,12 +53,15 @@ function LoginPage() {
     const from = location.state?.from || "/dashboard";
 
     return (
-        <Box className="auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-            <AuthHomeLink idPrefix="auth-login" />
-            <Login
-                onToggle={() => navigate("/signup")}
-                onSuccess={() => navigate(from, { replace: true })}
-            />
+        <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <Box className="auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
+                <AuthHomeLink idPrefix="auth-login" />
+                <Login
+                    onToggle={() => navigate("/signup")}
+                    onSuccess={() => navigate(from, { replace: true })}
+                />
+            </Box>
+            <PublicFooter />
             <Toast
                 message={toast.message}
                 type={toast.type}
@@ -74,9 +81,12 @@ function SignupPage() {
     if (user) return <Navigate to="/dashboard" replace />;
 
     return (
-        <Box className="auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-            <AuthHomeLink idPrefix="auth-signup" />
-            <Signup onToggle={() => navigate("/login")} />
+        <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <Box className="auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
+                <AuthHomeLink idPrefix="auth-signup" />
+                <Signup onToggle={() => navigate("/login")} />
+            </Box>
+            <PublicFooter />
             <Toast
                 message={toast.message}
                 type={toast.type}
@@ -94,9 +104,12 @@ function VerifyEmailPage() {
     if (authLoading) return <AuthLoadingScreen />;
 
     return (
-        <Box className="verify-page-wrap auth-page-wrap min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4">
-            <AuthHomeLink idPrefix="auth-verify" />
-            <VerifyEmail onGoToLogin={() => navigate(user ? "/dashboard" : "/login")} />
+        <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <Box className="verify-page-wrap auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
+                <AuthHomeLink idPrefix="auth-verify" />
+                <VerifyEmail onGoToLogin={() => navigate(user ? "/dashboard" : "/login")} />
+            </Box>
+            <PublicFooter />
         </Box>
     );
 }
@@ -128,24 +141,10 @@ export default function App() {
     return (
         <Routes>
             <Route path="/pdf-preview" element={<PdfPreview />} />
-            <Route
-                path="/privacy"
-                element={
-                    <LegalPage
-                        title="Privacy Policy"
-                        description="Our privacy policy is being finalized. Check back soon for full details on how DietDesk handles your data."
-                    />
-                }
-            />
-            <Route
-                path="/terms"
-                element={
-                    <LegalPage
-                        title="Terms of Service"
-                        description="Our terms of service are being finalized. Check back soon for the complete agreement."
-                    />
-                }
-            />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/security" element={<SecurityPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/" element={<RootRoute />} />
             <Route path="/login" element={<LoginPage />} />

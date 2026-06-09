@@ -13,6 +13,8 @@ import {
     FileCheck,
 } from "lucide-react";
 import DietDeskLogo from "../components/DietDeskLogo";
+import PublicFooter from "../components/PublicFooter";
+import PageMeta from "../components/PageMeta";
 import "../landing.css";
 
 const ROUTES = {
@@ -427,37 +429,11 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* ── Footer ── */}
-            <footer className="landing-footer">
-                <div className="landing-container">
-                    <div className="landing-footer-grid">
-                        <div className="landing-footer-brand">
-                            <Link to={ROUTES.home} className="landing-logo landing-footer-logo" aria-label="DietDesk home">
-                                <DietDeskLogo compact idPrefix="footer" />
-                            </Link>
-                            <p className="landing-footer-tagline">
-                                Clinical nutrition software for modern diet planning.
-                            </p>
-                        </div>
-                        <nav className="landing-footer-col" aria-label="Product links">
-                            <p className="landing-footer-col-title">Product</p>
-                            <button type="button" className="landing-footer-link-btn" onClick={scrollToFeatures}>
-                                Features
-                            </button>
-                            <span className="landing-footer-link-muted">Pricing (coming soon)</span>
-                        </nav>
-                        <nav className="landing-footer-col" aria-label="Legal links">
-                            <p className="landing-footer-col-title">Legal</p>
-                            <a href="/privacy" className="landing-footer-legal-link">Privacy Policy</a>
-                            <a href="/terms" className="landing-footer-legal-link">Terms of Service</a>
-                        </nav>
-                    </div>
-                    <p className="landing-footer-copy">© {new Date().getFullYear()} DietDesk. All rights reserved.</p>
-                    <p className="landing-footer-disclaimer">
-                        For educational and professional diet-planning support. Not a replacement for medical diagnosis.
-                    </p>
-                </div>
-            </footer>
+            <PageMeta
+                title={null}
+                description="DietDesk helps dietitians manage patients, calculate macros, build meal plans, and export professional PDF diet reports."
+            />
+            <PublicFooter />
         </div>
     );
 }
