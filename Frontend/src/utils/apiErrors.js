@@ -1,5 +1,7 @@
+import { getColdStartMessage, isBackendWakingError } from "./coldStart";
+
 const CONNECTION_HINT =
-    "Please wait a few seconds and try again. If you already submitted the form, try Sign In — your account may already exist.";
+    "The secure server is starting. Please wait a few seconds and try again.";
 
 const FRIENDLY_BY_STATUS = {
     400: null,
@@ -7,10 +9,10 @@ const FRIENDLY_BY_STATUS = {
     403: null,
     404: "We couldn't find what you were looking for. Please refresh and try again.",
     429: "Too many attempts. Please wait a minute and try again.",
-    500: "Something went wrong on our side. Please try again in a moment.",
-    502: "Our service is waking up. Please try again in a few seconds.",
-    503: "We're briefly unavailable. Please try again in a moment.",
-    504: "This is taking longer than usual. Please try again in a few seconds.",
+    500: "The server is still starting. Please try again in a few seconds.",
+    502: "Backend is waking up... Please try again in a few seconds.",
+    503: "Backend is waking up... Please try again in a few seconds.",
+    504: "Backend is waking up... This is taking longer than usual.",
 };
 
 const FRIENDLY_BY_PHRASE = [
@@ -47,10 +49,11 @@ export function toFriendlyApiError(error, context = "request") {
 
     if (error?.code === "ECONNABORTED") {
         return {
-            userMessage: `This is taking longer than expected. ${CONNECTION_HINT}`,
+            userMessage: getColdStartMessage(context),
             technicalMessage: `Timeout during ${context}`,
             status,
             retryable: true,
+            coldStart: true,
         };
     }
 
@@ -65,10 +68,11 @@ export function toFriendlyApiError(error, context = "request") {
 
     if (error?.message === "Network Error" || !error?.response) {
         return {
-            userMessage: `We couldn't connect right now. ${CONNECTION_HINT}`,
+            userMessage: getColdStartMessage(context),
             technicalMessage: error?.message || "No response from server",
             status,
             retryable: true,
+            coldStart: true,
         };
     }
 
@@ -95,10 +99,14 @@ export function toFriendlyApiError(error, context = "request") {
     }
 
     const statusMessage = FRIENDLY_BY_STATUS[status];
+    const coldStart = isBackendWakingError(error);
     return {
-        userMessage: statusMessage || "Something went wrong. Please try again.",
+        userMessage: coldStart
+            ? getColdStartMessage(context)
+            : (statusMessage || "Please try again in a moment."),
         technicalMessage: error?.message || `HTTP ${status || "unknown"}`,
         status,
-        retryable: status >= 500 || status === 429,
+        retryable: status >= 500 || status === 429 || coldStart,
+        coldStart,
     };
 }

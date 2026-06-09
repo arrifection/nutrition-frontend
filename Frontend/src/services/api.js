@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 import { toFriendlyApiError } from '../utils/apiErrors';
+import { COLD_START_RETRY_DELAY_MS, sleep } from '../utils/coldStart';
 import { captureApiFailure, captureAuthFailure } from '../utils/sentry';
 
 const API_BASE_URL = getApiBaseUrl();
@@ -160,9 +161,20 @@ const handleResp = async (fn, context = 'request') => {
             success: false,
             error: friendly.userMessage,
             retryable: friendly.retryable,
+            coldStart: friendly.coldStart,
         };
     }
 };
+
+export async function executeWithColdStartRetry(requestFn, context, { onWaking } = {}) {
+    const first = await handleResp(requestFn, context);
+    if (first.success || !first.coldStart) {
+        return first;
+    }
+    onWaking?.();
+    await sleep(COLD_START_RETRY_DELAY_MS);
+    return handleResp(requestFn, context);
+}
 
 const withRetries = async (fn, context, retries = 2, delayMs = 1500) => {
     let lastResult;
@@ -212,11 +224,23 @@ export const getExchangeList = (category = null) => {
 };
 
 // Auth endpoints
-export const loginUser = (data) => handleResp(() => api.post('/auth/login', data), 'login');
-export const registerUser = (data) => handleResp(() => api.post('/auth/register', data), 'signup');
+export const loginUser = (data, options) => executeWithColdStartRetry(
+    () => api.post('/auth/login', data),
+    'login',
+    options,
+);
+export const registerUser = (data, options) => executeWithColdStartRetry(
+    () => api.post('/auth/register', data),
+    'signup',
+    options,
+);
 export const refreshSession = () => handleResp(() => api.post('/auth/refresh', { refresh_token: sessionStorage.getItem(REFRESH_KEY) }), 'refresh-session');
 export const logoutUser = () => handleResp(() => api.post('/auth/logout'), 'logout');
-export const getMe = () => handleResp(() => api.get('/auth/me'), 'session-check');
+export const getMe = (options) => executeWithColdStartRetry(
+    () => api.get('/auth/me'),
+    'session-check',
+    options,
+);
 export const resendVerification = () => withRetries(
     () => handleResp(() => api.post('/auth/resend-verification'), 'resend-verification'),
     'resend-verification',
@@ -226,6 +250,9 @@ export const requestVerificationEmail = (data) => withRetries(
     'request-verification',
 );
 
-export const wakeBackend = () => handleResp(() => api.get('/'), 'wake-backend');
+export const wakeBackend = () => handleResp(
+    () => api.get('/warmup', { params: { ping_db: false }, timeout: 15000 }),
+    'wake-backend',
+);
 
 export default api;

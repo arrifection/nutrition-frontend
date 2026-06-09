@@ -1,0 +1,25 @@
+name: Keep HF Backend Warm
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping DietDesk backend health
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            if curl -fsS --max-time 20 "https://dietdesk.online/backend/health"; then
+              echo ""
+              echo "Health ping succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "Health ping failed after 3 attempts"
+          exit 1

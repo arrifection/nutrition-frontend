@@ -3,6 +3,7 @@ import certifi
 import dns.resolver
 import motor.motor_asyncio
 import os
+import time
 from dotenv import load_dotenv
 from pymongo.server_api import ServerApi
 
@@ -20,6 +21,7 @@ CONNECT_TIMEOUT_MS = int(os.getenv("MONGODB_CONNECT_TIMEOUT_MS", "5000"))
 SOCKET_TIMEOUT_MS = int(os.getenv("MONGODB_SOCKET_TIMEOUT_MS", "8000"))
 TLS_INSECURE = os.getenv("MONGODB_TLS_INSECURE", "false").lower() in {"1", "true", "yes"}
 DNS_SERVERS = [s.strip() for s in os.getenv("MONGODB_DNS_SERVERS", "8.8.8.8,1.1.1.1").split(",") if s.strip()]
+HEALTH_PING_TIMEOUT_MS = int(os.getenv("MONGODB_HEALTH_PING_TIMEOUT_MS", "2000"))
 
 if MONGODB_URL.startswith("mongodb+srv://") and DNS_SERVERS:
     try:
@@ -33,9 +35,11 @@ if MONGODB_URL.startswith("mongodb+srv://") and DNS_SERVERS:
         print(f"WARN: Could not set custom DNS resolver: {e}")
 
 
-# Global client instance
+# Global client instance (lazy — no connect at import time)
 client = None
 db = None
+_db_status_cache = {"ok": None, "checked_at": 0.0}
+
 
 def get_client():
     global client, db
@@ -64,32 +68,61 @@ def get_client():
             raise RuntimeError(f"Could not initialize MongoDB client: {e}")
     return client
 
-# Call it once to initialize at module level (safely)
-try:
-    get_client()
-except Exception as e:
-    print(f"[ERROR] Module-level DB init failed (will retry in startup): {e}")
 
-async def check_db():
+async def _ping_db(timeout_seconds: float) -> bool:
     try:
         c = get_client()
-        ping_timeout = max(10.0, (SERVER_SELECTION_TIMEOUT_MS / 1000) + 5.0)
-        await asyncio.wait_for(c.admin.command("ping"), timeout=ping_timeout)
-        print("MongoDB Atlas Connected Successfully!")
+        await asyncio.wait_for(c.admin.command("ping"), timeout=timeout_seconds)
         return True
-    except asyncio.TimeoutError:
-        print("MongoDB Connection Failed: Timeout while waiting for Atlas")
-        return False
     except Exception as e:
-        print(f"MongoDB Connection Failed: {type(e).__name__} - {e}")
-        if "SSL" in str(e) or "handshake" in str(e).lower():
-            print("TIP: This SSL error often means your IP is not whitelisted or there's a firewall/DNS issue.")
+        print(f"MongoDB ping failed ({timeout_seconds}s timeout): {type(e).__name__} - {e}")
         return False
+
+
+def _set_db_status(ok: bool) -> None:
+    _db_status_cache["ok"] = ok
+    _db_status_cache["checked_at"] = time.time()
+
+
+def get_cached_db_status(max_age_seconds: float = 60.0) -> str:
+    """Fast status for /health — never blocks on a live ping."""
+    ok = _db_status_cache["ok"]
+    checked_at = _db_status_cache["checked_at"]
+    if ok is None:
+        return "unknown"
+    if time.time() - checked_at > max_age_seconds:
+        return "stale"
+    return "connected" if ok else "unreachable"
+
+
+async def quick_db_ping(timeout_seconds: float | None = None) -> bool:
+    """Short ping for /warmup and background startup."""
+    timeout = timeout_seconds if timeout_seconds is not None else HEALTH_PING_TIMEOUT_MS / 1000
+    ok = await _ping_db(timeout)
+    _set_db_status(ok)
+    if ok:
+        print("MongoDB Atlas Connected Successfully!")
+    return ok
+
+
+async def check_db():
+    """Full ping used by routes that need a live DB check."""
+    ping_timeout = max(10.0, (SERVER_SELECTION_TIMEOUT_MS / 1000) + 5.0)
+    ok = await _ping_db(ping_timeout)
+    _set_db_status(ok)
+    if ok:
+        print("MongoDB Atlas Connected Successfully!")
+    else:
+        print("MongoDB Connection Failed: Timeout or unreachable")
+    return ok
 
 
 # Collections (proxies)
 def _get_coll(name):
-    return client[DB_NAME].get_collection(name) if client else None
+    if db is None:
+        get_client()
+    return db.get_collection(name) if db is not None else None
+
 
 patients_collection = _get_coll("patients")
 plans_collection = _get_coll("diet_plans")
@@ -98,9 +131,12 @@ users_collection = _get_coll("users")
 history_collection = _get_coll("history")
 refresh_sessions_collection = _get_coll("refresh_sessions")
 
+
 def refresh_collections():
-    """Ensure collections are bound to the active db instance"""
+    """Ensure collections are bound to the active db instance."""
     global patients_collection, plans_collection, logs_collection, users_collection, history_collection, refresh_sessions_collection, db
+    if db is None:
+        get_client()
     if db is not None:
         patients_collection = db.get_collection("patients")
         plans_collection = db.get_collection("diet_plans")
@@ -109,9 +145,11 @@ def refresh_collections():
         history_collection = db.get_collection("history")
         refresh_sessions_collection = db.get_collection("refresh_sessions")
 
+
 # Helper to format MongoDB _id to string id
 def patient_helper(patient) -> dict:
-    if not patient: return {}
+    if not patient:
+        return {}
     return {
         "id": str(patient["_id"]),
         "name": patient["name"],
@@ -128,11 +166,13 @@ def patient_helper(patient) -> dict:
         "tdee": patient.get("tdee"),
         "assessment": patient.get("assessment"),
         "medical_notes": patient.get("medical_notes"),
-        "owner_id": patient.get("owner_id")
+        "owner_id": patient.get("owner_id"),
     }
 
+
 def user_helper(user) -> dict:
-    if not user: return {}
+    if not user:
+        return {}
     return {
         "id": str(user["_id"]),
         "username": user["username"],
@@ -140,5 +180,5 @@ def user_helper(user) -> dict:
         "role": user.get("role", "client"),
         "createdAt": user.get("createdAt"),
         "email_verified": user.get("email_verified", False),
-        "verification_deadline": user.get("verification_deadline")
+        "verification_deadline": user.get("verification_deadline"),
     }

@@ -1,4 +1,5 @@
 # Backend for DietDesk MVP - v2.1 Sync (Token Fix)
+import asyncio
 import logging
 import os
 import time
@@ -23,7 +24,7 @@ from auth_router import router as auth_router
 from bmi import router as bmi_router
 from bmr import router as bmr_router
 from clinical_router import router as clinical_router
-from database import check_db, refresh_collections
+from database import get_cached_db_status, quick_db_ping, refresh_collections
 from client_log_router import router as client_log_router
 from debug_router import router as debug_router
 from email_utils import get_email_config_status, log_email_config_on_startup
@@ -66,25 +67,32 @@ def _log_startup_env_status() -> None:
             f.write(f"MISSING_ENV={missing}\n")
 
 
+async def _background_startup() -> None:
+    """Non-blocking startup: DB connect, collection bind, optional food seed."""
+    try:
+        log_email_config_on_startup()
+        _log_startup_env_status()
+        refresh_collections()
+
+        if await quick_db_ping():
+            with open("startup_check.txt", "a") as f:
+                f.write("DB CONNECTED\n")
+            await seed_food_data()
+        else:
+            with open("startup_check.txt", "a") as f:
+                f.write("DB FAILED\n")
+            logger.warning(
+                "Skipping startup seed: Database not reachable. The app will continue, but DB features will fail."
+            )
+    except Exception as exc:
+        logger.exception("[STARTUP] Background initialization failed: %s", exc)
+
+
 @app.on_event("startup")
 async def startup_db_client():
     with open("startup_check.txt", "w") as f:
         f.write("STARTUP RUNNING\n")
-
-    log_email_config_on_startup()
-    _log_startup_env_status()
-
-    refresh_collections()
-    if await check_db():
-        with open("startup_check.txt", "a") as f:
-            f.write("DB CONNECTED\n")
-        await seed_food_data()
-    else:
-        with open("startup_check.txt", "a") as f:
-            f.write("DB FAILED\n")
-        logger.warning(
-            "Skipping startup seed: Database not reachable. The app will continue, but DB features will fail."
-        )
+    asyncio.create_task(_background_startup())
 
 @app.middleware("http")
 async def security_and_rate_limit(request: Request, call_next):
@@ -104,6 +112,9 @@ async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = (time.time() - start_time) * 1000
+    if request.url.path in {"/health", "/warmup"}:
+        return response
+
     log_line = f"{request.method} {request.url.path} -> {response.status_code} ({process_time:.2f}ms)"
     if response.status_code >= 500:
         logger.error("[REQUEST] %s", log_line)
@@ -160,13 +171,30 @@ def home():
 
 @app.get("/health")
 async def health_check():
-    db_ok = await check_db()
+    """Fast liveness probe — never blocks on a live database ping."""
+    db_status = get_cached_db_status()
+    ready = db_status == "connected"
     return {
-        "status": "healthy" if db_ok else "degraded",
-        "database": "connected" if db_ok else "unreachable",
+        "status": "healthy" if ready or db_status in {"unknown", "stale"} else "degraded",
+        "database": db_status,
         "environment": resolve_environment(),
         "release": os.getenv("SENTRY_RELEASE", "unknown"),
         "sentry": "enabled" if is_sentry_enabled() else "disabled",
+    }
+
+
+@app.get("/warmup")
+async def warmup(ping_db: bool = True):
+    """Lightweight wake-up probe. Optional short DB ping (default 2s timeout)."""
+    db_ok = None
+    if ping_db:
+        db_ok = await quick_db_ping()
+    return {
+        "status": "warm",
+        "database": (
+            "connected" if db_ok else "unreachable" if db_ok is False else "skipped"
+        ),
+        "environment": resolve_environment(),
     }
 
 

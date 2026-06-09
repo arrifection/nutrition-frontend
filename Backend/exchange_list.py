@@ -1,11 +1,15 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, List
-from database import db
+from database import db, get_client
 
 router = APIRouter(prefix="/api/v1", tags=["exchange-list"])
 
-food_collection = db.get_collection("food_exchange")
+
+def get_food_collection():
+    if db is None:
+        get_client()
+    return db.get_collection("food_exchange")
 
 # Threshold for detecting if we need to re-seed (full dataset is ~300+ items)
 _FULL_SEED_THRESHOLD = 50
@@ -99,10 +103,11 @@ def food_helper(food) -> dict:
 async def _do_seed():
     """Drop the collection and re-insert the full dataset."""
     from exchange_list_data import EXCHANGE_LIST_INITIAL
-    await food_collection.drop()
+    coll = get_food_collection()
+    await coll.drop()
     # Create unique index on 'id'
-    await food_collection.create_index("id", unique=True)
-    result = await food_collection.insert_many(EXCHANGE_LIST_INITIAL)
+    await coll.create_index("id", unique=True)
+    result = await coll.insert_many(EXCHANGE_LIST_INITIAL)
     return len(result.inserted_ids)
 
 async def seed_food_data():
@@ -113,8 +118,9 @@ async def seed_food_data():
         return
 
     try:
-        count = await food_collection.count_documents({})
-        sample = await food_collection.find_one({})
+        coll = get_food_collection()
+        count = await coll.count_documents({})
+        sample = await coll.find_one({})
         # Re-seed if: count too low, OR old schema (no macros/id), OR missing allergen tags
         is_old_schema = sample and ("macros" not in sample or "id" not in sample)
         missing_allergens = sample and "allergens" not in sample
@@ -140,7 +146,7 @@ async def get_exchange_list(status: Optional[str] = None):
         query["translation_status"] = status
         
     foods = []
-    async for food in food_collection.find(query).sort(
+    async for food in get_food_collection().find(query).sort(
         [("group.en", 1), ("subcategory.en", 1), ("food_name.en", 1)]
     ):
         foods.append(food_helper(food))
@@ -156,7 +162,7 @@ async def get_groups():
         {"$sort": {"_id": 1}}
     ]
     groups = []
-    async for doc in food_collection.aggregate(pipeline):
+    async for doc in get_food_collection().aggregate(pipeline):
         groups.append(doc["group"])
     return {"groups": groups}
 
@@ -164,7 +170,7 @@ async def get_groups():
 async def get_by_group(group_en: str):
     """Returns all foods in a specific group by English name."""
     foods = []
-    async for food in food_collection.find({"group.en": group_en}).sort(
+    async for food in get_food_collection().find({"group.en": group_en}).sort(
         [("subcategory.en", 1), ("food_name.en", 1)]
     ):
         foods.append(food_helper(food))

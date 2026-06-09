@@ -17,6 +17,7 @@ const Login = ({ onToggle, onSuccess }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [waking, setWaking] = useState(false);
     const [resendLoading, setResendLoading] = useState(false);
     const [showResendOption, setShowResendOption] = useState(false);
 
@@ -30,7 +31,10 @@ const Login = ({ onToggle, onSuccess }) => {
         setSuccess("");
         setShowResendOption(false);
         setLoading(true);
-        const result = await login(email, password);
+        setWaking(false);
+        const result = await login(email, password, {
+            onWaking: () => setWaking(true),
+        });
         if (!result.success) {
             const err = result.error || "We couldn't sign you in right now. Please check your details and try again.";
             setError(err);
@@ -99,6 +103,15 @@ const Login = ({ onToggle, onSuccess }) => {
                             placeholder="••••••••"
                         />
                     </div>
+
+                    {waking && (
+                        <div style={{
+                            padding: '10px', background: '#eff6ff', border: '1px solid #bfdbfe',
+                            borderRadius: '8px', color: '#1d4ed8', fontSize: '0.8125rem', textAlign: 'center'
+                        }}>
+                            Starting secure server... Trying again in a few seconds.
+                        </div>
+                    )}
 
                     {error && (
                         <div style={{

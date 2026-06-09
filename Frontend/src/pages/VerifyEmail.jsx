@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
+import { COLD_START_RETRY_DELAY_MS, getColdStartMessage, isBackendWakingError, sleep } from '../utils/coldStart';
+import { wakeBackend } from '../services/api';
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -10,6 +12,8 @@ const VerifyEmail = ({ onGoToLogin }) => {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
+        wakeBackend();
+
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
 
@@ -20,16 +24,34 @@ const VerifyEmail = ({ onGoToLogin }) => {
         }
 
         const verify = async () => {
+            const attempt = async () => axios.get(`${API_BASE_URL}/auth/verify-email`, {
+                params: { token },
+                timeout: 30000,
+            });
+
             try {
-                const response = await axios.get(`${API_BASE_URL}/auth/verify-email`, {
-                    params: { token }
-                });
+                const response = await attempt();
                 setStatus('success');
                 setMessage(response.data.message || 'Email verified successfully!');
-                
-                // Optional: Clean up the URL after verification
                 window.history.replaceState({}, document.title, "/verify-email");
             } catch (error) {
+                if (isBackendWakingError(error)) {
+                    setMessage(getColdStartMessage('verify-email'));
+                    await sleep(COLD_START_RETRY_DELAY_MS);
+                    try {
+                        const retry = await attempt();
+                        setStatus('success');
+                        setMessage(retry.data.message || 'Email verified successfully!');
+                        window.history.replaceState({}, document.title, "/verify-email");
+                        return;
+                    } catch (retryError) {
+                        console.error('Verification retry failed:', retryError);
+                        setStatus('error');
+                        setMessage(retryError.response?.data?.detail || getColdStartMessage('verify-email'));
+                        return;
+                    }
+                }
+
                 console.error('Verification failed:', error);
                 setStatus('error');
                 setMessage(error.response?.data?.detail || 'Verification failed or the link has expired.');
@@ -45,7 +67,7 @@ const VerifyEmail = ({ onGoToLogin }) => {
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
                     <h2 className="text-2xl font-bold text-slate-800">Verifying your email...</h2>
-                    <p className="text-slate-500">Please wait while we confirm your account.</p>
+                    <p className="text-slate-500">{message || 'Please wait while we confirm your account.'}</p>
                 </div>
             )}
 
@@ -59,23 +81,22 @@ const VerifyEmail = ({ onGoToLogin }) => {
                         onClick={onGoToLogin}
                         className="mt-6 flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 group"
                     >
-                        Go to Login
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        Continue to Dashboard
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
             )}
 
             {status === 'error' && (
                 <div className="flex flex-col items-center gap-4">
-                    <XCircle className="w-16 h-16 text-rose-500" />
+                    <XCircle className="w-16 h-16 text-red-500" />
                     <h2 className="text-2xl font-bold text-slate-800">Verification Failed</h2>
-                    <p className="text-rose-600 font-medium">{message}</p>
-                    <p className="text-slate-500 text-sm">Try requesting a new link from your settings if you're already logged in.</p>
+                    <p className="text-slate-600">{message}</p>
                     <button
                         onClick={onGoToLogin}
-                        className="mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-xl transition-all"
+                        className="mt-4 text-emerald-600 hover:text-emerald-700 font-semibold"
                     >
-                        Return to Login
+                        Back to Login
                     </button>
                 </div>
             )}

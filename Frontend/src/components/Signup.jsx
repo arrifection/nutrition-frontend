@@ -11,6 +11,7 @@ const Signup = ({ onToggle }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [waking, setWaking] = useState(false);
 
     useEffect(() => {
         wakeBackend();
@@ -31,7 +32,10 @@ const Signup = ({ onToggle }) => {
         }
 
         setLoading(true);
-        const result = await register(username, email, password);
+        setWaking(false);
+        const result = await register(username, email, password, {
+            onWaking: () => setWaking(true),
+        });
         if (result.success) {
             if (result.emailSent === false) {
                 setSuccess(
@@ -105,6 +109,22 @@ const Signup = ({ onToggle }) => {
                             </ul>
                         )}
                     </div>
+
+                    {waking && (
+                        <div
+                            style={{
+                                padding: "10px",
+                                background: "#eff6ff",
+                                border: "1px solid #bfdbfe",
+                                borderRadius: "8px",
+                                color: "#1d4ed8",
+                                fontSize: "0.8125rem",
+                                textAlign: "center",
+                            }}
+                        >
+                            Backend is waking up... Trying again in a few seconds.
+                        </div>
+                    )}
 
                     {error && (
                         <div

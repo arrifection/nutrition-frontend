@@ -74,9 +74,9 @@ export const AuthProvider = ({ children }) => {
                 }
 
                 const meResult = await Promise.race([
-                    getMe(),
+                    getMe({ onWaking: () => window.dispatchEvent(new Event("dietdesk:backend-waking")) }),
                     new Promise((resolve) => {
-                        setTimeout(() => resolve({ success: false, error: "Session check timed out" }), 10000);
+                        setTimeout(() => resolve({ success: false, error: "Session check timed out", coldStart: true }), 10000);
                     }),
                 ]);
 
@@ -119,9 +119,9 @@ export const AuthProvider = ({ children }) => {
 
     const normalizeEmail = (value) => value.trim().toLowerCase();
 
-    const login = async (email, password) => {
+    const login = async (email, password, options = {}) => {
         const normalizedEmail = normalizeEmail(email);
-        const result = await loginUser({ email: normalizedEmail, password });
+        const result = await loginUser({ email: normalizedEmail, password }, options);
         if (!result.success) {
             return { success: false, error: result.error || "Login failed" };
         }
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
         const { access_token, refresh_token, expires_in, username, role } = result.data;
         storeAuthTokens({ access_token, refresh_token, expires_in });
 
-        const meResult = await getMe();
+        const meResult = await getMe(options);
         const profile = meResult.success ? meResult.data : {};
         const userData = {
             username: profile.username || username,
@@ -146,13 +146,13 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
     };
 
-    const register = async (username, email, password) => {
+    const register = async (username, email, password, options = {}) => {
         const result = await registerUser({
             username,
             email: normalizeEmail(email),
             password,
             role: "dietitian",
-        });
+        }, options);
         if (!result.success) {
             return { success: false, error: result.error || "Registration failed" };
         }
