@@ -4,6 +4,7 @@
   "framework": null,
   "installCommand": "cd Frontend && npm ci",
   "rewrites": [
+    { "source": "/backend/:path*", "destination": "https://arrifection-nutrition-backend.hf.space/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

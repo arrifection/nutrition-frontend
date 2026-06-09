@@ -101,7 +101,22 @@ export const getExchangeList = (category = null) => {
 
 // Auth endpoints
 export const loginUser    = (data) => handleResp(() => api.post('/auth/login', data));
-export const registerUser = (data) => handleResp(() => api.post('/auth/register', data));
+const withRetries = async (fn, retries = 2, delayMs = 1500) => {
+    let lastResult;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+        lastResult = await fn();
+        if (lastResult.success) return lastResult;
+        const err = (lastResult.error || '').toLowerCase();
+        const retryable = err.includes('network error')
+            || err.includes('could not reach the server')
+            || err.includes('timed out');
+        if (!retryable || attempt === retries) return lastResult;
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
+    }
+    return lastResult;
+};
+
+export const registerUser = (data) => withRetries(() => handleResp(() => api.post('/auth/register', data)));
 export const getMe        = ()     => handleResp(() => api.get('/auth/me'));
 export const resendVerification = () => handleResp(() => api.post('/auth/resend-verification'));
 export const requestVerificationEmail = (data) => handleResp(() => api.post('/auth/request-verification-email', data));
