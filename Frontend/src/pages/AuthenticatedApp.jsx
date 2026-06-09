@@ -1,26 +1,29 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import StepProgress from "../components/StepProgress";
-import Step1PatientInfo from "../components/steps/Step1PatientInfo";
-import Step2Calculations from "../components/steps/Step2Calculations";
-import Step3MacroSetup from "../components/steps/Step3MacroSetup";
-import Step4MealPlanner from "../components/steps/Step4MealPlanner";
-import Step5WeeklyPlan from "../components/steps/Step5WeeklyPlan";
-import Dashboard from "../components/Dashboard";
-import PatientDetail from "../components/PatientDetail";
 import Sidebar from "../components/Sidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import Toast from "../components/ui/Toast";
-import History from "../components/History";
-import Patients from "../components/Patients";
+import RouteLoadingFallback from "../components/ui/RouteLoadingFallback";
 import { useAuth } from "../context/AuthContext";
 import { Box, Stack, Typography } from "@mui/material";
-import Settings from "../components/Settings";
 import PlaceholderPage from "../components/ui/PlaceholderPage";
-import NutritionCalculators from "./NutritionCalculators";
 import OfflineBanner from "../components/ui/OfflineBanner";
 import useNetworkStatus from "../hooks/useNetworkStatus";
-import { FileText, Activity, UtensilsCrossed } from "lucide-react";
+import { Activity, UtensilsCrossed } from "lucide-react";
+
+const Dashboard = lazy(() => import("../components/Dashboard"));
+const Patients = lazy(() => import("../components/Patients"));
+const History = lazy(() => import("../components/History"));
+const Settings = lazy(() => import("../components/Settings"));
+const PlansReports = lazy(() => import("../components/views/PlansReports"));
+const PatientDetail = lazy(() => import("../components/PatientDetail"));
+const NutritionCalculators = lazy(() => import("./NutritionCalculators"));
+const Step1PatientInfo = lazy(() => import("../components/steps/Step1PatientInfo"));
+const Step2Calculations = lazy(() => import("../components/steps/Step2Calculations"));
+const Step3MacroSetup = lazy(() => import("../components/steps/Step3MacroSetup"));
+const Step4MealPlanner = lazy(() => import("../components/steps/Step4MealPlanner"));
+const Step5WeeklyPlan = lazy(() => import("../components/steps/Step5WeeklyPlan"));
 
 const PATH_TO_VIEW = {
     "/dashboard": "dashboard",
@@ -186,7 +189,13 @@ export default function AuthenticatedApp() {
     const renderStep = () => {
         switch (currentStep) {
             case 1:
-                return <Step1PatientInfo onSave={handlePatientSaved} onError={handleError} initialData={patientData} />;
+                return (
+                    <Step1PatientInfo
+                        onSave={handlePatientSaved}
+                        onError={handleError}
+                        initialData={patientData}
+                    />
+                );
             case 2:
                 return (
                     <Step2Calculations
@@ -239,6 +248,10 @@ export default function AuthenticatedApp() {
         }
     };
 
+    const withViewSuspense = (content, minHeight = "40vh") => (
+        <Suspense fallback={<RouteLoadingFallback minHeight={minHeight} />}>{content}</Suspense>
+    );
+
     const renderMainContent = () => {
         if (loading) {
             return (
@@ -249,7 +262,7 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "history") {
-            return (
+            return withViewSuspense(
                 <History
                     onBack={() => handleNavigate("dashboard")}
                     onCreatePlan={startNewPlan}
@@ -258,7 +271,7 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "dashboard") {
-            return (
+            return withViewSuspense(
                 <Dashboard
                     onCreatePlan={startNewPlan}
                     onAddPatient={() => {
@@ -275,7 +288,7 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "patients") {
-            return (
+            return withViewSuspense(
                 <Patients
                     onBack={() => handleNavigate("dashboard")}
                     onAddPatient={startNewPlan}
@@ -300,15 +313,7 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "plans") {
-            return (
-                <PlaceholderPage
-                    title="Nutrition Protocols"
-                    description="Review all active and historically assigned nutrition plans across your practice. Saved plans from the wizard will appear here in a future update."
-                    icon={FileText}
-                    actionLabel="Create a diet plan"
-                    onAction={startNewPlan}
-                />
-            );
+            return withViewSuspense(<PlansReports onCreatePlan={startNewPlan} />);
         }
 
         if (view === "progress") {
@@ -324,11 +329,11 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "settings") {
-            return <Settings />;
+            return withViewSuspense(<Settings />);
         }
 
         if (view === "calculators") {
-            return (
+            return withViewSuspense(
                 <Box className="dd-mobile-page" sx={{ p: { xs: 0, md: 3 }, background: "var(--background)", minHeight: "100%" }}>
                     <NutritionCalculators onExportToPlan={handleAssessmentExport} />
                 </Box>
@@ -336,7 +341,7 @@ export default function AuthenticatedApp() {
         }
 
         if (view === "profile" && selectedPatient) {
-            return (
+            return withViewSuspense(
                 <Box className="dd-mobile-page" p={{ xs: 2, md: 4 }}>
                     <PatientDetail
                         patient={selectedPatient}
@@ -365,7 +370,7 @@ export default function AuthenticatedApp() {
                         <StepProgress currentStep={currentStep} onStepClick={goToStep} />
                     </Box>
                     <Box className="dd-planner-content" sx={{ maxWidth: "1000px", mx: "auto", p: { xs: 0, md: 4 } }}>
-                        {renderStep()}
+                        {withViewSuspense(renderStep(), "30vh")}
                     </Box>
                 </Box>
             );

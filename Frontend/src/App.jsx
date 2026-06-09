@@ -1,23 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useAuth } from "./context/AuthContext";
-import Landing from "./pages/Landing";
-import AuthenticatedApp from "./pages/AuthenticatedApp";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-import VerifyEmail from "./pages/VerifyEmail";
-import PdfPreview from "./pages/PdfPreview";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import ContactUs from "./pages/ContactUs";
-import SecurityPage from "./pages/SecurityPage";
 import PublicFooter from "./components/PublicFooter";
-import NotFound from "./pages/NotFound";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthLoadingScreen from "./components/ui/AuthLoadingScreen";
+
+const Landing = lazy(() => import("./pages/Landing"));
+const AuthenticatedApp = lazy(() => import("./pages/AuthenticatedApp"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const PdfPreview = lazy(() => import("./pages/PdfPreview"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const ContactUs = lazy(() => import("./pages/ContactUs"));
+const SecurityPage = lazy(() => import("./pages/SecurityPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RootRoute() {
     const { user, loading: authLoading } = useAuth();
@@ -139,28 +140,30 @@ export default function App() {
     }, [location.search, location.pathname, navigate]);
 
     return (
-        <Routes>
-            <Route path="/pdf-preview" element={<PdfPreview />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/" element={<RootRoute />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/dashboard" element={<PrivateApp />} />
-            <Route path="/patients" element={<PrivateApp />} />
-            <Route path="/settings" element={<PrivateApp />} />
-            <Route path="/planner" element={<PrivateApp />} />
-            <Route path="/create-plan" element={<PrivateApp />} />
-            <Route path="/plans" element={<PrivateApp />} />
-            <Route path="/progress" element={<PrivateApp />} />
-            <Route path="/food-database" element={<PrivateApp />} />
-            <Route path="/exchange-list" element={<PrivateApp />} />
-            <Route path="/history" element={<PrivateApp />} />
-            <Route path="/calculators" element={<PrivateApp />} />
-            <Route path="*" element={<CatchAllRoute />} />
-        </Routes>
+        <Suspense fallback={<AuthLoadingScreen />}>
+            <Routes>
+                <Route path="/pdf-preview" element={<PdfPreview />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/contact" element={<ContactUs />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/" element={<RootRoute />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/dashboard" element={<PrivateApp />} />
+                <Route path="/patients" element={<PrivateApp />} />
+                <Route path="/settings" element={<PrivateApp />} />
+                <Route path="/planner" element={<PrivateApp />} />
+                <Route path="/create-plan" element={<PrivateApp />} />
+                <Route path="/plans" element={<PrivateApp />} />
+                <Route path="/progress" element={<PrivateApp />} />
+                <Route path="/food-database" element={<PrivateApp />} />
+                <Route path="/exchange-list" element={<PrivateApp />} />
+                <Route path="/history" element={<PrivateApp />} />
+                <Route path="/calculators" element={<PrivateApp />} />
+                <Route path="*" element={<CatchAllRoute />} />
+            </Routes>
+        </Suspense>
     );
 }
