@@ -35,7 +35,16 @@ Designed to provide a structured system for health-related workflows and data ma
 ```
 
 ---
+## 📸 Screenshots
 
+### 🏠 Home Page
+![Home](./home.png)
+
+### 📊 Dashboard
+![Dashboard](./dashboard.png)
+
+### ⚙️ Feature View
+![Feature](./feature.png)
 ## ⚙️ Tech Stack
 
 ### Frontend
