@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 import { toFriendlyApiError } from '../utils/apiErrors';
-import { COLD_START_RETRY_DELAY_MS, sleep } from '../utils/coldStart';
+import { COLD_START_MAX_RETRIES, COLD_START_RETRY_DELAY_MS, sleep } from '../utils/coldStart';
 import { captureApiFailure, captureAuthFailure } from '../utils/sentry';
 
 const API_BASE_URL = getApiBaseUrl();
@@ -25,7 +25,7 @@ export function clearAuthStorage() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TOKEN_EXPIRES_KEY);
-    sessionStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(REFRESH_KEY);
 }
 
 export function storeAuthTokens({ access_token, refresh_token, expires_in }) {
@@ -33,7 +33,7 @@ export function storeAuthTokens({ access_token, refresh_token, expires_in }) {
         localStorage.setItem(TOKEN_KEY, access_token);
     }
     if (refresh_token) {
-        sessionStorage.setItem(REFRESH_KEY, refresh_token);
+        localStorage.setItem(REFRESH_KEY, refresh_token);
     }
     if (expires_in) {
         localStorage.setItem(TOKEN_EXPIRES_KEY, String(Date.now() + expires_in * 1000));
@@ -44,7 +44,7 @@ async function refreshAccessToken() {
     if (!refreshInFlight) {
         refreshInFlight = axios.post(
             `${API_BASE_URL}/auth/refresh`,
-            { refresh_token: sessionStorage.getItem(REFRESH_KEY) },
+            { refresh_token: localStorage.getItem(REFRESH_KEY) },
             { withCredentials: true, timeout: 30000 }
         ).finally(() => {
             refreshInFlight = null;
@@ -167,13 +167,21 @@ const handleResp = async (fn, context = 'request') => {
 };
 
 export async function executeWithColdStartRetry(requestFn, context, { onWaking } = {}) {
-    const first = await handleResp(requestFn, context);
-    if (first.success || !first.coldStart) {
-        return first;
+    let lastResult = await handleResp(requestFn, context);
+    if (lastResult.success) {
+        return lastResult;
     }
-    onWaking?.();
-    await sleep(COLD_START_RETRY_DELAY_MS);
-    return handleResp(requestFn, context);
+
+    let attempt = 0;
+    while (!lastResult.success && (lastResult.coldStart || lastResult.retryable) && attempt < COLD_START_MAX_RETRIES) {
+        onWaking?.();
+        const delay = COLD_START_RETRY_DELAY_MS * (attempt + 1);
+        await sleep(delay);
+        lastResult = await handleResp(requestFn, context);
+        attempt += 1;
+    }
+
+    return lastResult;
 }
 
 const withRetries = async (fn, context, retries = 2, delayMs = 1500) => {
@@ -234,7 +242,7 @@ export const registerUser = (data, options) => executeWithColdStartRetry(
     'signup',
     options,
 );
-export const refreshSession = () => handleResp(() => api.post('/auth/refresh', { refresh_token: sessionStorage.getItem(REFRESH_KEY) }), 'refresh-session');
+export const refreshSession = () => handleResp(() => api.post('/auth/refresh', { refresh_token: localStorage.getItem(REFRESH_KEY) }), 'refresh-session');
 export const logoutUser = () => handleResp(() => api.post('/auth/logout'), 'logout');
 export const getMe = (options) => executeWithColdStartRetry(
     () => api.get('/auth/me'),
@@ -249,6 +257,18 @@ export const requestVerificationEmail = (data) => withRetries(
     () => handleResp(() => api.post('/auth/request-verification-email', data), 'request-verification'),
     'request-verification',
 );
+
+// MFA endpoints
+export const setupMfa = () => handleResp(() => api.post('/auth/mfa/setup'), 'mfa-setup');
+export const verifyMfaSetup = (code) => handleResp(
+    () => api.post('/auth/mfa/verify-setup', { code }),
+    'mfa-verify-setup',
+);
+export const verifyMfaLogin = (data) => handleResp(
+    () => api.post('/auth/mfa/verify', data),
+    'mfa-verify-login',
+);
+export const disableMfa = () => handleResp(() => api.delete('/auth/mfa/disable'), 'mfa-disable');
 
 export const wakeBackend = () => handleResp(
     () => api.get('/warmup', { params: { ping_db: false }, timeout: 15000 }),

@@ -7,6 +7,8 @@ import time
 from dotenv import load_dotenv
 from pymongo.server_api import ServerApi
 
+from runtime_env import is_production
+
 load_dotenv(override=True)
 
 # MongoDB Connection
@@ -15,13 +17,19 @@ if not MONGODB_URL:
     raise RuntimeError("MONGODB_URL environment variable is not set. Cannot start without a database connection.")
 DB_NAME = os.getenv("DATABASE_NAME", "nutripro_db")
 
-# Tunables
-SERVER_SELECTION_TIMEOUT_MS = int(os.getenv("MONGODB_SERVER_SELECTION_TIMEOUT_MS", "5000"))
-CONNECT_TIMEOUT_MS = int(os.getenv("MONGODB_CONNECT_TIMEOUT_MS", "5000"))
-SOCKET_TIMEOUT_MS = int(os.getenv("MONGODB_SOCKET_TIMEOUT_MS", "8000"))
+# Tunables — longer timeouts in production (HF cold starts + Atlas DNS)
+_prod = is_production()
+_DEFAULT_SERVER_SELECTION_MS = "30000" if _prod else "5000"
+_DEFAULT_CONNECT_MS = "20000" if _prod else "5000"
+_DEFAULT_SOCKET_MS = "20000" if _prod else "8000"
+_DEFAULT_HEALTH_PING_MS = "5000" if _prod else "2000"
+
+SERVER_SELECTION_TIMEOUT_MS = int(os.getenv("MONGODB_SERVER_SELECTION_TIMEOUT_MS", _DEFAULT_SERVER_SELECTION_MS))
+CONNECT_TIMEOUT_MS = int(os.getenv("MONGODB_CONNECT_TIMEOUT_MS", _DEFAULT_CONNECT_MS))
+SOCKET_TIMEOUT_MS = int(os.getenv("MONGODB_SOCKET_TIMEOUT_MS", _DEFAULT_SOCKET_MS))
 TLS_INSECURE = os.getenv("MONGODB_TLS_INSECURE", "false").lower() in {"1", "true", "yes"}
 DNS_SERVERS = [s.strip() for s in os.getenv("MONGODB_DNS_SERVERS", "8.8.8.8,1.1.1.1").split(",") if s.strip()]
-HEALTH_PING_TIMEOUT_MS = int(os.getenv("MONGODB_HEALTH_PING_TIMEOUT_MS", "2000"))
+HEALTH_PING_TIMEOUT_MS = int(os.getenv("MONGODB_HEALTH_PING_TIMEOUT_MS", _DEFAULT_HEALTH_PING_MS))
 
 if MONGODB_URL.startswith("mongodb+srv://") and DNS_SERVERS:
     try:
@@ -127,6 +135,9 @@ def _get_coll(name):
 patients_collection = _get_coll("patients")
 plans_collection = _get_coll("diet_plans")
 logs_collection = _get_coll("reflection_logs")
+# users collection schema (selected fields):
+#   mfa_enabled: bool (default False)
+#   mfa_secret: str (Fernet-encrypted TOTP secret, nullable)
 users_collection = _get_coll("users")
 history_collection = _get_coll("history")
 refresh_sessions_collection = _get_coll("refresh_sessions")
@@ -181,4 +192,5 @@ def user_helper(user) -> dict:
         "createdAt": user.get("createdAt"),
         "email_verified": user.get("email_verified", False),
         "verification_deadline": user.get("verification_deadline"),
+        "mfa_enabled": user.get("mfa_enabled", False),
     }

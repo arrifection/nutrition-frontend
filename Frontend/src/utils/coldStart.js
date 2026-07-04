@@ -1,4 +1,5 @@
 export const COLD_START_RETRY_DELAY_MS = 2500;
+export const COLD_START_MAX_RETRIES = 4;
 
 const CONTEXT_MESSAGES = {
     login: "Starting secure server... Trying again in a few seconds.",

@@ -27,7 +27,7 @@ const FRIENDLY_BY_PHRASE = [
     { match: /failed login attempts/i, text: "Too many failed login attempts. Please wait and try again." },
     { match: /password must include/i, text: null },
     { match: /password must be at least/i, text: null },
-    { match: /database is temporarily unreachable/i, text: "We're having a brief connection issue. Please try again in a moment." },
+    { match: /database is temporarily unreachable/i, text: "We're connecting to the secure database. Please wait a few seconds and try again." },
     { match: /couldn't save this patient/i, text: "We couldn't save this patient right now. Please check height, weight, and age, then try again." },
     { match: /weight must be between/i, text: "Please enter a valid weight between 5 and 300 kg." },
     { match: /height must be between/i, text: "Please enter a valid height between 50 and 250 cm." },
@@ -79,11 +79,13 @@ export function toFriendlyApiError(error, context = "request") {
     if (detail) {
         for (const rule of FRIENDLY_BY_PHRASE) {
             if (rule.match.test(detail)) {
+                const isDbRetry = /database is temporarily unreachable/i.test(detail);
                 return {
                     userMessage: rule.text ?? detail,
                     technicalMessage: detail,
                     status,
-                    retryable: false,
+                    retryable: isDbRetry || false,
+                    coldStart: isDbRetry || status === 503,
                 };
             }
         }

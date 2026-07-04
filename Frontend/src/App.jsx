@@ -2,15 +2,16 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useAuth } from "./context/AuthContext";
-import Login from "./components/Login";
-import Signup from "./components/Signup";
 import PublicFooter from "./components/PublicFooter";
 import Toast from "./components/ui/Toast";
 import DietDeskLogo from "./components/DietDeskLogo";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthLoadingScreen from "./components/ui/AuthLoadingScreen";
+import CookieConsent from "./components/ui/CookieConsent";
 
 const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./components/Login"));
+const Signup = lazy(() => import("./components/Signup"));
 const AuthenticatedApp = lazy(() => import("./pages/AuthenticatedApp"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const PdfPreview = lazy(() => import("./pages/PdfPreview"));
@@ -85,7 +86,7 @@ function SignupPage() {
         <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
             <Box className="auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
                 <AuthHomeLink idPrefix="auth-signup" />
-                <Signup onToggle={() => navigate("/login")} />
+                <Signup onToggle={() => navigate("/login")} onSuccess={() => navigate("/dashboard", { replace: true })} />
             </Box>
             <PublicFooter />
             <Toast
@@ -140,7 +141,12 @@ export default function App() {
     }, [location.search, location.pathname, navigate]);
 
     return (
-        <Suspense fallback={<AuthLoadingScreen />}>
+        <>
+        <Suspense fallback={(
+            <div className="route-suspense-fallback">
+                Loading...
+            </div>
+        )}>
             <Routes>
                 <Route path="/pdf-preview" element={<PdfPreview />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -165,5 +171,7 @@ export default function App() {
                 <Route path="*" element={<CatchAllRoute />} />
             </Routes>
         </Suspense>
+        <CookieConsent />
+        </>
     );
 }

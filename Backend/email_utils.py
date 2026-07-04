@@ -7,13 +7,17 @@ from typing import Any, Optional
 import httpx
 from dotenv import load_dotenv
 
+from runtime_env import is_production, resolve_environment
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+
+_default_frontend = "https://dietdesk.online" if is_production() else "http://localhost:5173"
+FRONTEND_URL = (os.getenv("FRONTEND_URL") or _default_frontend).rstrip("/")
 RESEND_API_URL = "https://api.resend.com/emails"
 
 

@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { wakeBackend } from "../services/api";
 import { isPasswordStrong, passwordRequirements, passwordValidationMessage } from "../utils/passwordPolicy";
 
-const Signup = ({ onToggle }) => {
+const Signup = ({ onToggle, onSuccess }) => {
     const { register } = useAuth();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -37,6 +37,10 @@ const Signup = ({ onToggle }) => {
             onWaking: () => setWaking(true),
         });
         if (result.success) {
+            if (result.autoLoggedIn) {
+                onSuccess?.();
+                return;
+            }
             if (result.emailSent === false) {
                 setSuccess(
                     "Account created. We couldn't send the verification email right now — open Settings after login and tap Resend Verification Email."

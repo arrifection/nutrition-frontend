@@ -21,6 +21,7 @@ from advice import router as advice_router
 from allergen_router import router as allergen_router
 from assessment_router import router as assessment_router
 from auth_router import router as auth_router
+from mfa_router import router as mfa_router
 from bmi import router as bmi_router
 from bmr import router as bmr_router
 from clinical_router import router as clinical_router
@@ -72,18 +73,25 @@ async def _background_startup() -> None:
     try:
         log_email_config_on_startup()
         _log_startup_env_status()
-        refresh_collections()
 
-        if await quick_db_ping():
-            with open("startup_check.txt", "a") as f:
-                f.write("DB CONNECTED\n")
-            await seed_food_data()
-        else:
-            with open("startup_check.txt", "a") as f:
-                f.write("DB FAILED\n")
-            logger.warning(
-                "Skipping startup seed: Database not reachable. The app will continue, but DB features will fail."
-            )
+        for attempt in range(6):
+            refresh_collections()
+            if await quick_db_ping(timeout_seconds=5.0 + attempt * 2.0):
+                with open("startup_check.txt", "a") as f:
+                    f.write("DB CONNECTED\n")
+                await seed_food_data()
+                return
+
+            wait = 3 * (attempt + 1)
+            logger.warning("[STARTUP] DB not ready (attempt %s/6). Retrying in %ss...", attempt + 1, wait)
+            await asyncio.sleep(wait)
+
+        with open("startup_check.txt", "a") as f:
+            f.write("DB FAILED\n")
+        logger.error(
+            "[STARTUP] Database unreachable after retries. Auth will retry on each request. "
+            "Check MONGODB_URL and Atlas Network Access (allow 0.0.0.0/0 for Hugging Face)."
+        )
     except Exception as exc:
         logger.exception("[STARTUP] Background initialization failed: %s", exc)
 
@@ -158,6 +166,7 @@ app.include_router(clinical_router)
 app.include_router(assessment_router)
 app.include_router(allergen_router)
 app.include_router(auth_router)
+app.include_router(mfa_router)
 app.include_router(client_log_router)
 app.include_router(debug_router)
 app.include_router(history_router)

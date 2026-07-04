@@ -15,7 +15,7 @@ from auth_utils import (
 from database import refresh_sessions_collection, users_collection
 
 REFRESH_COOKIE_NAME = "dietdesk_refresh"
-REFRESH_COOKIE_PATH = "/auth/refresh"
+REFRESH_COOKIE_PATH = "/"
 
 
 def _new_family_id() -> str:

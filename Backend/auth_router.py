@@ -2,12 +2,13 @@ import logging
 import os
 import traceback
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Request, Response, status
+from fastapi import APIRouter, HTTPException, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime, timedelta
 
 from database import users_collection, user_helper
+from db_ready import ensure_db_ready, is_db_connection_error, raise_db_unavailable
 from auth_utils import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     get_password_hash,
@@ -20,7 +21,6 @@ from auth_utils import (
 from email_utils import send_verification_email
 from password_policy import validate_password_strength
 from login_throttle import check_login_allowed, record_failed_login, clear_failed_logins
-from rate_limit import check_rate_limit
 from refresh_token_service import (
     REFRESH_COOKIE_NAME,
     REFRESH_COOKIE_PATH,
@@ -87,14 +87,11 @@ class Token(BaseModel):
 
 
 def _is_db_connection_error(error: Exception) -> bool:
-    return isinstance(error, (ServerSelectionTimeoutError, AutoReconnect, NetworkTimeout, ConfigurationError))
+    return is_db_connection_error(error)
 
 
-def _raise_db_unavailable():
-    raise HTTPException(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail="Database is temporarily unreachable. Please try again in a moment.",
-    )
+def _raise_db_unavailable() -> None:
+    raise_db_unavailable()
 
 
 def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
@@ -166,15 +163,9 @@ async def get_current_user(token: str | None = Depends(oauth2_scheme)):
     return user_helper(user)
 
 
-async def _send_registration_email(email: str, token: str) -> None:
-    email_result = await send_verification_email(email, token)
-    if not email_result.success:
-        logger.warning("Verification email was not sent to %s: %s", email, email_result.error_message)
-
-
 @router.post("/register", response_model=dict)
-async def register(user_data: UserRegister, request: Request, background_tasks: BackgroundTasks):
-    check_rate_limit(request)
+async def register(user_data: UserRegister, request: Request):
+    await ensure_db_ready()
     try:
         user_data.email = user_data.email.lower()
 
@@ -213,10 +204,17 @@ async def register(user_data: UserRegister, request: Request, background_tasks: 
         result = await users_collection.insert_one(new_user)
         if result.inserted_id:
             logger.info("[AUTH SIGNUP] User %s registered", user_data.email)
-            background_tasks.add_task(_send_registration_email, user_data.email, verification_token)
+            email_result = await send_verification_email(user_data.email, verification_token)
+            email_sent = email_result.success
+            if not email_sent:
+                logger.warning(
+                    "[AUTH SIGNUP] Account created but verification email failed for %s: %s",
+                    user_data.email,
+                    email_result.error_message,
+                )
             return {
-                "message": "Account created. You can use Diet Desk now, but please verify your email within 2 days.",
-                "email_sent": True,
+                "message": "Account created. You can sign in now. Please verify your email within 2 days.",
+                "email_sent": email_sent,
             }
         raise HTTPException(status_code=500, detail="Failed to register user record")
     except HTTPException:
@@ -230,9 +228,9 @@ async def register(user_data: UserRegister, request: Request, background_tasks: 
         raise HTTPException(status_code=500, detail="We couldn't create your account right now. Please try again.")
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 async def login(user_data: UserLogin, request: Request, response: Response):
-    check_rate_limit(request)
+    await ensure_db_ready()
     try:
         user_data.email = user_data.email.lower()
         await check_login_allowed(user_data.email)
@@ -255,6 +253,15 @@ async def login(user_data: UserLogin, request: Request, response: Response):
                 )
 
         await clear_failed_logins(user_data.email)
+
+        if user.get("mfa_enabled"):
+            temp_token = create_access_token(
+                data={"sub": user["email"], "uid": str(user["_id"]), "mfa_pending": True},
+                expires_delta=timedelta(minutes=5),
+            )
+            logger.info("[AUTH LOGIN] MFA challenge for %s", user_data.email)
+            return {"mfa_required": True, "temp_token": temp_token}
+
         tokens = await issue_token_pair(user)
         _set_refresh_cookie(response, tokens["refresh_token"])
 
@@ -279,7 +286,7 @@ async def login(user_data: UserLogin, request: Request, response: Response):
 
 @router.post("/refresh", response_model=dict)
 async def refresh_session(request: Request, response: Response, body: RefreshRequest | None = None):
-    check_rate_limit(request)
+    await ensure_db_ready()
     refresh_plain = request.cookies.get(REFRESH_COOKIE_NAME)
     if not refresh_plain and body and body.refresh_token:
         refresh_plain = body.refresh_token
@@ -373,7 +380,7 @@ async def verify_email(token: str):
 
 @router.post("/request-verification-email")
 async def request_verification_email(data: RequestVerificationEmail, request: Request):
-    check_rate_limit(request)
+    await ensure_db_ready()
     data.email = data.email.lower()
 
     try:
