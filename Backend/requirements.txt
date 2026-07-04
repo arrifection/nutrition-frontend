@@ -13,3 +13,5 @@ python-jose[cryptography]
 httpx
 fpdf2
 sentry-sdk[fastapi]
+pyotp
+qrcode[pil]
