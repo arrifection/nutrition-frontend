@@ -1,6 +1,7 @@
 import asyncio
 import certifi
 import dns.resolver
+import logging
 import motor.motor_asyncio
 import os
 import time
@@ -10,6 +11,8 @@ from pymongo.server_api import ServerApi
 from runtime_env import is_production
 
 load_dotenv(override=True)
+
+logger = logging.getLogger(__name__)
 
 # MongoDB Connection
 MONGODB_URL = os.getenv("MONGODB_URL")
@@ -46,7 +49,7 @@ if MONGODB_URL.startswith("mongodb+srv://") and DNS_SERVERS:
 # Global client instance (lazy — no connect at import time)
 client = None
 db = None
-_db_status_cache = {"ok": None, "checked_at": 0.0}
+_db_status_cache = {"ok": None, "checked_at": 0.0, "reason": None}
 
 
 def get_client():
@@ -81,9 +84,19 @@ async def _ping_db(timeout_seconds: float) -> bool:
     try:
         c = get_client()
         await asyncio.wait_for(c.admin.command("ping"), timeout=timeout_seconds)
+        _db_status_cache["reason"] = None
         return True
     except Exception as e:
-        print(f"MongoDB ping failed ({timeout_seconds}s timeout): {type(e).__name__} - {e}")
+        message = str(e).lower()
+        reason = "auth_failed" if "authentication failed" in message or "bad auth" in message else "unreachable"
+        _db_status_cache["reason"] = reason
+        if reason == "auth_failed":
+            logger.error(
+                "[DB] MongoDB authentication failed. Reset Atlas DB user password "
+                "and update MONGODB_URL in Hugging Face (URL-encode special chars in password)."
+            )
+        else:
+            logger.warning("MongoDB ping failed (%ss): %s - %s", timeout_seconds, type(e).__name__, e)
         return False
 
 
@@ -96,11 +109,20 @@ def get_cached_db_status(max_age_seconds: float = 60.0) -> str:
     """Fast status for /health — never blocks on a live ping."""
     ok = _db_status_cache["ok"]
     checked_at = _db_status_cache["checked_at"]
+    reason = _db_status_cache.get("reason")
     if ok is None:
         return "unknown"
     if time.time() - checked_at > max_age_seconds:
         return "stale"
-    return "connected" if ok else "unreachable"
+    if ok:
+        return "connected"
+    if reason == "auth_failed":
+        return "auth_failed"
+    return "unreachable"
+
+
+def get_db_status_reason() -> str | None:
+    return _db_status_cache.get("reason")
 
 
 async def quick_db_ping(timeout_seconds: float | None = None) -> bool:

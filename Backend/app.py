@@ -25,7 +25,7 @@ from mfa_router import router as mfa_router
 from bmi import router as bmi_router
 from bmr import router as bmr_router
 from clinical_router import router as clinical_router
-from database import get_cached_db_status, quick_db_ping, refresh_collections
+from database import get_cached_db_status, get_db_status_reason, quick_db_ping, refresh_collections
 from client_log_router import router as client_log_router
 from debug_router import router as debug_router
 from email_utils import get_email_config_status, log_email_config_on_startup
@@ -198,11 +198,18 @@ async def warmup(ping_db: bool = True):
     db_ok = None
     if ping_db:
         db_ok = await quick_db_ping()
+    db_reason = get_db_status_reason()
+    if db_ok:
+        db_label = "connected"
+    elif db_ok is False and db_reason == "auth_failed":
+        db_label = "auth_failed"
+    elif db_ok is False:
+        db_label = "unreachable"
+    else:
+        db_label = "skipped"
     return {
         "status": "warm",
-        "database": (
-            "connected" if db_ok else "unreachable" if db_ok is False else "skipped"
-        ),
+        "database": db_label,
         "environment": resolve_environment(),
     }
 
