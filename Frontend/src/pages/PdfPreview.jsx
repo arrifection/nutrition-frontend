@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import PageMeta from "../components/PageMeta";
 
 const sampleData = {
     patient_name: "Sarah Ahmed",
@@ -423,6 +424,7 @@ export default function PdfPreview() {
 
     return (
         <main className="pdf-preview-page">
+            <PageMeta title="PDF Preview" noindex={true} />
             <div className="pdf-preview-toolbar">
                 <div>
                     <h1>Clinical PDF Template Preview</h1>

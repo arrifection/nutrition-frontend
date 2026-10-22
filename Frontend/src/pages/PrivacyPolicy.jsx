@@ -7,6 +7,7 @@ export default function PrivacyPolicy() {
         <PublicPageShell
             title="Privacy Policy"
             metaDescription="DietDesk Privacy Policy — how we collect, use, and protect account and patient information for nutrition professionals."
+            canonical="https://dietdesk.online/privacy"
         >
             <TrustDocument title="Privacy Policy">
                 <TrustSection title="Welcome to DietDesk">

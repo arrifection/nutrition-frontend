@@ -8,6 +8,7 @@ export default function SecurityPage() {
         <PublicPageShell
             title="Security"
             metaDescription="Review DietDesk security practices for authentication, encrypted data storage, access controls, and responsible vulnerability disclosure."
+            canonical="https://dietdesk.online/security"
         >
             <TrustDocument
                 title="Security at DietDesk"

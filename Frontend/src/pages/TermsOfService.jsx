@@ -7,6 +7,7 @@ export default function TermsOfService() {
         <PublicPageShell
             title="Terms of Service"
             metaDescription="DietDesk Terms of Service — rules for using our nutrition planning platform as a student or dietitian."
+            canonical="https://dietdesk.online/terms"
         >
             <TrustDocument title="Terms of Service">
                 <TrustSection title="Agreement">

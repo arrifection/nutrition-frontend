@@ -14,6 +14,7 @@ export default function ContactUs() {
         <PublicPageShell
             title="Contact Us"
             metaDescription="Contact DietDesk for support, technical help, security reports, and feature requests. We typically respond within 24–48 business hours."
+            canonical="https://dietdesk.online/contact"
             narrow
         >
             <TrustDocument

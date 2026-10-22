@@ -9,6 +9,7 @@ export default function NotFound() {
             <PageMeta
                 title="Page Not Found"
                 description="The page you requested could not be found on DietDesk."
+                noindex={true}
             />
             <div className="not-found-page flex-1">
                 <Link to="/" className="not-found-logo" aria-label="DietDesk home">

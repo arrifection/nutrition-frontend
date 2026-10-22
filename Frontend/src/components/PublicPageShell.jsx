@@ -8,12 +8,13 @@ export default function PublicPageShell({
     title,
     metaTitle,
     metaDescription,
+    canonical,
     children,
     narrow = false,
 }) {
     return (
         <div className="landing-page public-page">
-            <PageMeta title={metaTitle || title} description={metaDescription} />
+            <PageMeta title={metaTitle || title} description={metaDescription} canonical={canonical} />
             <header className="landing-nav">
                 <div className="landing-container landing-nav-inner">
                     <Link to="/" className="landing-logo" aria-label="DietDesk home">

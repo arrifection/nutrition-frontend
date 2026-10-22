@@ -4,26 +4,75 @@
   "framework": null,
   "installCommand": "cd Frontend && npm ci",
   "rewrites": [
-    { "source": "/backend/:path*", "destination": "https://arrifection-nutrition-backend.hf.space/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/backend/:path*",
+      "destination": "https://arrifection-nutrition-backend.hf.space/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'nonce-dietdesk-csp-nonce-v1'; style-src 'self' 'unsafe-inline' 'nonce-dietdesk-csp-nonce-v1' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        }
+      ]
+    },
+    {
       "source": "/",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(login|signup|verify-email|pdf-preview|dashboard|patients|settings|planner|create-plan|plans|progress|food-database|exchange-list|history|calculators)(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     }
   ]

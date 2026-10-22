@@ -8,6 +8,7 @@ import DietDeskLogo from "./components/DietDeskLogo";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthLoadingScreen from "./components/ui/AuthLoadingScreen";
 import CookieConsent from "./components/ui/CookieConsent";
+import PageMeta from "./components/PageMeta";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./components/Login"));
@@ -56,6 +57,7 @@ function LoginPage() {
 
     return (
         <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <PageMeta title="Sign In" noindex={true} />
             <Box className="auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
                 <AuthHomeLink idPrefix="auth-login" />
                 <Login
@@ -84,6 +86,7 @@ function SignupPage() {
 
     return (
         <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <PageMeta title="Get Started" noindex={true} />
             <Box className="auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
                 <AuthHomeLink idPrefix="auth-signup" />
                 <Signup onToggle={() => navigate("/login")} onSuccess={() => navigate("/dashboard", { replace: true })} />
@@ -107,6 +110,7 @@ function VerifyEmailPage() {
 
     return (
         <Box className="public-auth-layout min-h-screen bg-slate-50 flex flex-col">
+            <PageMeta title="Verify Email" noindex={true} />
             <Box className="verify-page-wrap auth-page-wrap flex flex-col justify-center items-center py-12 px-4 flex-1">
                 <AuthHomeLink idPrefix="auth-verify" />
                 <VerifyEmail onGoToLogin={() => navigate(user ? "/dashboard" : "/login")} />
@@ -119,6 +123,7 @@ function VerifyEmailPage() {
 function PrivateApp() {
     return (
         <ProtectedRoute>
+            <PageMeta noindex={true} />
             <AuthenticatedApp />
         </ProtectedRoute>
     );
