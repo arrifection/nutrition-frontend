@@ -20,6 +20,9 @@ export default function PublicFooter() {
                         </Link>
                     ))}
                 </nav>
+                <p className="public-footer-disclaimer">
+                    DietDesk is a clinical nutrition planning and calculation tool for dietitians and students. It does not provide medical diagnoses or replace independent clinical judgment.
+                </p>
                 <p className="public-footer-tagline">Built for Nutrition Students and Dietitians</p>
             </div>
         </footer>

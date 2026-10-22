@@ -1506,6 +1506,15 @@
   color: rgba(255, 255, 255, 0.48);
 }
 
+.public-footer-disclaimer {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 680px;
+  text-align: center;
+}
+
 .trust-page-main {
   flex: 1;
   padding: 40px 0 56px;
@@ -1742,5 +1751,34 @@
   .trust-document {
     border-radius: 16px;
     padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .trust-document {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+
+  .trust-document-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .contact-simple-row {
+    padding: 12px 14px;
+  }
+
+  .contact-simple-email {
+    font-size: 0.875rem;
+    word-break: break-all;
+  }
+
+  .public-footer-nav {
+    gap: 8px 12px;
   }
 }

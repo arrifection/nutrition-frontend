@@ -171,7 +171,7 @@ export default function Landing() {
     return (
         <div className="home-page">
             <PageMeta
-                title={null}
+                title="Clinical Nutrition Software for Dietitians"
                 description="DietDesk — modern clinical nutrition software for dietitians and students. Patient management, meal planning, macro calculations, and PDF exports."
                 canonical="https://dietdesk.online/"
             />
