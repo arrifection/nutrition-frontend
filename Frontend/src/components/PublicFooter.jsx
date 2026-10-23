@@ -6,6 +6,7 @@ const FOOTER_LINKS = [
     { to: "/terms", label: "Terms of Service" },
     { to: "/security", label: "Security" },
     { to: "/contact", label: "Contact Us" },
+    { to: "/site-index", label: "Site Index" },
 ];
 
 export default function PublicFooter() {

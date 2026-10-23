@@ -21,6 +21,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const ContactUs = lazy(() => import("./pages/ContactUs"));
 const SecurityPage = lazy(() => import("./pages/SecurityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const SiteIndex = lazy(() => import("./pages/SiteIndex"));
 
 function RootRoute() {
     const { user, loading: authLoading } = useAuth();
@@ -158,6 +159,7 @@ export default function App() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/security" element={<SecurityPage />} />
+                <Route path="/site-index" element={<SiteIndex />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
                 <Route path="/" element={<RootRoute />} />
                 <Route path="/login" element={<LoginPage />} />

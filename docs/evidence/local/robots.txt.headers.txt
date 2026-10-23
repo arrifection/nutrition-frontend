@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Vary: Origin
+Content-Length: 132
+Content-Type: text/plain
+Last-Modified: Fri, 23 Oct 2026 10:07:08 GMT
+ETag: W/"132-1792750028272"
+Cache-Control: no-cache
+Date: Fri, 23 Oct 2026 11:08:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

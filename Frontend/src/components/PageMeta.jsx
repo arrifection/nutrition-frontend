@@ -38,7 +38,9 @@ export default function PageMeta({
     canonical,
     noindex = false,
 }) {
-    const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+    const fullTitle = title
+        ? (title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`)
+        : `${SITE_NAME} — Clinical diet planning software for dietitians`;
 
     useEffect(() => {
         document.title = fullTitle;

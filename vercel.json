@@ -9,7 +9,7 @@
       "destination": "https://arrifection-nutrition-backend.hf.space/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/(dashboard|patients|settings|planner|create-plan|plans|progress|food-database|exchange-list|history|calculators|pdf-preview|verify-email|login|signup)(/.*)?",
       "destination": "/index.html"
     }
   ],
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "source": "/(login|signup|verify-email|pdf-preview|dashboard|patients|settings|planner|create-plan|plans|progress|food-database|exchange-list|history|calculators)(.*)",
+      "source": "/(dashboard|patients|settings|planner|create-plan|plans|progress|food-database|exchange-list|history|calculators|pdf-preview|verify-email|login|signup)(/.*)?",
       "headers": [
         {
           "key": "X-Robots-Tag",
